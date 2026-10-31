@@ -1,0 +1,16 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#LicenseCollection.LicenseCollection",
+  "@odata.id": "/redfish/v1/LicenseService/Licenses",
+  "@odata.type": "#LicenseCollection.LicenseCollection",
+  "Description": "The collection of License resource instances.",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/LicenseService/Licenses/EvaluationLicense"
+    },
+    {
+      "@odata.id": "/redfish/v1/LicenseService/Licenses/ProductionLicense"
+    }
+  ],
+  "Members@odata.count": 2,
+  "Name": "LicenseCollection"
+}

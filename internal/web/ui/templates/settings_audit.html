@@ -1,0 +1,73 @@
+{{define "content"}}
+<div class="ph"><h1>Audit log</h1></div>
+{{template "settingstabs" "audit"}}
+<section class="panel" aria-labelledby="verify-h">
+  <h2 id="verify-h">Chain integrity</h2>
+  <p class="hint">Every row carries a hash of the previous one, so edits, deletions and reordering are detected. Removing the newest rows is not: compare the head hash with the copy in your log server.</p>
+  {{- if .Verify.Done}}
+  {{- if .Verify.OK}}
+  <p class="alert a-ok" role="status">{{template "sicon" "ok"}}<span class="alert-b"><strong>Chain intact.</strong> {{.Verify.Rows}} rows verified at {{.Verify.Verified}}.</span></p>
+  <p>Head hash: <code class="wrap">{{.Verify.Head}}</code></p>
+  {{- else if .Verify.BadSeq}}
+  <p class="alert a-crit" role="alert">{{template "sicon" "crit"}}<span class="alert-b"><strong>Chain broken at row {{.Verify.BadSeq}}:</strong> {{.Verify.Reason}}. Rows from there on cannot be trusted; preserve the database for investigation.</span></p>
+  {{- else}}
+  <p class="alert a-crit" role="alert">{{template "sicon" "crit"}}<span class="alert-b"><strong>Error:</strong> {{.Verify.Reason}}</span></p>
+  {{- end}}
+  {{- end}}
+  <form method="post" action="/settings/audit/verify" class="btn-row">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <button type="submit" class="btn">Verify chain</button>
+    <span class="hint">At most once a minute.</span>
+  </form>
+</section>
+<form class="filters panel" method="get" action="/settings/audit">
+  <div class="field"><label for="f-action">Action</label>
+    <select id="f-action" name="action">
+      <option value="">Any</option>
+    {{- range .Actions}}
+      <option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Value}}</option>
+    {{- end}}
+    </select>
+  </div>
+  <div class="field"><label for="f-principal">Who</label>
+    <input id="f-principal" name="principal" type="text" maxlength="64" value="{{.Filter.Principal}}" autocapitalize="none" spellcheck="false">
+  </div>
+  <div class="field"><label for="f-server">Server ID</label>
+    <input id="f-server" name="server" type="text" maxlength="64" value="{{.Filter.ServerID}}" autocapitalize="none" spellcheck="false">
+  </div>
+  <div class="field"><label for="f-result">Result</label>
+    <select id="f-result" name="result">
+      <option value="">Any</option>
+    {{- range .Results}}
+      <option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Value}}</option>
+    {{- end}}
+    </select>
+  </div>
+  <button type="submit" class="btn">Apply</button>
+</form>
+{{- if .Rows}}
+<p class="meta">Newest first.{{if .Filter.BeforeSeq}} Showing rows before #{{.Filter.BeforeSeq}}. <a href="{{.NewestRef}}">Back to the newest</a>{{end}}</p>
+<div class="tw panel flush" role="region" aria-label="Audit entries table" tabindex="0">
+<table class="stack">
+  <thead><tr><th scope="col" class="num">#</th><th scope="col">Time</th><th scope="col">What happened</th><th scope="col">Result</th><th scope="col" class="hide-sm">Address</th><th scope="col" class="hide-sm">Details</th></tr></thead>
+  <tbody>
+  {{- range .Rows}}
+    <tr class="ev-{{.ResultClass}}">
+      <td data-label="#" class="num mono">{{.Seq}}</td>
+      <td data-label="Time" class="nw">{{.Time}}</td>
+      <td data-label="What happened">{{.Sentence}} <span class="chip mono">{{.Action}}</span>{{if .Role}} <span class="meta">{{.Role}}{{if .Method}} via {{.Method}}{{end}}</span>{{end}}{{if .Server}} <span class="meta">server {{.Server}}</span>{{end}}</td>
+      <td data-label="Result"><span class="badge b-{{.ResultClass}}">{{template "sicon" .ResultClass}} {{.Result}}</span>{{if .Error}} <span class="meta">{{.Error}}</span>{{end}}</td>
+      <td data-label="Address" class="hide-sm mono">{{template "v" .IP}}</td>
+      <td data-label="Details" class="hide-sm">{{if .Details}}<dl class="kv">{{range .Details}}<div><dt>{{.Key}}</dt><dd class="mono wrap">{{.Value}}</dd></div>{{end}}</dl>{{else}}<span class="meta">None</span>{{end}}</td>
+    </tr>
+  {{- end}}
+  </tbody>
+</table>
+</div>
+{{- if .OlderHref}}
+<nav class="pager" aria-label="Audit pages"><ul><li><a href="{{.OlderHref}}" rel="next">Older entries</a></li></ul></nav>
+{{- end}}
+{{- else}}
+<section class="panel"><p class="empty">No entries match.</p></section>
+{{- end}}
+{{end}}

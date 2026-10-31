@@ -1,0 +1,337 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#LogEntryCollection.LogEntryCollection",
+  "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog",
+  "@odata.type": "#LogEntryCollection.LogEntryCollection",
+  "Description": "LC Logs for this manager",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8480",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T22:45:02+00:00",
+      "Description": " Log Entry 8480",
+      "EntryType": "Oem",
+      "Id": "8480",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and REDFISH.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0030",
+      "Name": " Log Entry 8480",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8479",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T22:45:02+00:00",
+      "Description": " Log Entry 8479",
+      "EntryType": "Oem",
+      "Id": "8479",
+      "Links": {},
+      "Message": "The previous log entry was repeated 1 times.",
+      "MessageArgs": [
+        "1"
+      ],
+      "MessageArgs@odata.count": 1,
+      "MessageId": "LOG007",
+      "Name": " Log Entry 8479",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8478",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T17:00:01+00:00",
+      "Description": " Log Entry 8478",
+      "EntryType": "Oem",
+      "Id": "8478",
+      "Links": {},
+      "Message": "System CPU Resetting.",
+      "MessageId": "SYS1003",
+      "Name": " Log Entry 8478",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8477",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T17:00:01+00:00",
+      "Description": " Log Entry 8477",
+      "EntryType": "Oem",
+      "Id": "8477",
+      "Links": {},
+      "Message": "The previous log entry was repeated 22 times.",
+      "MessageArgs": [
+        "22"
+      ],
+      "MessageArgs@odata.count": 1,
+      "MessageId": "LOG007",
+      "Name": " Log Entry 8477",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8476",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:29:00+00:00",
+      "Description": " Log Entry 8476",
+      "EntryType": "Oem",
+      "Id": "8476",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and REDFISH.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0030",
+      "Name": " Log Entry 8476",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8475",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:26:29+00:00",
+      "Description": " Log Entry 8475",
+      "EntryType": "Oem",
+      "Id": "8475",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "The session for root from 192.0.2.10 using GUI is logged off.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "GUI"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0032",
+      "Name": " Log Entry 8475",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8474",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:24:41+00:00",
+      "Description": " Log Entry 8474",
+      "EntryType": "Oem",
+      "Id": "8474",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and GUI.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "GUI"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0030",
+      "Name": " Log Entry 8474",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8473",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:24:41+00:00",
+      "Description": " Log Entry 8473",
+      "EntryType": "Oem",
+      "Id": "8473",
+      "Links": {},
+      "Message": "The previous log entry was repeated 1 times.",
+      "MessageArgs": [
+        "1"
+      ],
+      "MessageArgs@odata.count": 1,
+      "MessageId": "LOG007",
+      "Name": " Log Entry 8473",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8472",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:16:40+00:00",
+      "Description": " Log Entry 8472",
+      "EntryType": "Oem",
+      "Id": "8472",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and REDFISH.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0030",
+      "Name": " Log Entry 8472",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8471",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:16:18+00:00",
+      "Description": " Log Entry 8471",
+      "EntryType": "Oem",
+      "Id": "8471",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "The session for root from 192.0.2.10 using GUI is logged off.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "GUI"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0032",
+      "Name": " Log Entry 8471",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8470",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:15:18+00:00",
+      "Description": " Log Entry 8470",
+      "EntryType": "Oem",
+      "Id": "8470",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Login attempt alert for root from 192.0.2.10 using REDFISH, IP will be blocked for 60 seconds.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH",
+        "60"
+      ],
+      "MessageArgs@odata.count": 4,
+      "MessageId": "USR0034",
+      "Name": " Log Entry 8470",
+      "OemRecordFormat": "Dell",
+      "Severity": "Warning"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8469",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:15:18+00:00",
+      "Description": " Log Entry 8469",
+      "EntryType": "Oem",
+      "Id": "8469",
+      "Links": {},
+      "Message": "The previous log entry was repeated 2 times.",
+      "MessageArgs": [
+        "2"
+      ],
+      "MessageArgs@odata.count": 1,
+      "MessageId": "LOG007",
+      "Name": " Log Entry 8469",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8468",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:15:12+00:00",
+      "Description": " Log Entry 8468",
+      "EntryType": "Oem",
+      "Id": "8468",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Unable to log in for root from 192.0.2.10 using REDFISH.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0031",
+      "Name": " Log Entry 8468",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8467",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T16:14:50+00:00",
+      "Description": " Log Entry 8467",
+      "EntryType": "Oem",
+      "Id": "8467",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and GUI.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "GUI"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0030",
+      "Name": " Log Entry 8467",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Logs/Lclog/8466",
+      "@odata.type": "#LogEntry.v1_3_0.LogEntry",
+      "Created": "2025-03-15T15:47:26+00:00",
+      "Description": " Log Entry 8466",
+      "EntryType": "Oem",
+      "Id": "8466",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "The session for root from 192.0.2.10 using GUI is logged off.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "GUI"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "USR0032",
+      "Name": " Log Entry 8466",
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    }
+  ],
+  "Members@odata.count": 3385,
+  "Name": "Log Entry Collection"
+}

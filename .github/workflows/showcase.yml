@@ -1,0 +1,80 @@
+# README screenshots (tests/e2e/README.md "README screenshots"): `make showcase` against
+# the in-repo mock BMCs, then a metadata check, and the PNGs uploaded as the "screenshots"
+# artifact for a maintainer to review and commit to docs/screenshots/. Run by hand only;
+# it never pushes anything.
+#
+# Same supply-chain rules as ci.yml: actions pinned to a full commit SHA, explicit tool
+# versions >= 14 days old (tracked by Renovate), a read-only token and no secrets.
+name: showcase
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version in the screenshots' footer, e.g. v0.14.0 (default the latest tag)
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: showcase-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Ubuntu 24.04 has no oxipng package: the release binary, checked against this digest
+  # (GitHub's sha256 of the release asset). Update both lines together.
+  # renovate: datasource=github-releases depName=shssoichiro/oxipng
+  OXIPNG_VERSION: v10.2.1
+  OXIPNG_SHA256: 1813750ef592c5350ca79c88f98b2c0876d05c826dc7156245256d4255c1ad17
+
+jobs:
+  showcase:
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false, fetch-depth: 0 } # the tags, for the default version
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: Install pngquant, exiftool and oxipng
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pngquant libimage-exiftool-perl
+          v="${OXIPNG_VERSION#v}"
+          dir="$RUNNER_TEMP/oxipng"
+          mkdir -p "$dir"
+          curl -fsSL -o "$dir/oxipng.tar.gz" \
+            "https://github.com/shssoichiro/oxipng/releases/download/${OXIPNG_VERSION}/oxipng-${v}-x86_64-unknown-linux-musl.tar.gz"
+          echo "${OXIPNG_SHA256}  $dir/oxipng.tar.gz" | sha256sum -c -
+          tar -xzf "$dir/oxipng.tar.gz" -C "$dir" --strip-components=1 "oxipng-${v}-x86_64-unknown-linux-musl/oxipng"
+          echo "$dir" >> "$GITHUB_PATH"
+      - name: Screenshots (make showcase)
+        env:
+          VERSION_INPUT: ${{ inputs.version }}
+        run: |
+          pngquant --version && oxipng --version && exiftool -ver
+          if [ -n "$VERSION_INPUT" ]; then
+            [[ "$VERSION_INPUT" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "version must look like v1.2.3"; exit 1; }
+            make showcase PW_INSTALL_FLAGS=--with-deps SHOWCASE_VERSION="$VERSION_INPUT"
+          else
+            make showcase PW_INSTALL_FLAGS=--with-deps
+          fi
+      - name: No metadata in any PNG
+        run: bash tests/e2e/showcase/check-metadata.sh docs/screenshots
+      - name: Upload the screenshots
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: screenshots
+          path: docs/screenshots
+          retention-days: 14
+          if-no-files-found: error
+      - name: Upload the Playwright results
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: showcase-results
+          path: tests/e2e/test-results
+          retention-days: 14
+          if-no-files-found: ignore

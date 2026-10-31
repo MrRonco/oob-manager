@@ -1,0 +1,79 @@
+{{- /* Maintenance mode, server notes and acknowledgements (tech_doc §28). */}}
+{{define "maintbadge"}}<span class="badge b-maint">{{template "sicon" "maint"}} {{if .Scheduled}}Maintenance scheduled{{else}}In maintenance{{end}}</span> {{if .Scheduled}}from <time datetime="{{.StartsISO}}">{{.Starts}}</time> {{end}}{{if .UntilEnds}}until ended{{else}}until <time datetime="{{.UntilISO}}">{{.Until}}</time>{{end}} — {{.Reason}} — by {{.By}}{{end}}
+
+{{define "maintcard"}}
+<section class="panel{{if .Badge}} p-maint{{end}}" aria-labelledby="maint-h" id="maint">
+  <h2 id="maint-h">Maintenance</h2>
+  {{- if .Badge}}
+  <p class="maint-line">{{template "maintbadge" .Badge}}</p>
+  {{- else}}
+  <p class="meta">Not in maintenance.</p>
+  {{- end}}
+  <p class="hint">During maintenance the warnings of {{.ServerName}} are shown but not counted, and its health, unreachable, log and power supply alerts are paused. Power actions, consoles, fan leases, sign-in and trust alerts are always sent. One message is sent when it starts and one when it ends.</p>
+  {{- if .CanChange}}
+  {{- if .Badge}}
+  <form method="post" action="/servers/{{.ServerID}}/maintenance/end"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><button type="submit" class="btn btn-secondary">{{if .Badge.Scheduled}}Cancel scheduled maintenance{{else}}End maintenance now{{end}}</button></form>
+  {{- else}}
+  <p class="btn-row"><a class="btn btn-secondary" href="/servers/{{.ServerID}}/maintenance/new">Start maintenance…</a></p>
+  {{- end}}
+  {{- end}}
+</section>
+{{end}}
+
+{{define "notebody"}}<p class="note-body">{{range .Segs}}{{if .Href}}<a href="{{.Href}}" rel="noopener noreferrer" target="_blank">{{.Text}}</a>{{else}}{{.Text}}{{end}}{{end}}</p>{{end}}
+
+{{define "pinnednote"}}
+<aside class="alert a-info pinned" aria-label="Pinned note">{{template "sicon" "info"}}<span class="alert-b"><strong>Pinned note:</strong>{{template "notebody" .}}<span class="meta">{{.Author}} · <time datetime="{{.ISO}}">{{.At}}</time>{{if .Edited}} · {{.Edited}}{{end}} · <a href="#note-{{.ID}}">all notes</a></span></span></aside>
+{{end}}
+
+{{define "notescard"}}
+<section class="panel" aria-labelledby="notes-h" id="notes">
+  <h2 id="notes-h">Notes <span class="cnt">{{len .Notes}}</span></h2>
+  {{- if .Notes}}
+  <ul class="notes">
+  {{- range .Notes}}
+    <li id="note-{{.ID}}"{{if .Pinned}} class="pin"{{end}}>
+      {{- if .Pinned}}<span class="badge b-info">{{template "icon" "sticky-note"}} Pinned</span>{{end}}
+      {{template "notebody" .}}
+      <p class="meta">{{.Author}} · <time datetime="{{.ISO}}">{{.At}}</time>{{if .Edited}} · {{.Edited}}{{end}}</p>
+      {{- if $.CanWrite}}
+      <div class="note-acts">
+        <form method="post" action="/servers/{{$.ServerID}}/notes/pin"><input type="hidden" name="csrf_token" value="{{$.CSRF}}"><input type="hidden" name="note" value="{{if .Pinned}}0{{else}}{{.ID}}{{end}}"><button type="submit" class="btn btn-secondary btn-small">{{if .Pinned}}Unpin{{else}}Pin to top{{end}}<span class="sr-only"> note by {{.Author}} from {{.At}}</span></button></form>
+        {{- if .CanEdit}}
+        <a class="btn btn-secondary btn-small" href="/servers/{{$.ServerID}}/notes/{{.ID}}/edit">Edit<span class="sr-only"> note from {{.At}}</span></a>
+        {{- end}}
+        {{- if .CanDelete}}
+        <form method="post" action="/servers/{{$.ServerID}}/notes/{{.ID}}/delete"><input type="hidden" name="csrf_token" value="{{$.CSRF}}"><button type="submit" class="btn btn-secondary btn-small">Delete<span class="sr-only"> note by {{.Author}} from {{.At}}</span></button></form>
+        {{- end}}
+      </div>
+      {{- end}}
+    </li>
+  {{- end}}
+  </ul>
+  {{- else}}
+  <p class="empty">No notes yet.</p>
+  {{- end}}
+  {{- if .CanWrite}}
+  <p class="btn-row"><a class="btn btn-secondary" href="/servers/{{.ServerID}}/notes/new">Add a note…</a></p>
+  {{- end}}
+</section>
+{{end}}
+
+{{- /* The acknowledgement state of one log row, with its Acknowledge or Un-acknowledge form. */}}
+{{define "ackcell"}}
+{{- if .Ack}}<p class="acked"><span class="badge b-info">{{template "icon" "check"}} Acked</span> by {{.Ack.By}} at <time datetime="{{.Ack.ISO}}">{{.Ack.At}}</time>{{if .Ack.Comment}}: {{.Ack.Comment}}{{end}}</p>
+{{- with .Form}}<form method="post" action="/servers/{{$.ServerID}}/acks/remove" class="ackf"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="back" value="{{.Back}}"><input type="hidden" name="ref" value="{{$.Ref}}"><button type="submit" class="btn btn-secondary btn-small">Un-acknowledge<span class="sr-only"> entry {{$.Record}}</span></button></form>{{end}}
+{{- else if and .Ref .Form}}<details class="ack"><summary>{{template "icon" "chevron-right"}}Acknowledge<span class="sr-only"> entry {{.Record}}</span></summary>
+<form method="post" action="/servers/{{.ServerID}}/acks" class="ackf"><input type="hidden" name="csrf_token" value="{{.Form.CSRF}}"><input type="hidden" name="back" value="{{.Form.Back}}"><input type="hidden" name="ref" value="{{.Ref}}"><label for="ackc-{{.Idx}}">Comment <span class="meta">(optional)</span></label> <input id="ackc-{{.Idx}}" name="comment" type="text" maxlength="500" autocomplete="off"> <button type="submit" class="btn btn-secondary btn-small">Acknowledge</button></form></details>
+{{- end}}
+{{- end}}
+
+{{- /* "Acknowledge all shown" for one server: . is {ServerID, Refs, Form}. */}}
+{{define "ackall"}}
+<form method="post" action="/servers/{{.ServerID}}/acks" class="filters panel ackall">
+  <input type="hidden" name="csrf_token" value="{{.Form.CSRF}}"><input type="hidden" name="back" value="{{.Form.Back}}">
+  {{- range .Refs}}<input type="hidden" name="ref" value="{{.}}">{{end}}
+  <div class="field grow"><label for="ackall-c">Comment for all <span class="meta">(optional)</span></label><input id="ackall-c" name="comment" type="text" maxlength="500" autocomplete="off"></div>
+  <button type="submit" class="btn btn-secondary">Acknowledge all {{len .Refs}} shown</button>
+</form>
+{{end}}

@@ -1,0 +1,22 @@
+{{define "content"}}
+<section class="panel auth" aria-labelledby="link-h">
+  {{template "stepper" 1}}
+  <h1 id="link-h">{{if .Reset}}Set up a new authenticator{{else}}Set up your account{{end}}</h1>
+  <p>Account: <strong>{{.Username}}</strong>. This link works once and is valid until <span class="nw">{{.Expires}}</span>.</p>
+  <p>Choose a password. The next page shows a code for your authenticator app, once.</p>
+  {{template "formerror" .FormError}}
+  <form method="post" action="{{.Action}}" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <input type="text" name="username" value="{{.Username}}" autocomplete="username" hidden>
+    <div class="field">
+      <label for="l-password">New password (12 characters or more)</label>
+      <input id="l-password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="256"{{if .FormError}} aria-invalid="true" aria-describedby="form-error"{{end}}>
+    </div>
+    <div class="field">
+      <label for="l-confirm">Repeat the password</label>
+      <input id="l-confirm" name="confirm" type="password" autocomplete="new-password" required minlength="12" maxlength="256">
+    </div>
+    <button type="submit" class="btn">Continue</button>
+  </form>
+</section>
+{{end}}

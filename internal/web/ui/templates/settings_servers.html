@@ -1,0 +1,34 @@
+{{define "content"}}
+<div class="ph"><h1>Servers</h1>{{if not .Locked}}<div class="tools"><a class="btn" href="/settings/servers/new">Add server</a></div>{{end}}</div>
+{{template "settingstabs" "servers"}}
+{{template "stepup" .StepUp}}
+{{- if .Locked}}
+<p class="alert a-info" role="status">{{template "icon" "lock"}}<span class="alert-b">This section is locked by <code>settings.locked</code> in config.yaml. Servers can only be changed there.</span></p>
+{{- end}}
+{{- range .Warnings}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">{{.}}</span></p>
+{{- end}}
+<section class="panel flush" aria-labelledby="srv-h">
+  <h2 id="srv-h" class="pad">Managed servers</h2>
+  <p class="hint pad-b">Servers in config.yaml are read-only here ({{template "icon" "lock"}} config.yaml). Servers added here are stored in the database with their credentials sealed, and start or stop polling without a restart. BMC addresses must be inside <code>settings.bmc_networks</code>: {{.Networks}}.</p>
+  {{- if .Rows}}
+  <div class="tw" role="region" aria-label="Servers table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">Server</th><th scope="col">Status</th><th scope="col">Kind</th><th scope="col">BMC</th><th scope="col">Source</th><th scope="col">Last test</th></tr></thead>
+    <tbody>
+    {{- range .Rows}}
+      <tr><th scope="row" data-label="Server"><span><a href="/settings/servers/{{.ID}}">{{.Name}}</a> <span class="meta mono">{{.ID}}</span>{{if .Note}}<br><span class="meta">{{.Note}}</span>{{end}}</span></th>
+        <td data-label="Status">{{template "health" .Status}}</td>
+        <td data-label="Kind">{{.Kind}}</td>
+        <td data-label="BMC" class="mono">{{.Address}}</td>
+        <td data-label="Source">{{if .FileManaged}}<span class="lock">{{template "icon" "lock"}} config.yaml</span>{{else}}Browser{{end}}</td>
+        <td data-label="Last test">{{.LastTest}}</td></tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+  {{- else}}
+  <p class="empty pad-b">No servers yet.{{if not .Locked}} <a href="/settings/servers/new">Add the first one</a>.{{end}}</p>
+  {{- end}}
+</section>
+{{end}}

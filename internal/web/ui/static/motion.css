@@ -1,0 +1,63 @@
+/* oob-manager motion. Round-2 redesign slice D (plan 04 §7, §11 items 5 and 6; docs/tech_doc.md
+   §43). Every animation, transition and view transition of the app is declared in this file,
+   inside prefers-reduced-motion: no-preference, so a user who asks for reduced motion gets
+   instant pages and nothing here applies. Budget: at most 250 ms (the --dur-* tokens), ease-out.
+   Nothing moves on alarms or status changes: chips, pills, badges and banners appear as they are.
+   Deleting this file (and its <link> in layout.html) removes all motion and changes nothing else.
+   TestMotionOnlyWhenAllowed (Go) and motion.spec.ts (Playwright) hold these rules. */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Cross-document view transitions: same-origin navigations (links, and a form's 303 to a
+     GET) crossfade, the bars stay put, the server head morphs between its tabs and the tab
+     ink slides to the new tab. Reloads and the auto-refresh never transition. No script. */
+  @view-transition { navigation: auto; }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation-duration: var(--dur-2); animation-timing-function: var(--ease); }
+  .bar { view-transition-name: topbar; }
+  .side { view-transition-name: sidebar; }
+  .shead { view-transition-name: server-head; }
+  .tab-ink { view-transition-name: tab-ink; }
+
+  /* Colour fades on hover and focus. */
+  a, .btn, .menu > summary, .sheet > summary, details:not(.menu) > summary, input, select, textarea {
+    transition: color var(--dur-1) var(--ease), background-color var(--dur-1) var(--ease),
+      border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+  }
+  .ic-chevron-down, .ic-chevron-right { transition: transform var(--dur-2) var(--ease); }
+
+  /* Entrances: menus and the phone Menu sheet fade in and drop 6 px; a disclosure's body
+     fades in. */
+  .menu-pop, .sheet-body { transition: opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease); }
+  @starting-style {
+    .menu[open] > .menu-pop { opacity: 0; transform: translateY(-6px); }
+    .sheet[open] > .sheet-body { opacity: 0; transform: translateY(-6px); }
+  }
+  /* The Go to palette (palette.js) enters like a menu; its backdrop fades in. */
+  .pal[open] { transition: opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease); }
+  .pal[open]::backdrop { transition: opacity var(--dur-2) var(--ease); }
+  @starting-style {
+    .pal[open] { opacity: 0; transform: translateY(-6px); }
+    .pal[open]::backdrop { opacity: 0; }
+  }
+  details:not(.menu)[open] > :not(summary) { animation: oob-reveal var(--dur-2) var(--ease); }
+  @keyframes oob-reveal { from { opacity: 0; } }
+
+  /* Value-change cue (ui/valuechange.go): a reading that differs from the previous poll is
+     tinted, holds for --hold, then fades within the budget. */
+  .chg {
+    animation-name: oob-chg; animation-duration: var(--dur-2); animation-timing-function: var(--ease);
+    animation-delay: var(--hold); animation-fill-mode: backwards;
+  }
+  @keyframes oob-chg { from { background-color: var(--accent-bg); } }
+}
+
+/* Vendored sheets: xterm.js fades its scrollbar over 800 ms; within the budget when motion
+   is allowed, and not at all when it is not. */
+@media (prefers-reduced-motion: no-preference) {
+  .serial-term .xterm .xterm-scrollable-element > .invisible.fade { transition-duration: var(--dur-2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .serial-term .xterm .xterm-scrollable-element > .visible,
+  .serial-term .xterm .xterm-scrollable-element > .invisible.fade { transition: none; }
+}

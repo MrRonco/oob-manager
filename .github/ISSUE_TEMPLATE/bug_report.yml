@@ -1,0 +1,82 @@
+name: Bug report
+description: Something in oob-manager does not work as documented.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Security problems go through the Security tab, not here** (see SECURITY.md).
+
+        **Remove addresses and credentials before you submit.** No IP addresses, host names, domains,
+        serial numbers, service tags, MAC addresses or licence IDs, and never a password, TOTP secret,
+        API token, setup code or the age identity. Use `192.0.2.10` for a BMC, `192.0.2.20` for the
+        Docker host and `<redacted>` for anything secret. This issue is public.
+  - type: input
+    id: version
+    attributes:
+      label: oob-manager version
+      description: The page footer or `/about`, or `docker run --rm <image> version`. Include the image digest if you pinned one.
+      placeholder: vX.Y.Z
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment
+      options:
+        - Docker Compose
+        - docker run
+        - Unraid (template)
+        - Unraid (Compose project)
+        - Other (say below)
+    validations:
+      required: true
+  - type: input
+    id: deployment-other
+    attributes:
+      label: Deployment details
+      description: Host OS and architecture, Docker version, anything you changed from the documented layout (user, mounts, network, a config.yaml).
+      placeholder: Debian 13 amd64, Docker 29, the Quick start compose file with --user 1000:1000
+  - type: input
+    id: bmc
+    attributes:
+      label: Server, BMC model and BMC firmware
+      description: For each server involved. Write "not BMC related" if it is not.
+      placeholder: Dell PowerEdge R640, iDRAC9, firmware 7.10.30.00, Enterprise licence
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: If it also happens against the mock BMCs (`make dev`), say so; that makes it much easier to fix.
+      placeholder: |
+        1. Settings › Servers › Add server, kind idrac9
+        2. ...
+        3. The server page shows ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        The relevant lines from `docker logs oob-manager` (a few lines around the error are better than the whole log),
+        and the server page's error text if there is one. **Remove addresses and credentials first.**
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I removed IP addresses, host names, serials, MAC addresses, licence IDs and every credential from this report.
+          required: true
+        - label: This is not a security vulnerability (those go through the Security tab).
+          required: true

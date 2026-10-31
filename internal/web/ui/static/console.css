@@ -1,0 +1,43 @@
+/* Consoles: the graphical console (P5, noVNC) and the serial console (P4, xterm.js; its
+   terminal colours are in serial.css). Round-2 slice D restyles them without changing
+   their structure (plan 04 §11 item 13): one frame, a toolbar strip over an always-dark
+   stage, a status chip whose state is carried by its outline and mark (dashed while
+   connecting, solid green when connected, tinted red on an error), and the session panels
+   beside it. Only tokens.css values; no inline styles in markup (CSP style-src 'self');
+   noVNC and serial.js set element sizes through the CSSOM, which CSP allows. */
+.con-layout { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: var(--sp-5); align-items: start; }
+.con-main { min-width: 0; display: grid; gap: var(--sp-3); align-content: start; }
+.con-main > .panel { margin: 0; }
+.con-side { display: grid; gap: var(--sp-4); }
+.con-side > .panel { margin: 0; }
+.con-tr { margin: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.con-tr .ic { color: var(--muted); }
+
+.con-frame { overflow: hidden; background: #000; border: 1px solid var(--field-border); border-radius: var(--r-panel); box-shadow: var(--shadow-panel); }
+.con-bar {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; padding: var(--sp-2) var(--sp-3);
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.con-end { margin-left: auto; }
+.console-status {
+  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl-h-sm); margin: 0 var(--sp-2) 0 0; padding: 0 var(--sp-3);
+  border: 1px dashed var(--field-border); border-radius: var(--r-pill); color: var(--muted); font-size: var(--fs-1); font-weight: 600;
+}
+.console-status::before { content: ""; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
+.console-status[data-state="connected"] { color: var(--ok); border-style: solid; border-color: var(--ok-mark); }
+.console-status[data-state="error"] { color: var(--crit); border-style: solid; border-color: var(--crit-mark); background: var(--crit-bg); }
+.console-status[data-state="disconnected"] { border-style: solid; }
+.con-hint { margin: 0; max-width: 80ch; }
+
+.console-screen { display: block; width: 100%; height: 70vh; min-height: 20rem; background: #000; overflow: hidden; }
+.console-screen:fullscreen { height: 100vh; }
+.console-screen canvas:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+
+@media (max-width: 75rem) { .con-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 51.25rem) {
+  .console-screen { height: 50vh; }
+  .con-bar .btn { flex: 1 1 40%; }
+  .console-status { flex: 1 1 100%; justify-content: center; margin: 0; }
+  .con-end { margin-left: 0; }
+}
+@media (forced-colors: active) { .con-frame, .console-status { border: 1px solid CanvasText; } .console-status::before { background: CanvasText; } }

@@ -1,0 +1,181 @@
+{{define "layout"}}<!doctype html>
+<html lang="en"{{if .Theme}} data-theme="{{.Theme}}"{{end}}{{if .Palette}} data-palette="{{.Palette}}"{{end}}{{if .Density}} data-density="{{.Density}}"{{end}}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Out-of-band server management console">
+<meta name="theme-color" content="#11161b">
+{{- if .Refresh}}
+{{- if not .RefreshScriptOnly}}
+<noscript><meta http-equiv="refresh" content="{{.Refresh}}"></noscript>
+{{- end}}
+<meta name="oob-refresh" content="{{.Refresh}}">
+{{- end}}
+{{- if .Recent}}
+<meta name="oob-recent" content="on">
+{{- end}}
+<title>{{.Title}} · oob-manager</title>
+{{- /* The favicon carries the fleet's worst state (signed in); the plain mark otherwise. */}}
+{{- with .Favicon}}
+<link rel="icon" href="/static/favicon-{{.}}.svg?v={{$.Footer.Asset}}" type="image/svg+xml">
+{{- else}}
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+{{- end}}
+{{- /* Fonts: versioned by directory, no ?v= (the sign-in page must not fingerprint the build). */}}
+<link rel="preload" href="/static/vendor/fonts/inter-4.1/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/vendor/fonts/jetbrains-mono-2.304/jetbrains-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/tokens.css?v={{.Footer.Asset}}">
+<link rel="stylesheet" href="/static/themes.css?v={{.Footer.Asset}}">
+<link rel="stylesheet" href="/static/app.css?v={{.Footer.Asset}}">
+<link rel="stylesheet" href="/static/shell.css?v={{.Footer.Asset}}">
+<link rel="stylesheet" href="/static/pages.css?v={{.Footer.Asset}}">
+<link rel="stylesheet" href="/static/motion.css?v={{.Footer.Asset}}">
+<script src="/static/app.js?v={{.Footer.Asset}}" defer></script>
+{{- if .User}}<script src="/static/palette.js?v={{.Footer.Asset}}" defer></script>{{end}}
+</head>
+<body{{if .BodyClass}} class="{{.BodyClass}}"{{end}}>
+{{sprite}}
+<a class="skip" href="#main">Skip to content</a>
+<header class="bar">
+  {{- /* The brand: the side-channel mark, and a wordmark whose dot carries the fleet's worst
+       state (decorative: the pill says it in words). */}}
+  <a class="brand" href="/"><span class="logo" aria-hidden="true">{{template "icon" "mark"}}</span><span class="wordmark"><span class="wm-a">oob</span><span class="led{{with .Favicon}} led-{{.}}{{end}}" aria-hidden="true"></span><span class="sr-only">-</span><span class="wm-b">manager</span></span></a>
+  {{- if .Instance}}
+  <span class="inst">{{.Instance}}</span>
+  {{- end}}
+  {{- if .User}}
+  {{- if .Pill.Text}}
+  <a class="gpill {{.Pill.Class}}" href="/" title="{{.Pill.Text}}">{{template "sicon" (slice .Pill.Class 3)}} {{if .Pill.Short}}<span class="pt-long">{{.Pill.Text}}</span><span class="pt-short" aria-hidden="true">{{.Pill.Short}}</span>{{else}}{{.Pill.Text}}{{end}}<span class="sr-only"> (fleet status)</span></a>
+  {{- end}}
+  <div class="bar-r">
+    <p class="clock"><a class="clock-link" href="/preferences" title="Time zone: {{.Clock.Zone}}. Change it in Display preferences."><time datetime="{{.Clock.ISO}}">{{.Clock.Time}}</time><span class="sr-only"> (display preferences)</span></a>{{if .Clock.DataAge}} <span class="meta">data {{.Clock.DataAge}} old</span>{{end}}</p>
+    <details class="menu usermenu">
+      <summary><span class="avatar" aria-hidden="true">{{slice .User 0 1}}</span><span class="who-n">{{.User}}</span>{{if ne .User .Role}} <span class="role">{{.Role}}</span>{{end}}{{template "icon" "chevron-down"}}<span class="sr-only"> (account menu)</span></summary>
+      <div class="menu-pop">
+        <p class="menu-who">Signed in as <strong>{{.User}}</strong>{{if ne .User .Role}} ({{.Role}}){{end}}</p>
+        {{template "themeform" .ThemeForm}}
+        <a href="/go" data-palette>{{template "icon" "search"}} Go to…<kbd class="menu-kbd" data-palette-key hidden>Ctrl K</kbd></a>
+        <a href="/preferences">{{template "icon" "sliders-horizontal"}} Display preferences</a>
+        <a href="/help">{{template "icon" "life-buoy"}} Help</a>
+        <a href="/about">{{template "icon" "info"}} About and licenses</a>
+        <form method="post" action="/logout">
+          <input type="hidden" name="csrf_token" value="{{.LogoutCSRF}}">
+          <button class="btn btn-quiet" type="submit">{{template "icon" "log-out"}} Sign out</button>
+        </form>
+      </div>
+    </details>
+  </div>
+  <details class="menu sheet">
+    <summary>{{template "icon" "menu"}}<span>Menu</span></summary>
+    <div class="sheet-body">
+      <p class="sheet-user">Signed in as <strong>{{.User}}</strong>{{if ne .User .Role}} <span class="role">{{.Role}}</span>{{end}}{{if .Instance}} · {{.Instance}}{{end}}</p>
+      {{template "sidenav" .}}
+      <div class="sheet-actions">
+        {{template "themeform" .ThemeForm}}
+        <a class="btn btn-secondary" href="/go" data-palette>{{template "icon" "search"}} Go to…</a>
+        <a class="btn btn-secondary" href="/preferences">{{template "icon" "sliders-horizontal"}} Display preferences</a>
+        <form method="post" action="/logout">
+          <input type="hidden" name="csrf_token" value="{{.LogoutCSRF}}">
+          <button type="submit" class="btn btn-secondary">{{template "icon" "log-out"}} Sign out</button>
+        </form>
+      </div>
+    </div>
+  </details>
+  {{- else}}
+  <a class="bar-plain" href="/help">{{template "icon" "life-buoy"}} Help</a>
+  {{- end}}
+</header>
+<div class="app{{if not .User}} plain{{end}}">
+{{- if .User}}
+<aside class="side" aria-label="Navigation and servers">
+  {{template "sidenav" .}}
+</aside>
+{{- end}}
+<div class="col">
+<main id="main" tabindex="-1">
+{{- if .Crumbs}}
+<nav class="crumbs" aria-label="Breadcrumb"><ol class="crumb">
+{{- range .Crumbs}}<li>{{if .Href}}<a href="{{.Href}}">{{.Label}}</a>{{else}}<span aria-current="page">{{.Label}}</span>{{end}}</li>{{end -}}
+</ol></nav>
+{{- end}}
+{{- with .KeyNotice}}
+<div class="alert a-warn" role="alert">{{template "sicon" "warn"}}<span class="alert-b"><strong>Back up the encryption key.</strong> This install generated its key at first start: <code>{{.Path}}</code> in the data volume. Copy it somewhere safe and off this server. Without it, the stored BMC passwords, authenticator secrets and notification secrets cannot be read after a restore.
+<form method="post" action="/keys/backup-notice" class="alert-form"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="next" value="/"><button type="submit" class="btn btn-secondary btn-small">I have a backup</button></form></span></div>
+{{- end}}
+{{- if .Flash}}
+<p class="alert {{if eq .FlashKind "error"}}a-crit{{else}}a-ok{{end}}" role="{{if eq .FlashKind "error"}}alert{{else}}status{{end}}">{{if eq .FlashKind "error"}}{{template "sicon" "crit"}}{{else}}{{template "sicon" "ok"}}{{end}}<span class="alert-b"><strong>{{if eq .FlashKind "error"}}Error:{{else}}Done:{{end}}</strong> {{.Flash}}</span></p>
+{{- end}}
+{{template "content" .Body}}
+</main>
+{{- with .ServerMenus}}
+<nav class="bottombar" aria-label="Server actions, phone">{{template "menutrio" .}}</nav>
+{{- end}}
+<footer class="foot">
+  <p>
+    <span class="foot-brand">oob-manager</span>
+    {{- if .User}}
+    <span>{{.Footer.Version}}</span>
+    {{- end}}
+    <a href="/help">Help</a>
+    {{- if .User}}
+    <a href="/about">About and licenses</a>
+    <a href="/help#accessibility">Accessibility statement</a>
+    <a href="/help#report">Report a problem</a>
+    {{- end}}
+    <span class="foot-t">Page generated <time datetime="{{.Footer.ISO}}">{{.Footer.Generated}}</time></span>
+  </p>
+</footer>
+</div>
+</div>
+{{- with .GoLinks}}
+<template id="oob-go">{{range .}}<div data-group="{{.Label}}">{{template "golinks" .Links}}</div>{{end}}</template>
+{{- end}}
+</body>
+</html>
+{{end}}
+
+{{- /* Sidebar (desktop) and Menu sheet (phone): main navigation and the server switcher.
+     Each server reads its name, then its sub-line in words, then its state. */}}
+{{define "sidenav"}}
+<nav aria-label="Main">
+  <ul class="snav">
+    <li><a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>{{template "icon" "layout-dashboard"}} <span>Overview</span></a></li>
+    <li><a href="/servers"{{if and (eq .Nav "servers") (not .ServerID)}} aria-current="page"{{end}}>{{template "icon" "server"}} <span>Servers</span></a></li>
+    {{- if .CanFirmware}}
+    <li><a href="/firmware"{{if eq .Nav "firmware"}} aria-current="page"{{end}}>{{template "icon" "cpu"}} <span>Firmware</span>{{if .FirmwareWarn}} <span class="cnt">{{.FirmwareWarn}}</span><span class="sr-only"> need attention (below minimum or urgent update)</span>{{end}}</a></li>
+    {{- end}}
+    {{- if .CanLogs}}
+    <li><a href="/events"{{if eq .Nav "events"}} aria-current="page"{{end}}>{{template "icon" "scroll-text"}} <span>Events</span>{{if .Events24h}} <span class="cnt">{{.Events24h}}</span><span class="sr-only"> warning or critical in the last 24 hours</span>{{end}}</a></li>
+    {{- end}}
+    <li><a href="/activity"{{if eq .Nav "activity"}} aria-current="page"{{end}}>{{template "icon" "clock-arrow-up"}} <span>Activity</span></a></li>
+    {{- if .IsAdmin}}
+    <li><a href="/settings"{{if eq .Nav "settings"}} aria-current="page"{{end}}>{{template "icon" "settings"}} <span>Settings</span></a></li>
+    {{- end}}
+    <li><a href="/help"{{if eq .Nav "help"}} aria-current="page"{{end}}>{{template "icon" "life-buoy"}} <span>Help</span></a></li>
+  </ul>
+</nav>
+<h2 class="side-h">Servers <span class="cnt">{{len .Servers}}</span></h2>
+{{- if .Servers}}
+<ul class="slist">
+{{- range .Servers}}
+  <li><a href="/servers/{{.ID}}"{{if eq .ID $.ServerID}} aria-current="page"{{end}}><span class="sdot s-{{.Health.Class}}" aria-hidden="true">{{template "sicon" .Health.Class}}</span><span class="sm"><span class="sn">{{.Name}}</span>{{if .Value}} <span class="sv">{{.Value}}</span>{{end}}</span><span class="sr-only">, {{.Health.Label}}</span>{{if .Maint}}<span class="smaint" title="{{.Maint}}">{{template "icon" "wrench"}}<span class="sr-only"> ({{.Maint}})</span></span>{{end}}</a></li>
+{{- end}}
+</ul>
+{{- else}}
+<p class="meta slist-empty">No servers yet.</p>
+{{- end}}
+{{end}}
+
+{{define "themeform"}}
+<form method="post" action="/prefs/theme">
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <input type="hidden" name="next" value="{{.Next}}">
+  <button type="submit" class="btn btn-quiet" name="theme" value="{{.NextValue}}">{{template "icon" "sun-moon"}} Theme: {{.Label}}<span class="sr-only"> (switch to {{.NextLabel}})</span></button>
+</form>
+{{end}}
+
+{{- /* A Go to list: the /go page's sections and the inert <template> palette.js reads. */}}
+{{define "golinks"}}<ul class="go-ul">{{range .}}<li><a href="{{.Href}}">{{.Label}}</a>{{if .Hint}} <span class="go-hint">{{.Hint}}</span>{{end}}</li>{{end}}</ul>{{end}}

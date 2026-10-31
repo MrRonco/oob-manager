@@ -1,0 +1,14 @@
+bin/
+cover.out
+*.age
+config.local.yaml
+tests/e2e/node_modules/
+tests/e2e/test-results/
+tests/e2e/playwright-report/
+/oob-manager
+/cmd/oob-manager/oob-manager
+tests/e2e/visual-baseline/*-darwin.png
+tests/e2e/visual-baseline/*-win32.png
+
+# ZAP reports (make zap-quick / zap-full)
+tests/zap/reports/

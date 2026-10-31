@@ -1,0 +1,15 @@
+From: oob@example.org
+To: ops@example.org, oncall@example.org
+Subject: Storage node: health Critical
+Date: Wed, 21 Oct 2026 14:03:00 +0000
+Message-ID: <ID@example.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Auto-Submitted: auto-generated
+X-OOB-Event: health
+
+Storage node reports Critical health (was OK).
+
+--=20
+oob-manager

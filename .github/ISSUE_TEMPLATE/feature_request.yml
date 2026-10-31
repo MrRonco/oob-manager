@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest an improvement or a new feature.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Some things are out of scope by design: virtual media, firmware updates, BIOS settings,
+        BMC user management, Java consoles and proxying the full BMC web UI. Requests for those
+        will be closed, with thanks. This issue is public: leave out addresses, host names and credentials.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      description: What you are trying to do, and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: How it could look in the UI, the API or the configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Workarounds you use now, other tools, other designs.
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware it concerns (if any)
+      description: Server and BMC model and firmware, if the feature depends on them.
+      placeholder: Dell PowerEdge R740, iDRAC9 firmware 7.10
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to work on this myself (tests first, DCO sign-off; see CONTRIBUTING.md).

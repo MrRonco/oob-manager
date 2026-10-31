@@ -1,0 +1,42 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{template "servertabs" .Nav}}
+<nav class="seg" aria-label="Log">
+  <ul>
+  {{- range .Tabs}}
+    <li><a href="{{.Href}}"{{if .Active}} aria-current="page"{{end}}>{{.Label}}</a></li>
+  {{- end}}
+  </ul>
+</nav>
+{{- if .Overdue}}
+<p class="alert a-stale" role="status">{{template "sicon" "stale"}}<span class="alert-b">{{.Overdue}}</span></p>
+{{- end}}
+{{- if .Notice}}
+<p class="alert a-info" role="status">{{template "sicon" "info"}}<span class="alert-b">{{.Notice}}</span></p>
+{{- end}}
+{{- if .Incomplete}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b"><strong>Warning:</strong> only part of this log could be read from the BMC (it reports more entries than it returned). The newest entries are shown. <a href="{{(index .Tabs 0).Href}}">Reload</a> after the next poll to try again.</span></p>
+{{- end}}
+{{- if .Rows}}
+<p class="meta">{{.Total}} in the order the BMC keeps them (newest record first). Times are the BMC's own clock, so they can jump when that clock was changed. Repeats are folded (×N). For filters across servers use <a href="/events?server={{.Nav.ID}}&amp;severity=all">Events</a>.</p>
+{{- with .AckAll}}{{template "ackall" .}}{{end}}
+{{template "pager" .Pager}}
+<div class="tw panel flush" role="region" aria-label="Log entries table" tabindex="0">
+<table class="stack">
+  <thead><tr><th scope="col">Time</th><th scope="col">Severity</th><th scope="col">Message</th><th scope="col" class="hide-sm">Record</th><th scope="col">Acknowledged</th></tr></thead>
+  <tbody>
+  {{- range .Rows}}
+    <tr class="ev-{{.Severity.Class}}">
+      <td data-label="Time" class="mono nw">{{if .ISO}}<time datetime="{{.ISO}}" title="{{.Created}}">{{.Short}}</time> <span class="meta">{{.Rel}}</span>{{else}}<span class="nodata">No time</span>{{end}}</td>
+      <td data-label="Severity">{{template "health" .Severity}}</td>
+      <td data-label="Message">{{template "v" .Message}}{{if .Repeat}} <span class="rep">×{{.Repeat}}</span>{{end}}{{if or .MessageID .Sensor .Type}}<br><small class="meta">{{if .MessageID}}ID {{.MessageID}}{{end}}{{if .Sensor}} · sensor {{.Sensor}}{{end}}{{if .Type}} · {{.Type}} {{.Code}}{{end}}</small>{{end}}</td>
+      <td data-label="Record" class="hide-sm mono">{{template "v" .Record}}</td>
+      <td data-label="Acknowledged" class="ackc">{{template "ackcell" .}}</td>
+    </tr>
+  {{- end}}
+  </tbody>
+</table>
+</div>
+{{template "pager" .Pager.Bottom}}
+{{- end}}
+{{end}}

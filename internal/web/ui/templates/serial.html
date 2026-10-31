@@ -1,0 +1,86 @@
+{{define "content"}}
+<link rel="stylesheet" href="/static/vendor/xterm-6.0.0/xterm.css?v={{.Version}}">
+<link rel="stylesheet" href="/static/console.css?v={{.Version}}">
+<link rel="stylesheet" href="/static/serial.css?v={{.Version}}">
+<div class="ph">
+  <h1>Serial console: {{.Name}}</h1>
+  {{- if .Ticket}}<p class="chip con-tr">{{template "icon" "lock"}} SSH to the BMC with a pinned host key, then <code>console com2</code></p>{{end}}
+</div>
+{{template "servertabs" .Nav}}
+{{- if .Error}}
+<p class="alert a-crit" role="alert">{{template "sicon" "crit"}}<span class="alert-b"><strong>Error:</strong> {{.Error}}</span></p>
+{{- end}}
+<div class="con-layout">
+<div class="con-main">
+{{- if .Ticket}}
+<div class="con-frame">
+<div class="con-bar" role="toolbar" aria-label="Serial console controls">
+  <p id="serial-status" class="console-status" role="status" aria-live="polite">Connecting…</p>
+  <button type="button" class="btn btn-secondary btn-small" id="serial-break" disabled>Send break</button>
+  <button type="button" class="btn btn-secondary btn-small" id="serial-quit" disabled>Send Ctrl-\ (end console)</button>
+  <button type="button" class="btn btn-secondary btn-small" id="serial-copy" disabled>Copy</button>
+  <span class="serial-font" role="group" aria-label="Font size">
+    <button type="button" class="btn btn-secondary btn-small" id="serial-smaller" aria-label="Smaller text" disabled>A−</button>
+    <button type="button" class="btn btn-secondary btn-small" id="serial-larger" aria-label="Larger text" disabled>A+</button>
+  </span>
+  <button type="button" class="btn btn-danger-outline btn-small con-end" id="serial-disconnect" disabled>{{template "icon" "x"}} Disconnect</button>
+</div>
+<div id="serial-term" class="serial-term" role="region" aria-label="Serial console of {{.Name}}" data-ws="{{.WSPath}}" data-ticket="{{.Ticket}}"></div>
+</div>
+<div id="serial-silent" class="alert a-info serial-hint" role="status" hidden>{{template "sicon" "info"}}<div class="alert-b">
+  <p><strong>Connected, but the host has sent nothing yet.</strong> Press <kbd>Enter</kbd> to wake a login prompt. If the screen stays blank, the host is not using the BMC's serial port: turn on BIOS serial redirection to COM2 and a serial console on the operating system (<code>console=ttyS1,115200n8</code> on Linux), then reboot the host.</p>
+</div></div>
+<p class="meta con-hint">The keyboard goes to the host while the terminal has focus. Press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd> to return focus to the toolbar. A typed <kbd>Ctrl</kbd>+<kbd>\</kbd> is not sent (it would end the BMC console); use the toolbar instead.</p>
+<section class="panel" aria-labelledby="tr-h">
+  <h2 id="tr-h">Plain-text transcript</h2>
+  <p class="meta">The console output as plain text, without colors or cursor movement. <label><input type="checkbox" id="serial-announce"> Announce new output</label></p>
+  <pre id="serial-transcript" class="serial-transcript" role="log" aria-live="off" aria-labelledby="tr-h" tabindex="0"></pre>
+</section>
+<script type="module" src="/static/serial.js?v={{.Version}}"></script>
+{{- end}}
+<section class="panel console-connect{{if .Takeover}} p-warn{{end}}" aria-labelledby="sc-connect-h"{{if .Ticket}} id="serial-reconnect" hidden{{end}}>
+  <h2 id="sc-connect-h">{{if .Takeover}}In use{{else if .Ticket}}Disconnected{{else}}Connect{{end}}</h2>
+  {{- if .Takeover}}
+  <p>The serial console is in use by <strong>{{.Card.ActiveUser}}</strong> since <time datetime="{{.Card.ActiveISO}}">{{.Card.ActiveSince}}</time>. Taking over ends their session at once.</p>
+  {{- else}}
+  <p>{{.Card.Message}}</p>
+  {{- end}}
+  {{- if or .Card.Open .Takeover .Ticket}}
+  <form method="post" action="/servers/{{.ID}}/serial" class="btn-row">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    {{- if .Takeover}}
+    <a class="btn btn-secondary" href="/servers/{{.ID}}" autofocus>Cancel</a>
+    <input type="hidden" name="takeover" value="1">
+    <button type="submit" class="btn btn-danger">Take over serial console</button>
+    {{- else}}
+    <button type="submit" class="btn">{{if .Ticket}}Reconnect{{else}}Connect{{end}}</button>
+    {{- end}}
+  </form>
+  {{- end}}
+  {{- if .Card.Steps}}
+  <details class="more"><summary>{{template "icon" "chevron-right"}}How to set it up</summary><ol class="list">{{range .Card.Steps}}<li>{{.}}</li>{{end}}</ol></details>
+  {{- end}}
+</section>
+</div>
+<aside class="con-side" aria-label="Session details">
+  <section class="panel" aria-labelledby="ss-h">
+    <h2 id="ss-h">Session</h2>
+    <dl class="kv">
+      <div><dt>Held by</dt><dd>{{if .Ticket}}{{.User}} (you){{else if .Card.ActiveUser}}{{.Card.ActiveUser}}{{else}}Nobody{{end}}</dd></div>
+      <div><dt>Idle limit</dt><dd>{{.Idle}}</dd></div>
+      <div><dt>Longest session</dt><dd>{{.Max}}</dd></div>
+      <div><dt>Transport</dt><dd>{{if .Legacy}}SSH, legacy algorithms{{else}}SSH{{end}}</dd></div>
+    </dl>
+  </section>
+  <section class="panel" aria-labelledby="nt-h">
+    <h2 id="nt-h">Notes</h2>
+    <ul class="dense">
+      <li>The serial console is equivalent to physical access to the server (BIOS, boot loader, operating system login).</li>
+      <li>It closes after {{.Idle}} without input, after {{.Max}} at most, and when you sign out.</li>
+      <li>One session per server.</li>
+      <li>Screen readers: the terminal announces new lines; the plain-text transcript below it can be read at any pace.</li>
+    </ul>
+  </section>
+</aside>
+</div>
+{{end}}

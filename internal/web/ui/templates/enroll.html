@@ -1,0 +1,20 @@
+{{define "content"}}
+<section class="panel auth" aria-labelledby="enroll-h">
+  <h1 id="enroll-h">Set up your authenticator</h1>
+  {{template "formerror" .Error}}
+  {{- if .RevealCSRF}}
+  <p>Show the secret for your account, add it to your authenticator app, then confirm a code.</p>
+  <form method="post" action="/enroll/reveal" class="form">
+    <input type="hidden" name="csrf_token" value="{{.RevealCSRF}}">
+    <div class="field"><label for="r-username">Username</label>
+    <input id="r-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="64" value="{{.Username}}"></div>
+    <div class="field"><label for="r-password">Password</label>
+    <input id="r-password" name="password" type="password" autocomplete="current-password" required maxlength="256"></div>
+    <button type="submit" class="btn btn-secondary">Show my secret</button>
+  </form>
+  {{- else}}
+  <p>Your administrator creates your account and gives you a one-time setup link. After you add the secret it shows to your authenticator app, enter your username, password and the current code here to finish.</p>
+  {{- end}}
+  {{template "confirmform" .}}
+</section>
+{{end}}

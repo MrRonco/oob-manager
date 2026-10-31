@@ -1,0 +1,36 @@
+{{define "content"}}
+<section class="panel auth" aria-labelledby="stepup-h">
+  <p class="eyebrow">Step-up</p>
+  <h1 id="stepup-h">Confirm it is you</h1>
+  {{- if .Fresh}}
+  <p class="stepup-line" role="status">{{template "icon" "shield"}} You already confirmed with your authenticator: changes are allowed until <time datetime="{{.UntilISO}}">{{.Until}}</time>.</p>
+  <div class="btn-row"><a class="btn" href="{{.Next}}">Continue</a></div>
+  {{- else}}
+  <div class="stepup" role="group" aria-labelledby="su-h">
+    <h2 id="su-h" class="sr-only">Action</h2>
+    <p><strong>{{.Action}}</strong> needs a fresh code.</p>
+    {{- if .Resume}}
+    <p class="hint">Your form is kept and will be submitted once you confirm.</p>
+    {{- end}}
+    <p class="hint">After you confirm, changes are allowed for {{.Window}} (until about {{.After}}), then you are asked again.</p>
+  </div>
+  {{template "formerror" .Error}}
+  <form method="post" action="/stepup" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <input type="hidden" name="next" value="{{.Next}}">
+    {{- if .Resume}}
+    <input type="hidden" name="resume" value="{{.Resume}}">
+    {{- end}}
+    <div class="field">
+      <label for="code">6-digit code for {{.User}}</label>
+      <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required autofocus aria-describedby="code-hint{{if .Error}} form-error{{end}}"{{if .Error}} aria-invalid="true"{{end}}>
+      <p id="code-hint" class="hint">The digits change every 30 seconds. You can paste them.</p>
+    </div>
+    <div class="btn-row">
+      <a class="btn btn-secondary" href="{{.Next}}">Cancel</a>
+      <button type="submit" class="btn">Confirm</button>
+    </div>
+  </form>
+  {{- end}}
+</section>
+{{end}}

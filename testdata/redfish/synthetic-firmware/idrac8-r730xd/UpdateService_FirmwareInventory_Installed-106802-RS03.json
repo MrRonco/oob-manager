@@ -1,0 +1,15 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
+  "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Installed-106802-RS03",
+  "@odata.type": "#SoftwareInventory.v1_1_1.SoftwareInventory",
+  "Description": "Represents Firmware Inventory (SYNTHETIC fixture written from the captured shape, not captured)",
+  "Id": "Installed-106802-RS03",
+  "Name": "Disk 1 in Backplane 0 of Integrated RAID Controller 1",
+  "SoftwareId": "106802",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Updateable": true,
+  "Version": "RS03"
+}

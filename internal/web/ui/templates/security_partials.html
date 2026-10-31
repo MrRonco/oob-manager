@@ -1,0 +1,58 @@
+{{- /* BMC security checks (tech_doc §31): the fleet table's Security cell. */}}
+{{define "seccell"}}
+{{- if .Href}}<a href="{{.Href}}"{{with .Title}} title="{{.}}"{{end}}>{{with .Badge}}{{template "health" .}}{{else}}{{.Text}}{{end}}<span class="sr-only">: security checks</span></a>
+{{- else}}<span class="meta">{{.Text}}</span>{{end}}
+{{- end}}
+
+{{- /* The Re-run control: a form, a disabled button with the reason visible, or a viewer's role note. */}}
+{{define "secrerun"}}
+{{- if .Note}}
+<p class="ackf meta">{{.Note}}</p>
+{{- else if .CSRF}}
+<form method="post" action="/servers/{{.ServerID}}/security/rerun" class="ackf"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><button type="submit" class="btn btn-secondary">Re-run checks</button></form>
+{{- else}}
+<p class="ackf"><span class="btn btn-disabled" aria-disabled="true" aria-describedby="rerun-why">Re-run checks</span> <span class="why-off" id="rerun-why">Re-run: {{.Why}}.</span></p>
+{{- end}}
+{{- end}}
+
+{{- /* One finding of the Security tab. */}}
+{{define "secfinding"}}
+<li id="{{.Anchor}}">
+  <h3 class="chk-h">{{template "health" .Badge}} {{.Title}}</h3>
+  {{- if .Evidence}}
+  <ul class="ev">
+  {{- range .Evidence}}
+    <li>{{.}}</li>
+  {{- end}}
+  </ul>
+  {{- end}}
+  {{- with .Accepted}}
+  <p class="acked">{{template "health" .Badge}} by {{.By}} on <time datetime="{{.ISO}}">{{.At}}</time>: {{.Comment}}</p>
+  {{- end}}
+  <details class="more chk-more"><summary>{{template "icon" "chevron-right"}}Why it matters and what to do<span class="sr-only">: {{.Title}}</span></summary>
+    <p>{{.Why}}</p>
+    <p><strong>What to do:</strong> {{.Fix}}</p>
+    {{- with .Dell}}
+    <p><strong>Dell iDRAC:</strong> {{.}}</p>
+    {{- end}}
+    {{- with .Docs}}
+    <p><a href="{{.}}" rel="noopener noreferrer" target="_blank">Reference {{template "icon" "external-link"}}<span class="sr-only"> about {{$.Title}} (opens a new tab)</span></a></p>
+    {{- end}}
+  </details>
+  {{- if .Accept}}
+  <details class="more"><summary>{{template "icon" "chevron-right"}}Accept as a risk<span class="sr-only">: {{.Title}}</span></summary>
+    <form method="post" action="/servers/{{.ServerID}}/security/accept" class="stackform">
+      <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+      <input type="hidden" name="check" value="{{.ID}}"><input type="hidden" name="seen" value="{{.Seen}}">
+      <div class="field"><label for="acc-{{.Anchor}}">Why is this risk accepted?</label>
+        <input id="acc-{{.Anchor}}" name="comment" type="text" required maxlength="500" autocomplete="off" aria-describedby="acc-{{.Anchor}}-h">
+        <p class="hint" id="acc-{{.Anchor}}-h">An accepted finding stops counting and is not notified while it stays the same. It ends by itself when the finding is fixed or changes. One line, 500 bytes at most (fewer characters with accents or symbols); the comment is audited and sent to notification targets that include details.</p></div>
+      <button type="submit" class="btn btn-secondary">Accept risk</button>
+    </form>
+  </details>
+  {{- end}}
+  {{- if .Remove}}
+  <form method="post" action="/servers/{{.ServerID}}/security/accept/remove" class="ackf"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="check" value="{{.ID}}"><button type="submit" class="btn btn-secondary btn-small">Remove acceptance<span class="sr-only">: {{.Title}}</span></button></form>
+  {{- end}}
+</li>
+{{end}}

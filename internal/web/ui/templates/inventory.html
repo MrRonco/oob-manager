@@ -1,0 +1,97 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{template "servertabs" .Nav}}
+{{- if .InventoryNote}}
+<p class="alert a-stale" role="status">{{template "sicon" "stale"}}<span class="alert-b">{{.InventoryNote}}</span></p>
+{{- end}}
+<div class="g2 even">
+<section class="panel" aria-labelledby="sys-h">
+  <h2 id="sys-h">System</h2>
+  {{- if .HasInventory}}{{template "kv" .Info}}{{else}}<p class="empty">Inventory not read yet.</p>{{end}}
+</section>
+<section class="panel" aria-labelledby="cap-h">
+  <h2 id="cap-h">Capabilities</h2>
+  <p class="hint">What this BMC supports, what this installation of oob-manager offers on it, and whether your role may use it.</p>
+  <ul class="dense">
+  {{- range .Capabilities}}
+    <li><strong>{{.Name}}</strong> <span>{{with .Support}}{{.}} {{end}}{{.Offered}} {{.Access}}</span></li>
+  {{- end}}
+  </ul>
+  {{- if .BMC}}
+  <h3 class="dense-h">BMC</h3>
+  {{template "kv" .BMC}}
+  {{- end}}
+  {{- if .PollTook}}<p class="meta polltook">Last poll took {{.PollTook}}.</p>{{end}}
+</section>
+</div>
+{{- if .HasInventory}}
+<section class="panel" aria-labelledby="lic-h">
+  <h2 id="lic-h">License</h2>
+  {{template "kv" .License}}{{if .LicenseNote}}<p class="hint">{{.LicenseNote}}</p>{{end}}
+</section>
+{{- end}}
+{{- with .FW}}{{$fw := .}}
+<section class="panel flush" aria-labelledby="fw-h">
+  <div class="pad">
+    <h2 id="fw-h">Firmware</h2>
+    <div class="fw-scan">{{template "fwscan" .Scan}}</div>
+  </div>
+  {{- if .Notice}}<p class="alert a-ok pad" role="status">{{template "sicon" "ok"}}<span class="alert-b"><strong>Done:</strong> {{.Notice}}</span></p>{{end}}
+  <div class="pad-b">{{template "fwlegend"}}</div>
+  {{- if .Groups}}
+  <div class="tw" role="region" aria-label="Firmware table" tabindex="0">
+  <table class="stack fw">
+    <thead><tr><th scope="col">Component</th><th scope="col">Running</th>{{if .Cols.Latest}}<th scope="col">Latest</th>{{end}}{{if .Cols.Previous}}<th scope="col">Previous</th>{{end}}{{if .Cols.Staged}}<th scope="col">Staged</th>{{end}}{{if .Cols.Released}}<th scope="col">Released</th>{{end}}<th scope="col">Flag</th>{{if .Cols.Details}}<th scope="col">Component ID</th><th scope="col"><abbr title="Fully qualified device descriptor">FQDD</abbr></th>{{end}}</tr></thead>
+    {{- range .Groups}}
+    <tbody>
+      <tr class="daysep"><th scope="rowgroup" colspan="9">{{.Label}}</th></tr>
+      {{- range .Rows}}
+      <tr>
+        <th scope="row" data-label="Component">{{template "fwname" .}}</th>
+        <td data-label="Running" class="mono">{{template "v" .Running}}{{if .Stored}} <span class="meta">({{.Stored}} stored on the BMC, not installed)</span>{{end}}</td>
+        {{- if $fw.Cols.Latest}}<td data-label="Latest">{{template "fwlatest" .}}</td>{{end}}
+        {{- if $fw.Cols.Previous}}<td data-label="Previous" class="mono meta">{{if .Previous}}{{.Previous}}{{else}}<span class="nodata">None</span>{{end}}</td>{{end}}
+        {{- if $fw.Cols.Staged}}<td data-label="Staged" class="mono">{{if .Staged}}{{.Staged}}{{else}}<span class="nodata">None</span>{{end}}</td>{{end}}
+        {{- if $fw.Cols.Released}}<td data-label="Released">{{template "v" .Released}}</td>{{end}}
+        <td data-label="Flag">{{template "fwflags" .}}</td>
+        {{- if $fw.Cols.Details}}<td data-label="Component ID" class="mono">{{.ComponentID}}</td><td data-label="FQDD" class="mono">{{template "v" .FQDD}}</td>{{end}}
+      </tr>
+      {{- end}}
+    </tbody>
+    {{- end}}
+  </table>
+  </div>
+  <p class="meta pad"><a href="{{.DetailsHref}}">{{if .Cols.Details}}Hide{{else}}Show{{end}} component IDs and FQDDs</a> · <a href="/firmware">Firmware of every server</a></p>
+  {{- else}}
+  <p class="empty pad">No firmware read yet.</p>
+  {{- end}}
+  {{- if .Changes}}
+  <h3 class="dense-h pad">Recent changes</h3>
+  <ul class="dense pad">
+  {{- range .Changes}}
+    <li><time datetime="{{.ISO}}">{{.When}}</time> {{.Component}}: {{.Field}} <span class="mono">{{if .Before}}{{.Before}}{{else}}none{{end}}</span> → <span class="mono">{{if .After}}{{.After}}{{else}}none{{end}}</span></li>
+  {{- end}}
+  </ul>
+  {{- end}}
+</section>
+{{- else}}
+{{- if .HasInventory}}
+<section class="panel flush" aria-labelledby="fw-h">
+  <h2 id="fw-h" class="pad">Firmware</h2>
+  <p class="hint pad-b">Running is what the device reports it runs (Dell: Installed); Previous is the rollback copy the BMC keeps; Available waits for a reboot. Versions of one component are listed together.</p>
+  <div class="tw" role="region" aria-label="Firmware table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">Component</th><th scope="col">Version</th><th scope="col">State</th>{{if .FirmwareCols.ComponentID}}<th scope="col" class="hide-sm">Component ID</th>{{end}}{{if .FirmwareCols.FQDD}}<th scope="col" class="hide-sm"><abbr title="Fully qualified device descriptor">FQDD</abbr></th>{{end}}</tr></thead>
+    <tbody>
+    {{- range .Firmware}}
+      <tr><th scope="row" data-label="Component">{{template "v" .Name}}</th><td data-label="Version" class="mono">{{template "v" .Version}}</td><td data-label="State">{{if eq .State "Previous"}}<span class="meta">Previous (rollback)</span>{{else}}{{template "v" .State}}{{end}}</td>{{if $.FirmwareCols.ComponentID}}<td data-label="Component ID" class="hide-sm mono">{{template "v" .ComponentID}}</td>{{end}}{{if $.FirmwareCols.FQDD}}<td data-label="FQDD" class="hide-sm mono">{{template "v" .FQDD}}</td>{{end}}</tr>
+    {{- else}}
+      <tr><td colspan="5">No firmware reported.</td></tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+</section>
+{{- end}}
+{{- end}}
+{{end}}

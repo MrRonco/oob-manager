@@ -1,0 +1,47 @@
+{{define "content"}}
+<div class="ph"><h1>Users</h1></div>
+{{template "settingstabs" "users"}}
+{{template "stepup" .StepUp}}
+<div class="g2">
+<section class="panel flush" aria-labelledby="users-h">
+  <h2 id="users-h" class="pad">Accounts</h2>
+  <div class="tw" role="region" aria-label="Users table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">User</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col" class="num">Sessions</th><th scope="col" class="hide-sm">Created</th><th scope="col">Actions</th></tr></thead>
+    <tbody>
+    {{- range .Rows}}
+      <tr>
+        <th scope="row" data-label="User"><span><a href="/settings/users/{{.ID}}">{{.Username}}</a>{{if .Self}} <span class="meta">(you)</span>{{end}}</span></th>
+        <td data-label="Role">{{.Role}}</td>
+        <td data-label="Status"><span class="badge b-{{.StatusClass}}">{{template "sicon" .StatusClass}} {{.Status}}</span></td>
+        <td data-label="Sessions" class="num">{{.Sessions}}</td>
+        <td data-label="Created" class="hide-sm">{{template "v" .Created}}</td>
+        <td data-label="Actions" class="acts-cell">{{if .Self}}<span class="meta">Use the CLI to reset yourself</span>{{else if .Disabled}}<a class="btn btn-secondary btn-small" href="/settings/users/{{.ID}}">Enable…<span class="sr-only"> {{.Username}}</span></a>{{else}}<a class="btn btn-caution btn-small" href="/settings/users/{{.ID}}/disable">Disable…<span class="sr-only"> {{.Username}}</span></a> <a class="btn btn-danger-outline btn-small" href="/settings/users/{{.ID}}/reset-totp">Reset authenticator…<span class="sr-only"> {{.Username}}</span></a>{{end}}</td>
+      </tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+</section>
+<section class="panel" aria-labelledby="new-h">
+  <h2 id="new-h">Add a user</h2>
+  <p class="hint">The new user gets a one-time link, valid for 24 hours, to choose a password and set up an authenticator. Nobody else ever sees their password.</p>
+  {{template "formerror" .FormError}}
+  <form method="post" action="/settings/users" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <div class="field">
+      <label for="new-username">Username</label>
+      <input id="new-username" name="username" type="text" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="32" pattern="[a-z][a-z0-9._\-]{2,31}" value="{{.Username}}" aria-describedby="new-username-hint{{if .FormError}} form-error{{end}}"{{if .FormError}} aria-invalid="true"{{end}}>
+      <p id="new-username-hint" class="hint">3 to 32 characters: a lowercase letter, then letters, digits, dot, underscore or hyphen.</p>
+    </div>
+    <fieldset>
+      <legend>Role</legend>
+      {{- range .Roles}}
+      <div class="radio"><input type="radio" id="new-role-{{.Value}}" name="role" value="{{.Value}}"{{if .Selected}} checked{{end}}><label for="new-role-{{.Value}}"><strong>{{.Label}}</strong><span class="hint">{{.Hint}}</span></label></div>
+      {{- end}}
+    </fieldset>
+    <button type="submit" class="btn">Create user and copy setup link</button>
+  </form>
+</section>
+</div>
+{{end}}

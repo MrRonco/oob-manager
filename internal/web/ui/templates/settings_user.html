@@ -1,0 +1,71 @@
+{{define "content"}}
+{{with .User}}
+<div class="ph">
+  <div>
+    <h1>{{.Username}}{{if .Self}} <span class="meta">(you)</span>{{end}} <span class="badge b-{{.StatusClass}}">{{template "sicon" .StatusClass}} {{.Status}}</span></h1>
+    <p class="sub">Role {{.Role}} · created {{template "v" .Created}}</p>
+  </div>
+</div>
+{{end}}
+{{template "settingstabs" "users"}}
+{{template "stepup" .StepUp}}
+<div class="g2 even">
+<section class="panel" aria-labelledby="role-h">
+  <h2 id="role-h">Role</h2>
+  {{- if .User.Self}}
+  <p class="hint">You cannot change your own role. Another admin can.</p>
+  {{- else}}
+  <form method="post" action="/settings/users/{{.User.ID}}/role" class="form" data-role-form>
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <fieldset>
+      <legend>Role</legend>
+      {{- range .Roles}}
+      <div class="radio"><input type="radio" id="role-{{.Value}}" name="role" value="{{.Value}}"{{if .Selected}} checked data-current{{end}}><label for="role-{{.Value}}"><strong>{{.Label}}</strong><span class="hint">{{.Hint}}</span></label></div>
+      {{- end}}
+    </fieldset>
+    <div class="btn-row"><button type="submit" class="btn btn-secondary">Change role</button></div>
+  </form>
+  <p class="hint">The last enabled admin cannot be demoted. Choosing the current role changes nothing.</p>
+  {{- end}}
+</section>
+<section class="panel" aria-labelledby="access-h">
+  <h2 id="access-h">Access</h2>
+  {{- if .User.Self}}
+  <p class="hint">You cannot disable or reset your own account here. Use the <code>reset-totp</code> command on the server if you lose your authenticator.</p>
+  {{- else}}
+  {{- if .User.Disabled}}
+  <p>This account is disabled and cannot sign in.</p>
+  <form method="post" action="/settings/users/{{.User.ID}}/enable" class="btn-row">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <button type="submit" class="btn">Enable account</button>
+  </form>
+  {{- else}}
+  <p>Disabling ends every session and unused setup link at once. It can be undone.</p>
+  <p class="btn-row"><a class="btn btn-caution" href="/settings/users/{{.User.ID}}/disable">Disable account…</a></p>
+  {{- end}}
+  <p>Resetting removes the authenticator, signs the user out everywhere and creates a new one-time setup link (also how an expired invitation is renewed). It cannot be undone.</p>
+  <p class="btn-row"><a class="btn btn-danger-outline" href="/settings/users/{{.User.ID}}/reset-totp">Reset authenticator…</a></p>
+  {{- end}}
+</section>
+</div>
+<section class="panel flush" aria-labelledby="sess-h">
+  <h2 id="sess-h" class="pad">Sessions</h2>
+  {{- if .Sessions}}
+  <div class="tw" role="region" aria-label="Sessions table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">Session</th><th scope="col">Last seen</th><th scope="col" class="hide-sm">Started</th><th scope="col">Address</th><th scope="col" class="hide-sm">Browser</th><th scope="col">Action</th></tr></thead>
+    <tbody>
+    {{- range .Sessions}}
+      <tr><th scope="row" data-label="Session" class="mono"><span>{{.Short}}{{if .Current}} <span class="meta">(this browser)</span>{{end}}{{if .Pending}} <span class="meta">(sign-in not finished)</span>{{end}}</span></th><td data-label="Last seen">{{template "v" .LastSeen}}</td><td data-label="Started" class="hide-sm">{{template "v" .Created}}</td><td data-label="Address" class="mono">{{template "v" .IP}}</td><td data-label="Browser" class="hide-sm">{{template "v" .UserAgent}}</td>
+        <td data-label="Action"><a class="btn btn-caution btn-small" href="/settings/users/{{$.User.ID}}/sessions/{{.ID}}/revoke">End session…<span class="sr-only"> {{.Short}}</span></a></td></tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+  <p class="btn-row pad-b"><a class="btn btn-caution" href="/settings/users/{{.User.ID}}/sessions/revoke-all">End all sessions…</a></p>
+  {{- else}}
+  <p class="empty pad-b">No active sessions.</p>
+  {{- end}}
+</section>
+<p><a href="/settings/users">Back to users</a></p>
+{{end}}

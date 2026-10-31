@@ -1,0 +1,156 @@
+{{define "content"}}
+{{- if .FirstRun}}
+<div class="ph">
+  <h1>Overview</h1>
+</div>
+{{template "firstrun" .FirstRun}}
+{{- else}}
+{{template "ovhero" .}}
+{{- if .NotifyFailing}}
+<p class="alert a-crit" role="alert">{{template "sicon" "crit"}}<span class="alert-b"><strong>Notifications failing:</strong> {{range $i, $n := .NotifyFailing}}{{if $i}}, {{end}}{{$n}}{{end}}. Alerts may not reach you.{{if .NotifyAdmin}} <a href="/settings/notifications">Check Settings → Notifications</a>.{{end}}</span></p>
+{{- end}}
+{{- if .GELFPaused}}
+<p class="alert a-crit" role="alert">{{template "sicon" "crit"}}<span class="alert-b"><strong>Audit shipping paused:</strong> {{if .GELFExpired}}the log server's TLS certificate has expired (or is not valid yet); renew it on the log server, and shipping resumes on its own. Meanwhile audit rows{{else}}the log server's TLS certificate does not match the pinned fingerprint, so audit rows{{end}} are not leaving this console (they queue, up to 1,024, then are dropped and counted; the database copy is kept).{{if .GELFAdmin}} <a href="/settings/integrations">Check Settings → Integrations</a>.{{end}}</span></p>
+{{- end}}
+{{- if .GELFNote}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b"><strong>Audit shipping settings not in force:</strong> {{.GELFNote}} <a href="/settings/integrations">Open Settings → Integrations</a>.</span></p>
+{{- end}}
+{{- if .OpenEnded}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b"><strong>Open-ended maintenance:</strong> {{range $i, $m := .OpenEnded}}{{if $i}}; {{end}}<a href="{{$m.Href}}">{{$m.Server}}</a> since <time datetime="{{$m.SinceISO}}">{{$m.Since}}</time> ({{$m.By}}: {{$m.Reason}}){{end}}. Health, unreachable, log and power supply alerts for {{if gt (len .OpenEnded) 1}}these servers{{else}}it{{end}} have been paused for over 24 h; a reminder is sent once a day. End the maintenance when the work is done.</span></p>
+{{- end}}
+<div class="ov2">
+<section class="fleet-sec" aria-labelledby="fleet-h">
+  <div class="sec-h"><h2 id="fleet-h">Fleet{{if .Recorder}}, last 24 hours{{end}}</h2><span class="meta">{{.Counts.Total}} servers</span><a class="sec-h-r" href="/servers">Table with every column</a></div>
+  {{- with .Recorder}}{{template "recorder" .}}{{end}}
+  <ul class="clist{{if .Recorder}} only-narrow{{end}}" aria-label="Servers, worst first">
+  {{- range .Servers}}
+    <li><a class="crow r-{{.Health.Class}}" href="/servers/{{.ID}}"><span class="sdot s-{{.Health.Class}}" aria-hidden="true">{{template "sicon" .Health.Class}}</span><span class="crow-m"><span class="crow-n">{{.Name}}<span class="sr-only">, {{.Health.Label}}{{if .Critical}}, critical server{{end}}</span></span> <span class="crow-w">{{if .Maint}}{{.Maint.Text}}{{else if .Issue}}{{.Issue}}{{else}}{{.Health.Label}}{{end}}</span></span><span class="crow-r"><span class="mono">{{if .HostDown}}Off{{else if .Hottest.Value}}{{.Hottest.Value}} {{.Hottest.Unit}}{{end}}</span> {{template "chip" .Fresh}}</span></a></li>
+  {{- end}}
+  </ul>
+</section>
+<div class="ov-rail">
+{{- if .InMaint}}
+<section class="panel p-maint inm-p" aria-labelledby="inm-h">
+  <h2 id="inm-h">In maintenance <span class="cnt">{{len .InMaint}}</span></h2>
+  <p class="hint">Shown for reference: these servers are not counted in the fleet verdict or Needs attention, and their health alerts are paused.</p>
+  <ul class="dense">
+  {{- range .InMaint}}
+    <li><a href="{{.Href}}">{{.Server}}</a> {{template "maintbadge" .Badge}}
+    {{- if .Items}}
+      <ul class="dense">
+      {{- range .Items}}
+        <li>{{template "health" .Health}} {{.Text}}{{if .Time}} <time datetime="{{.TimeISO}}">{{.Time}}</time>{{end}} <a class="jump" href="{{.JumpHref}}">{{.Jump}}<span class="sr-only"> details for {{.Server}}</span></a></li>
+      {{- end}}
+      </ul>
+    {{- end}}
+    </li>
+  {{- end}}
+  </ul>
+</section>
+{{- end}}
+<section class="panel feed-p" aria-labelledby="feed-h">
+  <h2 id="feed-h">Events, last 24 h <span class="cnt">{{.EventWarn}} warn · {{.EventCrit}} crit</span></h2>
+  {{- if .Feed}}
+  <ul class="dense feed">
+  {{- range .Feed}}
+    <li><time class="mono" datetime="{{.ISO}}" title="{{.Created}}">{{.Short}}</time> {{template "health" .Severity}} <span>{{.ServerName}}: {{.Message}}{{if .Repeat}} <span class="rep">×{{.Repeat}}</span>{{end}}</span></li>
+  {{- end}}
+  </ul>
+  {{- else}}
+  <p class="empty">No log entries in the last 24 hours.</p>
+  {{- end}}
+  <p><a href="/events">All events</a></p>
+</section>
+</div>
+</div>
+{{- end}}
+{{end}}
+
+{{- /* The verdict-first hero (direction A). In incident mode (a server is critical) the
+     verdict takes display type and the critical count a display numeral (direction B). */}}
+{{define "ovhero"}}
+<section class="hero hero-{{.Hero.Tone}}{{if .Hero.Incident}} hero-incident{{end}}" id="verdict" aria-labelledby="ov-h">
+  <div class="hero-ic" aria-hidden="true">{{template "sicon" .Hero.Tone}}</div>
+  <div class="hero-main">
+    <h1 id="ov-h"><span class="eyebrow">Overview</span> <span class="hero-t verdict">{{.Hero.Title}}</span></h1>
+    {{- with .Hero.Worst}}
+    <p class="hero-s worst">{{template "health" .Health}} <a href="{{.Href}}">{{.Server}}</a> {{.Text}}{{if .Time}} <time datetime="{{.TimeISO}}">{{.Time}}</time>{{end}} <a class="jump" href="{{.JumpHref}}">{{.Jump}}<span class="sr-only"> details for {{.Server}}</span></a></p>
+    {{- else}}
+    <p class="hero-s worst">No sensor problems and no warning or critical events in the last 24 hours.</p>
+    {{- end}}
+    <p class="hero-f"><span class="hero-counts">{{range .Hero.Counts}}<span>{{.}}</span>{{end}}</span>{{if .Draw}}<span>Draw {{.Draw}} W</span>{{end}}{{if or .EventWarn .EventCrit}}<span>Events 24 h: {{.EventWarn}} warn · {{.EventCrit}} crit</span>{{end}}<span class="dataage">Data as of <time datetime="{{.DataISO}}">{{.DataAt}}</time>{{if .DataAge}} · <span class="strip-age">{{.DataAge}} old</span>{{end}}</span></p>
+    {{template "refresh" .Refresh}}
+  </div>
+  {{- if .Hero.Incident}}
+  <p class="hero-num"><span class="num-xl">{{.Hero.Critical}}</span> critical</p>
+  {{- end}}
+  {{- if .Hero.Also}}
+  <div class="hero-also">
+    <h2 id="attn-h">Also needs attention <span class="cnt">{{len .Hero.Also}}</span></h2>
+    <ul class="dense">
+    {{- range .Hero.Also}}
+      <li>{{template "health" .Health}} <a href="{{.Href}}">{{.Server}}</a> {{.Text}}{{if .Time}} <time datetime="{{.TimeISO}}">{{.Time}}</time>{{end}} <a class="jump" href="{{.JumpHref}}">{{.Jump}}<span class="sr-only"> details for {{.Server}}</span></a></li>
+    {{- end}}
+    </ul>
+  </div>
+  {{- end}}
+</section>
+{{end}}
+
+{{- /* The flight recorder (direction C): one row per server on a shared 24 h axis. The
+     SVGs are decorative (aria-hidden); each row has its text summary and the data table
+     below repeats the numbers. Tick positions are classes (no style attribute). */}}
+{{define "recorder"}}
+<div class="rec only-wide">
+  <div class="rec-axis" aria-hidden="true"><span></span><span class="rec-scale">{{range .Ticks}}<span class="rec-tick t{{.Pct}}">{{.Label}}</span>{{end}}<span class="rec-now">now</span></span><span></span></div>
+  <ul class="rec-rows" aria-label="Fleet, last 24 hours">
+  {{- range .Rows}}
+    <li class="rec-row r-{{.Health.Class}}">
+      <div class="rec-id"><a href="/servers/{{.ID}}">{{.Name}}</a> {{template "health" .Health}}<span class="rec-w">{{if .Issue}}{{.Issue}}{{else}}{{.Sensor}}{{end}}</span></div>
+      <div class="rec-plot">{{if .NoHistory}}<span class="meta">No history yet</span>{{else}}<svg class="rec-svg" viewBox="{{.ViewBox}}" preserveAspectRatio="none" aria-hidden="true" focusable="false">{{range .Gaps}}<rect class="rec-gap" x="{{.X}}" y="{{.Y}}" width="{{.W}}" height="{{.H}}"/>{{end}}<path class="rec-area" d="{{.Area}}"/><path class="rec-line" d="{{.Line}}"/></svg>{{end}}<span class="sr-only">{{.Desc}}</span></div>
+      <div class="rec-v"><span class="mono">{{if .Now}}{{.Now}}{{else}}–{{end}}</span><span class="meta">{{.Sensor}}</span></div>
+      <div class="rec-age">{{template "chip" .Fresh}}</div>
+    </li>
+  {{- end}}
+  </ul>
+  {{- if .More}}
+  <p class="meta">{{.More}} more servers are in the <a href="/servers">Servers table</a>.</p>
+  {{- end}}
+  <p class="hint">One row per server, worst first. The line is each server's hottest sensor over the last 24 hours, on one time axis for all rows; a hatched stretch had no readings.</p>
+  <details class="rec-table">
+    <summary>{{template "icon" "chevron-right"}}Data table: fleet, last 24 hours</summary>
+    <div class="tw" role="region" aria-label="Fleet history table" tabindex="0">
+    <table>
+      <thead><tr><th scope="col">Server</th><th scope="col">Sensor</th><th scope="col" class="num">Minimum</th><th scope="col" class="num">Average</th><th scope="col" class="num">Maximum</th><th scope="col">Gaps</th></tr></thead>
+      <tbody>
+      {{- range .Rows}}
+        <tr><th scope="row">{{.Name}}</th><td>{{.Sensor}}</td>{{if .NoHistory}}<td colspan="4" class="meta">No history yet</td>{{else}}<td class="num">{{.Min}}</td><td class="num">{{.Avg}}</td><td class="num">{{.Max}}</td><td>{{.Without}}</td>{{end}}</tr>
+      {{- end}}
+      </tbody>
+    </table>
+    </div>
+  </details>
+</div>
+{{end}}
+
+{{define "firstrun"}}
+<dl class="strip" aria-label="Installation summary">
+  <div><dt>Servers</dt><dd>0</dd></div>
+</dl>
+<section class="panel" aria-labelledby="fr-h">
+  <h2 id="fr-h">First-run checklist</h2>
+  {{- if .Admin}}
+  <ol class="steps">
+    <li class="step done"><span class="step-n" aria-hidden="true">{{template "icon" "check"}}</span><div><h3>Create your admin account <span class="meta">Done</span></h3><p>You are signed in as an admin.</p></div></li>
+    <li class="step now"><span class="step-n" aria-hidden="true">2</span><div><h3>Add a server</h3><p>List the BMC address, its TLS fingerprint and the credential names in <code>config.yaml</code>, then restart. <a href="/help#setup">Setup guide</a></p></div></li>
+    <li class="step"><span class="step-n" aria-hidden="true">3</span><div><h3>Confirm its TLS fingerprint</h3><p>Compare the pinned fingerprint with the one the BMC shows on its certificate page.</p></div></li>
+    <li class="step"><span class="step-n" aria-hidden="true">4</span><div><h3>Invite users and create an API token</h3><p><a href="/settings/users">Add a user</a>. Create a read-only <a href="/settings/tokens">API token</a> for dashboards.</p></div></li>
+  </ol>
+  {{- else}}
+  <p>No servers are configured yet. Ask your administrator to add them.</p>
+  {{- end}}
+</section>
+{{- if .Admin}}
+<p class="hint">Not an admin? Ask your administrator to add servers.</p>
+{{- end}}
+{{end}}

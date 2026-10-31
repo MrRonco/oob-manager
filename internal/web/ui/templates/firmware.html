@@ -1,0 +1,75 @@
+{{define "content"}}
+<div class="ph">
+  <div>
+    <h1>Firmware</h1>
+    <p class="meta">What runs on each server's components, read from its BMC. Problems first. Read only: updates are done on the BMC itself.</p>
+  </div>
+  <div class="tools"><a class="btn btn-secondary" href="{{.CSVHref}}">Download CSV</a></div>
+</div>
+{{- if .Notice}}
+<p class="alert a-ok" role="status">{{template "sicon" "ok"}}<span class="alert-b"><strong>Done:</strong> {{.Notice}}</span></p>
+{{- end}}
+<form class="filters panel" method="get" action="/firmware">
+  <div class="field"><label for="fw-server">Server</label>
+    <select id="fw-server" name="server">{{range .Servers}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+  </div>
+  <div class="field"><label for="fw-kind">Kind</label>
+    <select id="fw-kind" name="kind">{{range .Kinds}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+  </div>
+  <div class="field grow"><label for="fw-q">Search name or version</label>
+    <input id="fw-q" name="q" type="search" maxlength="64" value="{{.Query}}" autocomplete="off" spellcheck="false">
+  </div>
+  <div class="field"><div class="radio"><input type="checkbox" id="fw-flagged" name="flagged" value="1"{{if .FlaggedOnly}} checked{{end}}><label for="fw-flagged">Flagged only</label></div></div>
+  {{- if .Cols.Latest}}
+  <div class="field"><div class="radio"><input type="checkbox" id="fw-updates" name="updates" value="1"{{if .UpdatesOnly}} checked{{end}}><label for="fw-updates">Updates only</label></div></div>
+  {{- end}}
+  <button class="btn" type="submit">Apply</button>
+</form>
+<p class="counts"><span class="chip">{{.Total}}</span> <span class="chip">{{.Shown}}</span>{{if .Flagged}} <a class="chip" href="/firmware?flagged=1">{{template "icon" "triangle-alert"}} {{.Flagged}} flagged</a>{{end}}{{if .Updates}} <a class="chip" href="/firmware?updates=1">{{.Updates}} update{{if ne .Updates 1}}s{{end}}{{if .Urgent}} ({{.Urgent}} urgent){{end}}</a>{{end}}{{if .Filtered}} <a href="{{.AllHref}}">Clear filters</a>{{end}}</p>
+{{template "fwlegend"}}
+{{- if .Rows}}
+<div class="tw panel flush" role="region" aria-label="Firmware of every server" tabindex="0">
+<table class="stack fw">
+  <thead><tr><th scope="col">Kind</th><th scope="col">Component</th><th scope="col">Server</th><th scope="col">Running</th>{{if .Cols.Latest}}<th scope="col">Latest</th>{{end}}{{if .Cols.Previous}}<th scope="col">Previous</th>{{end}}{{if .Cols.Staged}}<th scope="col">Staged</th>{{end}}{{if .Cols.Released}}<th scope="col">Released</th>{{end}}<th scope="col">Flag</th>{{if .Cols.Details}}<th scope="col">Component ID</th><th scope="col"><abbr title="Fully qualified device descriptor">FQDD</abbr></th>{{end}}</tr></thead>
+  <tbody>
+  {{- range .Rows}}
+    <tr>
+      <td data-label="Kind">{{.Kind}}</td>
+      <th scope="row" data-label="Component">{{template "fwname" .}}</th>
+      <td data-label="Server"><a href="/servers/{{.ServerID}}/inventory#fw-h">{{.ServerName}}</a></td>
+      <td data-label="Running" class="mono">{{template "v" .Running}}{{if .Stored}} <span class="meta">({{.Stored}} stored on the BMC, not installed)</span>{{end}}</td>
+      {{- if $.Cols.Latest}}<td data-label="Latest">{{template "fwlatest" .}}</td>{{end}}
+      {{- if $.Cols.Previous}}<td data-label="Previous" class="mono meta">{{if .Previous}}{{.Previous}}{{else}}<span class="nodata">None</span>{{end}}</td>{{end}}
+      {{- if $.Cols.Staged}}<td data-label="Staged" class="mono">{{if .Staged}}{{.Staged}}{{else}}<span class="nodata">None</span>{{end}}</td>{{end}}
+      {{- if $.Cols.Released}}<td data-label="Released">{{template "v" .Released}}</td>{{end}}
+      <td data-label="Flag">{{template "fwflags" .}}</td>
+      {{- if $.Cols.Details}}<td data-label="Component ID" class="mono">{{.ComponentID}}</td><td data-label="FQDD" class="mono">{{template "v" .FQDD}}</td>{{end}}
+    </tr>
+  {{- end}}
+  </tbody>
+</table>
+</div>
+<p class="meta"><a href="{{.DetailsHref}}">{{if .Cols.Details}}Hide{{else}}Show{{end}} component IDs and FQDDs</a></p>
+{{- else}}
+<section class="panel" aria-label="Firmware of every server"><p class="empty">{{if .Filtered}}No component matches these filters. <a href="{{.AllHref}}">Show all</a>.{{else}}No firmware scanned yet. Each server is scanned after its first poll, then daily.{{end}}</p></section>
+{{- end}}
+<section class="panel" aria-labelledby="fw-scans-h">
+  <h2 id="fw-scans-h">Scans</h2>
+  <p class="hint">{{.Catalog}}{{range .CatalogNotes}} <strong>{{.}}</strong>{{end}}</p>
+  {{- with .CheckNow}}
+  {{- if .CSRF}}
+  <form method="post" action="/firmware/catalog/check" class="ackf"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><button type="submit" class="btn btn-secondary">Check the vendor catalog now</button></form>
+  {{- else}}
+  <p class="ackf"><span class="btn btn-disabled" aria-disabled="true">Check the vendor catalog now</span> <span class="why-off">Check now: {{.Why}}.</span></p>
+  {{- end}}
+  {{- end}}
+  <p class="hint">Each server's firmware is read at start, every 24 hours, after a BMC restart and when its version list changes. Minimum versions come from <span class="lock">{{template "icon" "lock"}} config.yaml</span> (<code>firmware.minimum</code>; the BMC's own minimum is <code>security.min_firmware</code>).</p>
+  <ul class="dense">
+  {{- range .Scans}}
+    <li>{{template "fwscan" .}}</li>
+  {{- else}}
+    <li class="meta">No servers are polled.</li>
+  {{- end}}
+  </ul>
+</section>
+{{end}}

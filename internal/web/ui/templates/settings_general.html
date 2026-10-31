@@ -1,0 +1,117 @@
+{{define "content"}}
+<div class="ph"><h1>General</h1></div>
+{{template "settingstabs" "general"}}
+{{template "stepup" .StepUp}}
+{{- if .Locked}}
+<p class="alert a-info" role="status">{{template "icon" "lock"}}<span class="alert-b">This section is locked by <code>settings.locked</code> in config.yaml. Change it there and restart.</span></p>
+{{- end}}
+{{- if .Restart}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">Saved, applies after a restart: {{range $i, $l := .Restart}}{{if $i}}, {{end}}{{$l}}{{end}}. Everything else on this page applies at once.</span></p>
+{{- end}}
+{{template "formerror" .FormError}}
+<form method="post" action="/settings/general" class="panel" aria-labelledby="gen-h">
+  <h2 id="gen-h">App-wide settings</h2>
+  <p class="hint">A value set in config.yaml wins over the one saved here and is shown with a lock. Times are stored in UTC; the time zone only changes how they are shown. Users can pick their own time zone and theme in Display preferences.</p>
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <input type="hidden" name="rev" value="{{.Rev}}">
+  <div class="gen-grid gen-rows">
+  {{- range .Fields}}
+    {{template "genfield" .}}
+  {{- end}}
+  </div>
+  {{- if .History}}
+  <h3 id="gen-hist-h" class="gen-group">Sensor history</h3>
+  <p class="hint" id="gen-hist-size">{{.HistorySize}} Lowering a retention deletes the older data at the next hourly prune; the database file keeps its size and reuses the freed pages.</p>
+  <div class="gen-grid gen-rows" role="group" aria-labelledby="gen-hist-h" aria-describedby="gen-hist-size">
+  {{- range .History}}
+    {{template "genfield" .}}
+  {{- end}}
+  </div>
+  {{- end}}
+  {{- if .Catalog}}
+  <h3 id="gen-cat-h" class="gen-group">Firmware update check</h3>
+  <p class="hint" id="gen-cat-help">{{with .CatalogPanel}}Checks {{if .Host}}https://{{.Host}}{{else}}the vendor's catalog{{end}} for newer firmware releases. {{end}}Only the vendor's public catalog is downloaded; nothing about your servers is sent and nothing is ever installed. Turning the check on needs a fresh authenticator code.</p>
+  <div class="gen-grid gen-rows" role="group" aria-labelledby="gen-cat-h" aria-describedby="gen-cat-help">
+  {{- range .Catalog}}
+    {{template "genfield" .}}
+  {{- end}}
+  </div>
+  {{- end}}
+  {{- if .CanSave}}
+  <div class="btn-row"><button type="submit" class="btn">Save settings</button></div>
+  {{- end}}
+</form>
+{{- with .CatalogPanel}}
+<section class="panel" aria-labelledby="cat-h">
+  <h2 id="cat-h">Vendor firmware catalog</h2>
+  <p>{{.Status}}{{range .Notes}} <strong>{{.}}</strong>{{end}}</p>
+  <dl class="kv kv-cols">
+    <div><dt>Catalog address <span class="lock">{{template "icon" "lock"}} config.yaml</span></dt><dd class="mono">{{if .File.URL}}{{.File.URL}}{{else}}the vendor default{{end}}</dd></div>
+    <div><dt>Trusted signing keys <span class="lock">{{template "icon" "lock"}} config.yaml</span></dt><dd class="mono">{{.Fingerprints}}</dd></div>
+    <div><dt>Private networks allowed <span class="lock">{{template "icon" "lock"}} config.yaml</span></dt><dd>{{if .File.AllowedNetworks}}<span class="mono">{{range $i, $n := .File.AllowedNetworks}}{{if $i}}, {{end}}{{$n}}{{end}}</span>{{else}}None (public addresses only){{end}}</dd></div>
+    <div><dt>Unsigned uploads <span class="lock">{{template "icon" "lock"}} config.yaml</span></dt><dd>{{if .File.AllowUnsigned}}Accepted (labelled "unsigned catalog"){{else}}Refused{{end}}</dd></div>
+    <div><dt>System overrides <span class="lock">{{template "icon" "lock"}} config.yaml</span></dt><dd>{{.File.Systems}}</dd></div>
+  </dl>
+  {{- if .CSRF}}
+  {{- if .HeldVersion}}
+  <form method="post" action="/settings/catalog/confirm" class="ackf"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="import" value="{{.HeldID}}"><button type="submit" class="btn btn-secondary">Use the held catalog {{.HeldVersion}}</button></form>
+  {{- end}}
+  <h3 id="cat-up-h" class="panel-sub">Upload a catalog</h3>
+  <p class="hint" id="cat-up-help">For installs without internet access, private mirrors or older catalogs: the catalog (Catalog.xml.gz, 16 MiB at most) and its detached signature (.sign). The signature is checked before anything is read. Needs a fresh authenticator code; the files are not kept if the code is asked for.</p>
+  {{- if .StepUpFresh}}
+  <form method="post" action="/settings/catalog/upload" enctype="multipart/form-data" class="stackform" aria-labelledby="cat-up-h" aria-describedby="cat-up-help">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <div class="field"><label for="cat-sig">Signature file</label><input id="cat-sig" name="signature" type="file" accept=".sign,.asc,.sig"></div>
+    <div class="field"><label for="cat-file">Catalog file</label><input id="cat-file" name="catalog" type="file" required accept=".gz,application/gzip,application/x-gzip"></div>
+    <div class="btn-row"><button type="submit" class="btn btn-secondary">Upload and import</button></div>
+  </form>
+  {{- else}}
+  <p><a class="btn btn-secondary" href="/stepup?next=%2Fsettings%2Fgeneral">Confirm your authenticator code to upload</a></p>
+  {{- end}}
+  {{- end}}
+</section>
+{{- end}}
+{{end}}
+
+{{define "genfield"}}
+    <div class="field">
+      <label for="{{.ID}}">{{.Label}}{{if .FileManaged}} <span class="lock">{{template "icon" "lock"}} Managed by config.yaml</span>{{end}}</label>
+      {{- if eq .Kind "zone"}}
+      <select id="{{.ID}}" name="{{.Key}}" aria-describedby="{{.ID}}-hint {{.ID}}-src"{{if .FileManaged}} disabled{{end}}{{if .Invalid}} aria-invalid="true"{{end}}>
+        {{- $v := .Value}}
+        {{- range .Zones}}
+        <optgroup label="{{.Region}}">
+          {{- range .Zones}}
+          <option value="{{.Name}}"{{if eq .Name $v}} selected{{end}}>{{.Label}}</option>
+          {{- end}}
+        </optgroup>
+        {{- end}}
+      </select>
+      {{- else if eq .Kind "theme"}}
+      <select id="{{.ID}}" name="{{.Key}}" aria-describedby="{{.ID}}-hint {{.ID}}-src"{{if .FileManaged}} disabled{{end}}{{if .Invalid}} aria-invalid="true"{{end}}>
+        {{- $v := .Value}}
+        {{- range .Themes}}
+        <option value="{{.ID}}"{{if eq (print .ID) $v}} selected{{end}}>{{.Label}}</option>
+        {{- end}}
+      </select>
+      {{- else if eq .Kind "choice"}}
+      <select id="{{.ID}}" name="{{.Key}}" aria-describedby="{{.ID}}-hint {{.ID}}-src"{{if .FileManaged}} disabled{{end}}{{if .Invalid}} aria-invalid="true"{{end}}>
+        {{- $v := .Value}}
+        {{- range .Options}}
+        <option value="{{.Value}}"{{if eq .Value $v}} selected{{end}}>{{.Label}}</option>
+        {{- end}}
+      </select>
+      {{- else if eq .Kind "text"}}
+      <input id="{{.ID}}" name="{{.Key}}" type="text" maxlength="64" autocomplete="off" spellcheck="false" value="{{.Value}}" aria-describedby="{{.ID}}-hint {{.ID}}-src"{{if .FileManaged}} disabled{{end}}{{if .Invalid}} aria-invalid="true"{{end}}>
+      {{- else}}
+      <span class="unit"><input id="{{.ID}}" name="{{.Key}}" type="{{if .FileManaged}}text{{else}}number{{end}}" inputmode="numeric" min="{{.Min}}" max="{{.Max}}" step="1" required value="{{.Value}}" aria-describedby="{{.ID}}-hint {{.ID}}-src"{{if .FileManaged}} disabled{{end}}{{if .Invalid}} aria-invalid="true"{{end}}>{{if .Unit}} <span>{{.Unit}}</span>{{end}}</span>
+      {{- end}}
+      <p id="{{.ID}}-hint" class="hint">{{.Help}}{{if .Restart}} Applies after a restart.{{end}}</p>
+      <div class="fmeta">
+        <p id="{{.ID}}-src" class="src">{{.Source}}{{if .Resettable}} Default: {{.Default}}.{{end}}</p>
+        {{- if .Resettable}}
+        <p class="reset"><button type="submit" class="btn btn-secondary btn-small" formaction="/settings/general/reset" name="reset" value="{{.Key}}" formnovalidate aria-describedby="{{.ID}}-src">Reset to default</button></p>
+        {{- end}}
+      </div>
+    </div>
+{{end}}

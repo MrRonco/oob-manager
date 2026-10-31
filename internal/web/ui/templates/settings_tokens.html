@@ -1,0 +1,47 @@
+{{define "content"}}
+<div class="ph"><h1>API tokens</h1></div>
+{{template "settingstabs" "tokens"}}
+{{template "stepup" .StepUp}}
+<div class="g2">
+<section class="panel flush" aria-labelledby="tok-h">
+  <h2 id="tok-h" class="pad">Tokens</h2>
+  <p class="hint pad-b">Tokens are read-only: they can read the fleet and logs through <code>/api/v1</code> and nothing else. The token itself is shown once, when it is created.</p>
+  {{- if .Rows}}
+  <div class="tw" role="region" aria-label="API tokens table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">Name</th><th scope="col">Status</th><th scope="col">Expires</th><th scope="col">Last used</th><th scope="col" class="hide-sm">Owner</th><th scope="col" class="hide-sm">Created</th><th scope="col">Action</th></tr></thead>
+    <tbody>
+    {{- range .Rows}}
+      <tr><th scope="row" data-label="Name"><span>{{.Name}} <span class="meta mono">{{.ID}}</span></span></th><td data-label="Status"><span class="badge b-{{.StatusClass}}">{{template "sicon" .StatusClass}} {{.Status}}</span></td><td data-label="Expires">{{.Expires}}</td><td data-label="Last used">{{.LastUsed}}</td><td data-label="Owner" class="hide-sm">{{template "v" .Owner}}</td><td data-label="Created" class="hide-sm">{{.Created}}</td>
+        <td data-label="Action">{{if .Active}}<a class="btn btn-danger-outline btn-small" href="/settings/tokens/{{.ID}}/revoke">Revoke…<span class="sr-only"> {{.Name}}</span></a>{{else}}<span class="meta">None</span>{{end}}</td></tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+  {{- else}}
+  <p class="empty pad-b">No tokens yet.</p>
+  {{- end}}
+</section>
+<section class="panel" aria-labelledby="newtok-h">
+  <h2 id="newtok-h">Create a token</h2>
+  {{template "formerror" .FormError}}
+  <form method="post" action="/settings/tokens" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <div class="field">
+      <label for="tok-name">Name</label>
+      <input id="tok-name" name="name" type="text" required maxlength="64" value="{{.Name}}" aria-describedby="tok-name-hint{{if .FormError}} form-error{{end}}"{{if .FormError}} aria-invalid="true"{{end}}>
+      <p id="tok-name-hint" class="hint">Who uses it, for example "dashboard".</p>
+    </div>
+    <div class="field">
+      <label for="tok-exp">Expires</label>
+      <select id="tok-exp" name="expires">
+      {{- range .Expiries}}
+        <option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>
+      {{- end}}
+      </select>
+    </div>
+    <button type="submit" class="btn">Create token</button>
+  </form>
+</section>
+</div>
+{{end}}

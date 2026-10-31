@@ -1,0 +1,119 @@
+# oob-manager, hardened layout: keys mounted read-only, the age identity kept off the data
+# volume (deploy/README.md "Docker Compose with mounted keys"). For the minimal layout (one
+# data volume, keys generated on first start) see "Quick start". Paths use /srv/oob-manager
+# and the host address 192.0.2.20 (TEST-NET examples): replace both. On Unraid this file
+# can be a compose.manager project (deploy/README.md "Unraid").
+name: oob-manager
+
+services:
+  oob-manager:
+    # Pin the tag (or a digest) and bump it by hand on upgrade; keep the container out of
+    # any auto-updater (on Unraid: CA Auto Update), so a migration never runs unattended.
+    # A release you verified (docs/verify.md), ideally by digest, or the tag you built
+    # (deploy/README.md "First-install checklist", step 1).
+    image: ghcr.io/mrronco/oob-manager:<version>
+    container_name: oob-manager
+    restart: unless-stopped
+
+    # A Docker bridge network, not macvlan: outbound traffic is NATed to the host address,
+    # so a BMC IP allow-list needs only the host. Publish on the host's management-LAN
+    # address, never 0.0.0.0, and never behind a public tunnel or proxy.
+    networks: [oob]
+    ports:
+      - "192.0.2.20:8443:8443"
+
+    # Hardening (docs/security.md E2): non-root, immutable rootfs, no capabilities.
+    user: "65532:65532"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    # 256m, not 128m: `docker exec … bootstrap-admin` (and any other exec) runs a second
+    # process INSIDE this cgroup, and argon2id needs 19 MiB per hash (at most 2 at once,
+    # <= 100 MiB worst case, auth.HashMemoryBudgetKiB). At 128m the kernel OOM-killed the
+    # container during an exec plus a burst of logins (anon-rss ~68 MB at kill).
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 1.0
+    environment:
+      # Soft heap limit below mem_limit so the Go GC returns argon2 buffers before the
+      # cgroup limit is reached (no secrets here: secrets are files, never env).
+      GOMEMLIMIT: "200MiB"
+
+    volumes:
+      # The only two writable mounts. Host dirs are owned 65532:65532.
+      - type: bind
+        source: /srv/oob-manager/data
+        target: /data
+        bind: { create_host_path: false }
+      - type: bind
+        source: /srv/oob-manager/leases
+        target: /leases
+        bind: { create_host_path: false }
+      # Config: read-only; changes apply on restart only (security.md T4).
+      - type: bind
+        source: /srv/oob-manager/config.yaml
+        target: /etc/oob-manager/config.yaml
+        read_only: true
+        bind: { create_host_path: false }
+      # age-encrypted BMC credentials (safe in data backups: useless without the identity).
+      - type: bind
+        source: /srv/oob-manager/bmc-credentials.age
+        target: /run/secrets/bmc-credentials.age
+        read_only: true
+        bind: { create_host_path: false }
+      # age-encrypted app keys ({totp_key: <hex>}; create with `oob-manager gen-app-keys | age -r ...`).
+      - type: bind
+        source: /srv/oob-manager/app-keys.age
+        target: /run/secrets/app-keys.age
+        read_only: true
+        bind: { create_host_path: false }
+      # UI certificate and key (`oob-manager gen-tls`, or your own CA's pair). serve
+      # refuses to start without them; there is no plain-HTTP fallback.
+      - type: bind
+        source: /srv/oob-manager/tls/tls.crt
+        target: /run/secrets/tls.crt
+        read_only: true
+        bind: { create_host_path: false }
+      - type: bind
+        source: /srv/oob-manager/tls/tls.key
+        target: /run/secrets/tls.key
+        read_only: true
+        bind: { create_host_path: false }
+      # The age identity is kept OFF the data volume (and out of its backups), in a
+      # root-only place; a boot hook copies it to this RAM path with owner 65532 and mode
+      # 0400 (deploy/README.md "Keeping the identity off the data volume"). The key mounts go
+      # together: drop the identity, app-keys and credentials mounts (and their config.yaml
+      # paths) all at once to let a fresh install generate keys in /data; dropping only some
+      # makes the app refuse to start.
+      - type: bind
+        source: /run/oob-manager/identity
+        target: /run/secrets/age-identity
+        read_only: true
+        bind: { create_host_path: false }
+
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/oob-manager", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+    # On Unraid, these labels make the Docker page show it as a compose.manager container
+    # with a WebUI link; harmless elsewhere.
+    labels:
+      net.unraid.docker.managed: composeman
+      net.unraid.docker.webui: https://192.0.2.20:8443
+
+networks:
+  oob:
+    name: oob-manager
+    driver: bridge
+    enable_ipv6: false

@@ -1,0 +1,34 @@
+{{define "content"}}
+<div class="ph"><h1>{{.Heading}}</h1></div>
+<div class="g2">
+<section class="panel" aria-labelledby="sec-h">
+  <h2 id="sec-h">{{if eq .Kind "link"}}One-time setup link{{else}}Token{{end}}</h2>
+  <p>{{.Detail}}</p>
+  <p class="alert a-warn">{{template "sicon" "warn"}}<span class="alert-b"><strong>Shown once.</strong> Copy it now: it is not stored and cannot be shown again{{if eq .Kind "link"}}. Send it to {{.Name}} over a channel you trust{{end}}.</span></p>
+  <div class="field">
+    <label for="secret">{{if eq .Kind "link"}}Enrollment link for {{.Name}}{{else}}Token for {{.Name}}{{end}}</label>
+    <div class="secret-row">
+      <input id="secret" class="secret" type="text" readonly value="{{.Secret}}" autocomplete="off" spellcheck="false">
+      <button type="button" class="btn btn-secondary" data-copy="secret" hidden>Copy</button>
+    </div>
+    <p class="hint" data-copy-status="secret" role="status"></p>
+  </div>
+  <p class="btn-row"><a class="btn" href="{{.Back}}">{{.BackLabel}}</a></p>
+</section>
+<section class="panel" aria-labelledby="use-h">
+  <h2 id="use-h">How to use it</h2>
+  {{- if eq .Kind "link"}}
+  <ol class="list">
+    <li>Send the link to {{.Name}}.</li>
+    <li>{{.Name}} opens it, chooses a password and scans the authenticator code it shows.</li>
+    <li>Then {{.Name}} signs in with username, password and a 6-digit code.</li>
+  </ol>
+  {{- else}}
+  <p>Send it as a bearer token on read-only API requests:</p>
+  <code class="codeblock">Authorization: Bearer &lt;token&gt;
+GET /api/v1/servers</code>
+  <p class="hint">Dashboards and monitors (for example a status page or an uptime monitor) take it as a custom header. See <a href="/help#setup">Help</a>.</p>
+  {{- end}}
+</section>
+</div>
+{{end}}

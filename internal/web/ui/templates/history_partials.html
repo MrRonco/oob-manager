@@ -1,0 +1,100 @@
+{{- /* Sensor history charts (tech_doc §39): server-rendered SVG, no script, no style
+       attribute. Geometry comes from internal/history/svg; every color is a CSS class
+       mapped to a chart token (tokens.css), so palettes, light/dark and forced colors
+       apply. The <title> and <desc> name the chart; the data table is its text equivalent. */}}
+{{define "histchart"}}
+<div class="chart-wrap" role="region" aria-label="{{.Title}} chart" tabindex="0">
+<svg class="chart-svg" viewBox="{{.Chart.ViewBox}}" role="img" aria-labelledby="{{.ID}}-t {{.ID}}-d" focusable="false">
+  <title id="{{.ID}}-t">{{.ChartTitle}}</title>
+  <desc id="{{.ID}}-d">{{.ChartDesc}}</desc>
+  <rect class="plot" x="{{.Chart.Plot.X}}" y="{{.Chart.Plot.Y}}" width="{{.Chart.Plot.W}}" height="{{.Chart.Plot.H}}"/>
+  {{- range .Chart.Spans}}
+  <rect class="span-maint" x="{{.X}}" y="{{.Y}}" width="{{.W}}" height="{{.H}}"><title>{{.Title}}</title></rect>
+  {{- end}}
+  {{- range .Chart.Bands}}
+  <rect class="{{if .Crit}}band-crit{{else}}band-warn{{end}}" x="{{.X}}" y="{{.Y}}" width="{{.W}}" height="{{.H}}"/>
+  {{- end}}
+  {{- $c := .Chart}}
+  {{- range .Chart.YTicks}}
+  <line class="grid" x1="{{$c.GridFrom}}" x2="{{$c.GridTo}}" y1="{{.Y}}" y2="{{.Y}}"/>
+  <text class="tick ty" x="{{.X}}" y="{{.Y}}">{{.Label}}</text>
+  {{- end}}
+  {{- range .Chart.XTicks}}
+  <text class="tick tx" x="{{.X}}" y="{{.Y}}">{{.Label}}</text>
+  {{- end}}
+  {{- with .Chart.Envelope}}
+  <path class="env" d="{{.}}"/>
+  {{- end}}
+  {{- range .Chart.Lines}}{{if not .Focus}}
+  <path class="ser ser-muted" d="{{.D}}"><title>{{.Title}}</title></path>
+  {{- end}}{{end}}
+  {{- range .Chart.Lines}}{{if .Focus}}
+  <path class="ser ser-focus" d="{{.D}}"><title>{{.Title}}</title></path>
+  {{- end}}{{end}}
+  {{- range .Chart.Marks}}
+  <line class="mark{{if .Critical}} mark-crit{{end}}" x1="{{.X}}" x2="{{.X}}" y1="{{.Y1}}" y2="{{.Y2}}"><title>{{.Title}}</title></line>
+  {{- end}}
+</svg>
+</div>
+{{- if .Chart.Empty}}
+<p class="empty">No readings in this period.</p>
+{{- end}}
+{{end}}
+
+{{- /* A 24 h sparkline (C-04 stat tile variant): no axes; it links to the History tab
+       focused on the sensor, and its name carries the minimum, average and maximum. */}}
+{{define "sparkline"}}{{if .D}}<a class="spark" href="{{.Href}}"><svg class="spark-svg" viewBox="{{.ViewBox}}" role="img" aria-labelledby="{{.ID}}-t {{.ID}}-d" focusable="false"><title id="{{.ID}}-t">{{.Title}}</title><desc id="{{.ID}}-d">{{.Desc}}</desc><path class="spark-line" d="{{.D}}"/></svg></a>{{end}}{{end}}
+
+{{define "histpanel"}}
+<section class="panel hist-panel" id="{{.ID}}" aria-labelledby="{{.ID}}-h">
+  <h2 id="{{.ID}}-h">{{.Title}} <span class="meta">{{.Unit}}</span></h2>
+  {{template "histchart" .}}
+  {{- if .CoarseNote}}
+  <p class="meta">{{.CoarseNote}}</p>
+  {{- end}}
+  <div class="hist-side">
+    <ul class="legend" aria-label="{{.Title}}: show a sensor">
+    {{- range .Legend}}
+      <li><a href="{{.Href}}"{{if .Current}} aria-current="true"{{end}}><span class="sw{{if .Current}} sw-focus{{end}}" aria-hidden="true"></span>{{.Label}}</a></li>
+    {{- end}}
+    </ul>
+    {{- if .Also}}
+    <p class="meta">Also recorded: {{range $i, $a := .Also}}{{if $i}}, {{end}}<a href="{{$a.Href}}">{{$a.Label}}</a>{{end}}{{if .AlsoMore}}, and {{.AlsoMore}} more (in the CSV of every sensor and the API){{end}}.</p>
+    {{- end}}
+    {{- with .Focus}}
+    <dl class="kv hist-num">
+      <div><dt>Sensor</dt><dd><strong>{{.Label}}</strong></dd></div>
+      {{- if .Has}}
+      <div><dt>Minimum</dt><dd>{{.Min}}</dd></div>
+      <div><dt>Average</dt><dd>{{.Avg}}</dd></div>
+      <div><dt>Maximum</dt><dd>{{.Max}}</dd></div>
+      <div><dt>Samples</dt><dd>{{.Samples}}</dd></div>
+      {{- else}}
+      <div><dt>Readings</dt><dd><span class="nodata">None in this period</span></dd></div>
+      {{- end}}
+    </dl>
+    {{- end}}
+    {{- if .Bands}}
+    <p class="meta">Thresholds now: {{.Bands}}.</p>
+    {{- end}}
+  </div>
+  <details class="hist-table">
+    <summary>{{template "icon" "chevron-right"}}Data table: {{.Focus.Label}}</summary>
+    <p><a href="{{.Focus.CSVHref}}" download>Download CSV</a>{{if .Focus.RawHref}} · <a href="{{.Focus.RawHref}}" download>Every sample (CSV)</a>{{end}}</p>
+    {{- if .Rows}}
+    <div class="tw" role="region" aria-label="{{.Title}}: {{.Focus.Label}} data table" tabindex="0">
+    <table class="stack">
+      <thead><tr><th scope="col">Period starting</th><th scope="col" class="num">Minimum {{.Unit}}</th><th scope="col" class="num">Average {{.Unit}}</th><th scope="col" class="num">Maximum {{.Unit}}</th><th scope="col" class="num">Samples</th></tr></thead>
+      <tbody>
+      {{- range .Rows}}
+        <tr><th scope="row" data-label="Period starting"><time datetime="{{.ISO}}">{{.When}}</time></th><td data-label="Minimum" class="num">{{.Min}}</td><td data-label="Average" class="num">{{.Avg}}</td><td data-label="Maximum" class="num">{{.Max}}</td><td data-label="Samples" class="num">{{.N}}</td></tr>
+      {{- end}}
+      </tbody>
+    </table>
+    </div>
+    {{- else}}
+    <p class="empty">No readings in this period.</p>
+    {{- end}}
+  </details>
+</section>
+{{end}}

@@ -1,0 +1,10 @@
+# Keep the build context to what the Dockerfile copies; never ship secrets or local config.
+*
+!go.mod
+!go.sum
+!cmd/
+!internal/
+!LICENSE
+!NOTICE
+**/*_test.go
+**/testdata/

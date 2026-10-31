@@ -1,0 +1,22 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#FanCollection.FanCollection",
+  "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/ThermalSubsystem/Fans",
+  "@odata.type": "#FanCollection.FanCollection",
+  "Description": "Collection of Fan",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/ThermalSubsystem/Fans/Fan.Embedded.1"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/ThermalSubsystem/Fans/Fan.Embedded.2"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/ThermalSubsystem/Fans/Fan.Embedded.3"
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/ThermalSubsystem/Fans/Fan.Embedded.4"
+    }
+  ],
+  "Members@odata.count": 4,
+  "Name": "Fan Collection"
+}

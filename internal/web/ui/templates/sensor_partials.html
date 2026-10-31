@@ -1,0 +1,120 @@
+{{- /* Server sensor panels: the Overview tab's Status panel and the Sensors tab's tables (round-2 slice C). */}}
+{{define "statuspanel"}}
+<section class="panel" aria-labelledby="s-h">
+  <h2 id="s-h">Status</h2>
+  <dl class="kv">
+    <div><dt>Power</dt><dd>{{template "v" .Summary.Power}}{{if .Summary.PowerNote}} <span class="meta">{{.Summary.PowerNote}}</span>{{end}}</dd></div>
+    {{- with .Summary}}
+    <div><dt>Hottest</dt><dd>{{if .Hottest.Value}}<strong>{{.Hottest.Value}} {{.Hottest.Unit}}</strong> {{.HottestName}} <span class="{{if .Hottest.Close}}close{{else}}meta{{end}}">{{.Hottest.Text}}</span>{{with $.Sparks.Hottest}} {{template "sparkline" .}}{{end}}{{else}}<span class="nodata">Not reported</span>{{end}}</dd></div>
+    {{- if .Inlet.Value}}
+    <div><dt>Inlet</dt><dd><strong>{{.Inlet.Value}} {{.Inlet.Unit}}</strong> <span class="{{if .Inlet.Close}}close{{else}}meta{{end}}">{{.Inlet.Text}}</span>{{with $.Sparks.Inlet}} {{template "sparkline" .}}{{end}}</dd></div>
+    {{- end}}
+    <div><dt>Fans</dt><dd>{{template "v" .Fans}}</dd></div>
+    <div><dt><abbr title="Power supply units">PSUs</abbr></dt><dd>{{template "v" .PSUs}}{{if and .PSUs (not .PowerUnmonitored)}} {{template "health" .PSUHealth}}{{end}}</dd></div>
+    <div><dt>Draw</dt><dd>{{template "v" .Watts}}{{if and .PeakW (not .PowerUnmonitored)}} <span class="meta">peak {{.PeakW}}</span>{{end}}{{with $.Sparks.Draw}} {{template "sparkline" .}}{{end}}</dd></div>
+    {{- end}}
+    {{- if .Volt.PGTotal}}
+    <div><dt><abbr title="Power-good signals: one bit per rail, set when the rail is in range">Power-good</abbr></dt><dd>{{.Volt.PGGood}}/{{.Volt.PGTotal}} {{if .Volt.PGOpen}}<span class="badge b-crit">{{template "sicon" "crit"}} Fault</span>{{else if eq .Volt.PGGood .Volt.PGTotal}}<span class="badge b-ok">{{template "sicon" "ok"}} Good</span>{{else}}<span class="meta">{{.Volt.PGUnknown}} not reported</span>{{end}}</dd></div>
+    {{- end}}
+  </dl>
+</section>
+{{end}}
+
+{{define "tempspanel"}}
+<section class="panel" aria-labelledby="temps-h" id="temps">
+  <h2 id="temps-h">Temperatures</h2>
+  {{- if .Temps}}
+  <div class="tw" role="region" aria-label="Temperatures table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">Sensor</th><th scope="col" class="num">Reading {{.TempUnit}}</th><th scope="col">Headroom to warning</th><th scope="col" class="num hide-sm">Warn / crit {{.TempUnit}}</th></tr></thead>
+    <tbody>
+    {{- range .Temps}}
+      <tr class="{{if or .Alert (eq .Meter.Class "crit")}}r-warn{{else if .Meter.Close}}r-warn{{end}}">
+        <th scope="row" data-label="Sensor"><span><span title="{{.FullName}}">{{template "v" .Name}}</span>{{if ne .Health.Class "ok"}} {{template "health" .Health}}{{end}}</span></th>
+        <td data-label="Reading {{$.TempUnit}}" class="num{{with .Change}} chg chg-{{.}}{{end}}">{{if .Meter.Value}}{{.Meter.Value}}{{else}}<span class="nodata">Not reported</span>{{end}}</td>
+        <td data-label="Headroom" class="mcell">{{template "meterbar" .Meter}}{{if .Meter.Text}}<span class="hm-txt{{if or .Meter.Close .Alert}} close{{end}}">{{.Meter.Text}}</span>{{end}}</td>
+        <td data-label="Warn / crit {{$.TempUnit}}" class="num hide-sm nw">{{if .Warn}}{{trimUnit .Warn}}{{else}}–{{end}} / {{if .Crit}}{{trimUnit .Crit}}{{else}}–{{end}}</td>
+      </tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+  {{- else}}
+  <p class="empty">No temperature sensors reported.</p>
+  {{- end}}
+</section>
+{{end}}
+
+{{define "fanspanel"}}
+<section class="panel" aria-labelledby="fans-h" id="fans">
+  <h2 id="fans-h">Fans <span class="cnt">{{len .}} reported</span></h2>
+  {{- if .}}
+  <ul class="fanrow">
+  {{- range .}}
+    <li{{if and (ne .Health.Class "ok") (ne .Health.Class "stale")}} class="r-warn"{{end}}><span title="{{.FullName}}">{{.Name}}</span>{{if .Value}}<strong{{with .Change}} class="chg chg-{{.}}"{{end}}>{{.Value}}</strong> <span class="meta">{{.Unit}}</span>{{else}}<span class="nodata">Not reported</span>{{end}}{{if ne .Health.Class "ok"}} {{template "health" .Health}}{{end}}</li>
+  {{- end}}
+  </ul>
+  {{- else}}
+  <p class="empty">No fans reported.</p>
+  {{- end}}
+</section>
+{{end}}
+
+{{define "railspanel"}}
+<section class="panel" aria-labelledby="volt-h" id="volts">
+  <h2 id="volt-h">Voltage rails</h2>
+  {{- if .Analog}}
+  <div class="tw" role="region" aria-label="Analog voltage rails table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">Rail</th><th scope="col">Status</th><th scope="col" class="num">Reading</th></tr></thead>
+    <tbody>
+    {{- range .Analog}}
+      <tr><th scope="row" data-label="Rail"><span title="{{.FullName}}">{{template "v" .Name}}</span></th><td data-label="Status">{{template "health" .Health}}</td><td data-label="Reading" class="num">{{template "v" .Reading}}</td></tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+  {{- else if .PGTotal}}
+  <p class="meta">This BMC reports power-good signals only, no analog rail voltages.</p>
+  {{- end}}
+  {{- if .PGTotal}}
+  <details class="pg"{{if .PGOpen}} open{{end}}>
+    <summary>{{template "icon" "chevron-right"}}Power-good signals: {{.PGGood}} of {{.PGTotal}} good{{if .PGUnknown}}, {{.PGUnknown}} not reported{{end}} {{if .PGOpen}}<span class="badge b-crit">{{template "sicon" "crit"}} Fault</span>{{else}}<span class="badge b-ok">{{template "sicon" "ok"}} No faults</span>{{end}}</summary>
+    <ul class="pg-list">
+    {{- range .PG}}
+      <li><span title="{{.FullName}}">{{.Name}}</span>{{if eq .State "Fault"}} <span class="badge b-crit">{{template "sicon" "crit"}} Fault</span>{{else if eq .State "Unknown"}} <span class="meta">not reported</span>{{end}}</li>
+    {{- end}}
+    </ul>
+  </details>
+  {{- end}}
+  {{- if and (not .Analog) (not .PGTotal)}}
+  <p class="empty">No voltage sensors reported.</p>
+  {{- end}}
+</section>
+{{end}}
+
+{{define "psupanel"}}
+<section class="panel{{if or (eq .Summary.PSUHealth.Class "warn") (eq .Summary.PSUHealth.Class "crit")}} p-warn{{end}}" aria-labelledby="psu-h" id="psus">
+  <h2 id="psu-h">Power supplies</h2>
+  {{- if .Summary.PowerUnmonitored}}
+  <p class="empty">Not monitored by this server. Its BMC reports no power supplies and no power draw (for example a cabled PSU without PMBus); this is how the hardware is built, not a fault.</p>
+  {{- else if .PSUs}}
+  <div class="tw" role="region" aria-label="Power supplies table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">PSU</th><th scope="col">State</th>{{if .PSUCols.Rating}}<th scope="col">Rating</th>{{end}}{{if .PSUCols.Input}}<th scope="col" class="num">In W</th>{{end}}{{if .PSUCols.Output}}<th scope="col" class="num">Out W</th>{{end}}{{if .PSUCols.Volts}}<th scope="col" class="num hide-sm">Line</th>{{end}}</tr></thead>
+    <tbody>
+    {{- range .PSUs}}
+      <tr class="{{if or (eq .Health.Class "warn") (eq .Health.Class "crit")}}r-warn{{end}}"><th scope="row" data-label="PSU"><span title="{{.FullName}}{{if .Model}} · {{.Model}}{{end}}">{{template "v" .Name}}</span></th><td data-label="State">{{template "health" .Health}}</td>{{if $.PSUCols.Rating}}<td data-label="Rating" class="nw">{{template "v" .Rating}}</td>{{end}}{{if $.PSUCols.Input}}<td data-label="In W" class="num">{{template "v" .Input}}</td>{{end}}{{if $.PSUCols.Output}}<td data-label="Out W" class="num">{{template "v" .Output}}</td>{{end}}{{if $.PSUCols.Volts}}<td data-label="Line" class="num hide-sm">{{template "v" .Volts}}</td>{{end}}</tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+  <p class="hint">Rating is what a supply is built for; In and Out are live readings.</p>
+  {{- else}}
+  <p class="empty">No power supplies reported.</p>
+  {{- end}}
+  {{- if not .Summary.PowerUnmonitored}}
+  <details class="more"><summary>{{template "icon" "chevron-right"}}Chassis power</summary>{{template "kv" .Power}}</details>
+  {{- end}}
+</section>
+{{end}}

@@ -1,0 +1,139 @@
+/* oob-manager design tokens (round-2 redesign, slice A; docs/tech_doc.md §35).
+   Loaded before every other stylesheet. Three layers:
+     1. Fonts: the vendored variable fonts (static/vendor/fonts, SIL OFL 1.1) with
+        metric-matched local fallbacks, so a late font swap barely reflows.
+     2. Scale: spacing, radii, type sizes, line heights, motion (not colours).
+     3. Semantic colours: the names app.css uses, each mapped once onto a primitive
+        (--p-*). The palettes in themes.css override primitives only, in OKLCH, with
+        light-dark() carrying both modes; the mode itself is just color-scheme below.
+   No colour arithmetic (color-mix(), relative colours) in the semantic layer: the Go
+   test TestThemeContrast evaluates every pair numerically and must see plain values. */
+
+/* ---- Fonts ------------------------------------------------------------------------- */
+@font-face {
+  font-family: "Inter"; src: url("vendor/fonts/inter-4.1/inter-var-latin.woff2") format("woff2");
+  font-weight: 400 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Inter Fallback"; src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 107.51%; ascent-override: 90.11%; descent-override: 22.44%; line-gap-override: 0%;
+}
+@font-face {
+  font-family: "JetBrains Mono"; src: url("vendor/fonts/jetbrains-mono-2.304/jetbrains-mono-var-latin.woff2") format("woff2");
+  font-weight: 400 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono Fallback"; src: local("Courier New"), local("Liberation Mono");
+  size-adjust: 99.98%; ascent-override: 102.02%; descent-override: 30%; line-gap-override: 0%;
+}
+
+/* ---- Scale ------------------------------------------------------------------------- */
+:root {
+  --font-ui: "Inter", "Inter Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sp-1: .25rem; --sp-2: .5rem; --sp-3: .75rem; --sp-4: 1rem; --sp-5: 1.25rem; --sp-6: 1.5rem; --sp-7: 2rem; --sp-8: 3rem;
+  /* Radii (direction A): badges, controls, panels, pills. */
+  --r-badge: .375rem; --r-ctl: .5rem; --r-panel: .75rem; --r-pill: 999px;
+  /* Type: eyebrow, meta, small, body, h3, h2, h1. */
+  --fs-0: .75rem; --fs-1: .8125rem; --fs-2: .875rem; --fs-3: 1rem;
+  --fs-h3: clamp(1rem, .95rem + .25vw, 1.125rem);
+  --fs-4: clamp(1.125rem, 1rem + .5vw, 1.375rem); --fs-5: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  --lh-tight: 1.2; --lh-body: 1.5;
+  /* Control heights: default, small, and the 44 px touch target on phones. */
+  --ctl-h: 2.5rem; --ctl-h-sm: 2rem; --tap: 2.75rem;
+  /* Motion budget (plan 04 §11 item 5): at most 250 ms, ease-out; used only in motion.css.
+     --hold is how long a changed reading stays tinted before it fades (a delay, not motion). */
+  --dur-1: 120ms; --dur-2: 200ms; --ease: cubic-bezier(.2, .7, .2, 1); --hold: 600ms;
+  --bar-h: 3.5rem; --side-w: 16.5rem;
+}
+
+/* ---- Mode: dark is the default; the OS preference applies unless <html data-theme> -- */
+:root { color-scheme: dark; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { color-scheme: light; } }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* ---- Semantic colours (written once; every palette resolves through them) ----------- */
+/* Also on [data-palette] elements, so a swatch with its own palette re-resolves them. */
+:root, [data-palette] {
+  --bg: var(--p-neutral-0);
+  --surface: var(--p-neutral-1);
+  --surface-2: var(--p-neutral-2);
+  --surface-3: var(--p-neutral-4);
+  --border: var(--p-neutral-3);
+  --field-border: var(--p-neutral-6);
+  --muted: var(--p-neutral-8);
+  --text: var(--p-neutral-9);
+  --focus: var(--p-neutral-10);
+  --accent: var(--p-accent-7);
+  --accent-bg: var(--p-accent-1);
+  --on-accent: var(--p-accent-0);
+  --ok: var(--p-ok-7);
+  --ok-bg: var(--p-ok-1);
+  --ok-mark: var(--p-ok-5);
+  --warn: var(--p-warn-7);
+  --warn-bg: var(--p-warn-1);
+  --warn-mark: var(--p-warn-5);
+  --crit: var(--p-crit-7);
+  --crit-bg: var(--p-crit-1);
+  --crit-mark: var(--p-crit-5);
+  --info: var(--p-info-7);
+  --info-bg: var(--p-info-1);
+  --info-mark: var(--p-info-5);
+  --stale-fg: var(--p-stale-7);
+  --stale-bg: var(--p-stale-1);
+  --stale-mark: var(--p-stale-5);
+  --off: var(--p-off-7);
+  --off-bg: var(--p-off-1);
+  --off-fill: var(--p-off-8);
+  --on-off: var(--p-off-0);
+  --danger: var(--p-crit-8);
+  --danger-hover: var(--p-crit-9);
+  --on-danger: var(--p-crit-0);
+  --btn-bg: var(--p-neutral-9);
+  --btn-bg-hover: var(--p-neutral-7);
+  --btn-fg: var(--p-neutral-1);
+  /* Elevation: a hairline plus, in light mode, a short soft shadow (no blur-heavy glass).
+     The fallback below repeats them in plain dark values. */
+  --shadow-panel: 0 1px 2px light-dark(oklch(30% 0.02 250 / .1), transparent);
+  --elev-1: 0 0 0 1px var(--border);
+  --elev-2: 0 0 0 1px var(--field-border), 0 14px 36px light-dark(oklch(30% 0.02 250 / .24), oklch(0% 0 0 / .65));
+  /* The dimmed page behind a modal (the Go to palette): no text sits on it. */
+  --scrim: light-dark(oklch(30% 0.02 250 / .35), oklch(0% 0 0 / .6));
+}
+
+/* ---- Fallback for browsers without light-dark() (Safari < 17.5, Chromium < 123,
+   Firefox < 120): there every palette value would be invalid and the page would lose
+   its colours. They get plain Graphite dark instead, whatever the palette or mode
+   preference; TestLightDarkFallback keeps it equal to Graphite dark (theme-hex.txt). */
+@supports not (color: light-dark(#000, #fff)) {
+  :root, [data-palette] {
+    color-scheme: dark;
+    --bg: #0b0f12; --surface: #14181c; --surface-2: #1d2125; --surface-3: #262b30; --border: #272b30;
+    --field-border: #898d91; --text: #eef0f3; --muted: #b4b8bc; --accent: #38d6db; --accent-bg: #002a2c;
+    --on-accent: #020e0e; --focus: #fafafa; --ok: #7ae4aa; --ok-bg: #0d291a; --ok-mark: #63d99b;
+    --warn: #f9bf60; --warn-bg: #2f2006; --warn-mark: #f9b73f; --crit: #ffb4af; --crit-bg: #361a18;
+    --crit-mark: #ff6462; --info: #9bd1ff; --info-bg: #0e2537; --info-mark: #7cbbf0; --stale-fg: #d5cc9f;
+    --stale-bg: #262315; --stale-mark: #c8bf93; --off: #a3b3c4; --off-bg: #1c242c; --off-fill: #525c67;
+    --on-off: #f8f8f8; --danger: #f45152; --danger-hover: #ff6a67; --on-danger: #100606; --btn-bg: #eef0f3;
+    --btn-bg-hover: #cfd1d4; --btn-fg: #14181c;
+    --shadow-panel: none; --elev-2: 0 0 0 1px #898d91, 0 14px 36px rgb(0 0 0 / .65); --scrim: rgb(0 0 0 / .6);
+  }
+}
+
+/* ---- Chart tokens (sensor history, docs/tech_doc.md §39) ----------------------------
+   A component layer over the semantic colours: the history charts and sparklines use
+   only these, so the round-2 redesign (plan 04, slices B-D) restyles them here. After
+   the fallback above, so a browser without light-dark() resolves them too. */
+:root, [data-palette] {
+  --chart-focus: var(--accent);
+  --chart-muted: var(--muted);
+  --chart-grid: var(--border);
+  --chart-text: var(--muted);
+  --chart-plot: var(--surface-2);
+  --chart-band-warn: var(--warn-bg);
+  --chart-band-crit: var(--crit-bg);
+  --chart-mark: var(--warn);
+  --chart-mark-crit: var(--crit);
+  --chart-maint: var(--stale-bg);
+}

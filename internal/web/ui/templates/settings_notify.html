@@ -1,0 +1,59 @@
+{{define "content"}}
+<div class="ph"><h1>Notifications</h1></div>
+{{template "settingstabs" "notifications"}}
+{{template "stepup" .StepUp}}
+{{- if .Locked}}
+<p class="alert a-info" role="status">{{template "icon" "lock"}}<span class="alert-b">Targets are read-only here: the Integrations section is locked by <code>settings.locked</code> in config.yaml, or there is no database. Targets from config.yaml can still be tested.</span></p>
+{{- end}}
+{{- range .Shadowed}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">A target saved here with the id <code>{{.}}</code> is hidden by the config.yaml target with the same id. Rename one of them.</span></p>
+{{- end}}
+<div class="g2">
+<section class="panel flush" aria-labelledby="nt-h">
+  <h2 id="nt-h" class="pad">Targets</h2>
+  <p class="hint pad-b">Messages carry the server name, what changed and the severity. Addresses and serial numbers are never sent, and BMC log text only to targets that opt in. Secrets are stored encrypted and never shown again.</p>
+  {{- if .Rows}}
+  <div class="tw" role="region" aria-label="Notification targets table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">Name</th><th scope="col">Status</th><th scope="col">Sends</th><th scope="col" class="hide-sm">Last delivered</th><th scope="col" class="hide-sm">Last failure</th><th scope="col">Actions</th></tr></thead>
+    <tbody>
+    {{- range .Rows}}
+      <tr>
+        <th scope="row" data-label="Name"><span>{{.Name}} <span class="meta">{{.Kind}} · {{.Host}}</span>{{if .FileManaged}} <span class="lock">{{template "icon" "lock"}} Managed by config.yaml</span>{{end}}<span class="meta"> · {{.SecretNote}}</span></span></th>
+        <td data-label="Status">{{template "health" .Status}}{{if .Dropped}} <span class="meta">{{.Dropped}} dropped</span>{{end}}</td>
+        <td data-label="Sends">{{.Subs}}</td>
+        <td data-label="Last delivered" class="hide-sm">{{if .LastSuccess}}<time datetime="{{.LastSuccessISO}}">{{.LastSuccess}}</time>{{else}}<span class="meta">Never</span>{{end}}</td>
+        <td data-label="Last failure" class="hide-sm">{{if .LastFailure}}<time datetime="{{.LastFailureISO}}">{{.LastFailure}}</time> <span class="meta">({{.LastError}})</span>{{else}}<span class="meta">None</span>{{end}}</td>
+        <td data-label="Actions"><div class="acts">
+          <form method="post" action="/settings/notifications/{{.ID}}/test"><input type="hidden" name="csrf_token" value="{{$.CSRF}}"><button type="submit" class="btn btn-secondary btn-small">Send test<span class="sr-only"> to {{.Name}}</span></button></form>
+          {{- if and $.CanEdit (not .FileManaged)}}
+          <a class="btn btn-secondary btn-small" href="/settings/notifications/{{.ID}}">Edit<span class="sr-only"> {{.Name}}</span></a>
+          <a class="btn btn-danger-outline btn-small" href="/settings/notifications/{{.ID}}/delete">Delete…<span class="sr-only"> {{.Name}}</span></a>
+          {{- end}}
+        </div></td>
+      </tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+  {{- else}}
+  <p class="empty pad-b">No targets yet. Without one, nothing leaves this app.</p>
+  {{- end}}
+</section>
+{{- if .CanEdit}}
+<section class="panel" aria-labelledby="add-h" id="add">
+  <h2 id="add-h">Add a target</h2>
+  <form method="get" action="/settings/notifications/new" class="form">
+    <fieldset>
+      <legend>Kind</legend>
+      {{- range $i, $k := .Kinds}}
+      <div class="radio"><input type="radio" id="kind-{{$k.Value}}" name="kind" value="{{$k.Value}}"{{if eq $i 0}} checked{{end}}><label for="kind-{{$k.Value}}"><strong>{{$k.Label}}</strong><span class="hint">{{$k.Help}}</span></label></div>
+      {{- end}}
+    </fieldset>
+    <button type="submit" class="btn">Continue</button>
+  </form>
+  <p class="hint">Private addresses (a LAN ntfy, Gotify or mail relay) must be listed in <code>notifications.allowed_networks</code> in config.yaml. Plaintext is allowed only there, and only when the target opts in.</p>
+</section>
+{{- end}}
+</div>
+{{end}}

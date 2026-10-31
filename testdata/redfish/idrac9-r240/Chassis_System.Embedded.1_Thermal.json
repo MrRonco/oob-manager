@@ -1,0 +1,212 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#Thermal.Thermal",
+  "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Thermal",
+  "@odata.type": "#Thermal.v1_7_1.Thermal",
+  "Description": "Represents the properties for Temperature and Cooling",
+  "Fans": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Thermal#/Fans/0",
+      "@odata.type": "#Thermal.v1_7_1.Fan",
+      "Assembly": {
+        "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Assembly"
+      },
+      "FanName": "System Board Fan1",
+      "HotPluggable": false,
+      "LowerThresholdCritical": 480,
+      "LowerThresholdFatal": null,
+      "LowerThresholdNonCritical": 840,
+      "MaxReadingRange": null,
+      "MemberId": "0",
+      "MinReadingRange": null,
+      "Name": "System Board Fan1",
+      "PhysicalContext": "SystemBoard",
+      "Reading": 7920,
+      "ReadingUnits": "RPM",
+      "Redundancy": [],
+      "Redundancy@odata.count": 0,
+      "RelatedItem": [
+        {
+          "@odata.id": "/redfish/v1/Chassis/System.Embedded.1"
+        }
+      ],
+      "RelatedItem@odata.count": 1,
+      "SensorNumber": 56,
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      },
+      "UpperThresholdCritical": null,
+      "UpperThresholdFatal": null,
+      "UpperThresholdNonCritical": null
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Thermal#/Fans/1",
+      "@odata.type": "#Thermal.v1_7_1.Fan",
+      "Assembly": {
+        "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Assembly"
+      },
+      "FanName": "System Board Fan2",
+      "HotPluggable": false,
+      "LowerThresholdCritical": 480,
+      "LowerThresholdFatal": null,
+      "LowerThresholdNonCritical": 840,
+      "MaxReadingRange": null,
+      "MemberId": "1",
+      "MinReadingRange": null,
+      "Name": "System Board Fan2",
+      "PhysicalContext": "SystemBoard",
+      "Reading": 7680,
+      "ReadingUnits": "RPM",
+      "Redundancy": [],
+      "Redundancy@odata.count": 0,
+      "RelatedItem": [
+        {
+          "@odata.id": "/redfish/v1/Chassis/System.Embedded.1"
+        }
+      ],
+      "RelatedItem@odata.count": 1,
+      "SensorNumber": 57,
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      },
+      "UpperThresholdCritical": null,
+      "UpperThresholdFatal": null,
+      "UpperThresholdNonCritical": null
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Thermal#/Fans/2",
+      "@odata.type": "#Thermal.v1_7_1.Fan",
+      "Assembly": {
+        "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Assembly"
+      },
+      "FanName": "System Board Fan3",
+      "HotPluggable": false,
+      "LowerThresholdCritical": 480,
+      "LowerThresholdFatal": null,
+      "LowerThresholdNonCritical": 840,
+      "MaxReadingRange": null,
+      "MemberId": "2",
+      "MinReadingRange": null,
+      "Name": "System Board Fan3",
+      "PhysicalContext": "SystemBoard",
+      "Reading": 8040,
+      "ReadingUnits": "RPM",
+      "Redundancy": [],
+      "Redundancy@odata.count": 0,
+      "RelatedItem": [
+        {
+          "@odata.id": "/redfish/v1/Chassis/System.Embedded.1"
+        }
+      ],
+      "RelatedItem@odata.count": 1,
+      "SensorNumber": 58,
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      },
+      "UpperThresholdCritical": null,
+      "UpperThresholdFatal": null,
+      "UpperThresholdNonCritical": null
+    },
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Thermal#/Fans/3",
+      "@odata.type": "#Thermal.v1_7_1.Fan",
+      "Assembly": {
+        "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Assembly"
+      },
+      "FanName": "System Board Fan4",
+      "HotPluggable": false,
+      "LowerThresholdCritical": 480,
+      "LowerThresholdFatal": null,
+      "LowerThresholdNonCritical": 840,
+      "MaxReadingRange": null,
+      "MemberId": "3",
+      "MinReadingRange": null,
+      "Name": "System Board Fan4",
+      "PhysicalContext": "SystemBoard",
+      "Reading": 8160,
+      "ReadingUnits": "RPM",
+      "Redundancy": [],
+      "Redundancy@odata.count": 0,
+      "RelatedItem": [
+        {
+          "@odata.id": "/redfish/v1/Chassis/System.Embedded.1"
+        }
+      ],
+      "RelatedItem@odata.count": 1,
+      "SensorNumber": 59,
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      },
+      "UpperThresholdCritical": null,
+      "UpperThresholdFatal": null,
+      "UpperThresholdNonCritical": null
+    }
+  ],
+  "Fans@odata.count": 4,
+  "Id": "Thermal",
+  "Name": "Thermal",
+  "Redundancy": [],
+  "Redundancy@odata.count": 0,
+  "Temperatures": [
+    {
+      "@odata.context": "/redfish/v1/$metadata#Thermal.Thermal",
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Thermal#/Temperatures/0",
+      "@odata.type": "#Thermal.v1_7_1.Temperature",
+      "LowerThresholdCritical": 3,
+      "LowerThresholdFatal": null,
+      "LowerThresholdNonCritical": null,
+      "MaxReadingRangeTemp": null,
+      "MemberId": "0",
+      "MinReadingRangeTemp": null,
+      "Name": "CPU1 Temp",
+      "PhysicalContext": "CPU",
+      "ReadingCelsius": 40,
+      "RelatedItem": [
+        {
+          "@odata.id": "/redfish/v1/Systems/System.Embedded.1/Processors/CPU.Socket.1"
+        }
+      ],
+      "RelatedItem@odata.count": 1,
+      "SensorNumber": 1,
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      },
+      "UpperThresholdCritical": 100,
+      "UpperThresholdFatal": null,
+      "UpperThresholdNonCritical": null
+    },
+    {
+      "@odata.context": "/redfish/v1/$metadata#Thermal.Thermal",
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Thermal#/Temperatures/1",
+      "@odata.type": "#Thermal.v1_7_1.Temperature",
+      "LowerThresholdCritical": -7,
+      "LowerThresholdFatal": null,
+      "LowerThresholdNonCritical": 3,
+      "MaxReadingRangeTemp": null,
+      "MemberId": "1",
+      "MinReadingRangeTemp": null,
+      "Name": "System Board Inlet Temp",
+      "PhysicalContext": "SystemBoard",
+      "ReadingCelsius": 28,
+      "RelatedItem": [
+        {
+          "@odata.id": "/redfish/v1/Chassis/System.Embedded.1"
+        }
+      ],
+      "RelatedItem@odata.count": 1,
+      "SensorNumber": 5,
+      "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+      },
+      "UpperThresholdCritical": 42,
+      "UpperThresholdFatal": null,
+      "UpperThresholdNonCritical": 38
+    }
+  ],
+  "Temperatures@odata.count": 2
+}

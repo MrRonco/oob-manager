@@ -1,0 +1,19 @@
+{{define "content"}}
+<section class="panel auth" aria-labelledby="totp-h">
+  <h1 id="totp-h">Authenticator code</h1>
+  {{- if .Username}}
+  <p>Signing in as <strong>{{.Username}}</strong>.</p>
+  {{- end}}
+  {{template "formerror" .Error}}
+  <form method="post" action="/login/totp" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <div class="field">
+      <label for="code">6-digit code from your authenticator app</label>
+      <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required autofocus aria-describedby="code-hint{{if .Error}} form-error{{end}}"{{if .Error}} aria-invalid="true"{{end}}>
+      <p id="code-hint" class="hint">The 6 digits change every 30 seconds. You can paste them.</p>
+    </div>
+    <button type="submit" class="btn">Sign in</button>
+  </form>
+  <p class="hint">Lost your authenticator? An administrator can reset it and send you a new setup link. <a href="/login">Start over</a></p>
+</section>
+{{end}}

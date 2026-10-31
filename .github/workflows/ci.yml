@@ -1,0 +1,268 @@
+# oob-manager CI (task_list 0.2).
+#
+#   lint ─┐
+#   test ─┼─> image: build -> Trivy (fail on fixable HIGH/CRITICAL) -> Syft SBOM (SPDX)
+#   vuln ─┤
+#   e2e  ─┘   (e2e-ui: Playwright smoke, runs alongside)
+#   visual    (screenshot comparison in the pinned image; blocking since redesign slice B)
+#
+# Supply-chain rules (docs/security.md §6, CLAUDE.md rule 10):
+# - Every third-party action is pinned to a full commit SHA; the tag is in the comment.
+#   (The March 2026 Trivy compromise rewrote mutable tags; a SHA cannot be rewritten.)
+# - Tool versions are explicit and were >= 14 days old when chosen (2026-10-20).
+#   Renovate (renovate.json) proposes bumps monthly, only once a release is 14 days old.
+#   Keep GOLANGCI_VERSION / GOVULNCHECK_VERSION / ACTIONLINT_VERSION in step with the
+#   Makefile (internal/repopolicy checks it).
+# - Least-privilege token: read-only contents; no secrets are used anywhere in this file.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      visual_update:
+        description: Regenerate the visual baseline (uploaded as the visual-baseline artifact, to commit in a [visual] PR)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Each pin is tracked by Renovate through the "# renovate:" line above it.
+  # renovate: datasource=go depName=github.com/golangci/golangci-lint/v2
+  GOLANGCI_VERSION: v2.14.0
+  # renovate: datasource=go depName=golang.org/x/vuln
+  GOVULNCHECK_VERSION: v1.8.0
+  # renovate: datasource=go depName=github.com/rhysd/actionlint
+  ACTIONLINT_VERSION: v1.7.12
+  # renovate: datasource=github-releases depName=aquasecurity/trivy
+  TRIVY_VERSION: v0.75.0
+  # renovate: datasource=github-releases depName=anchore/syft
+  SYFT_VERSION: v1.54.0
+  IMAGE: oob-manager:ci
+
+# Runner choice (tech_doc §53): every job runs on the runners labelled by the repository variable
+# CI_RUNNER (self-hosted), or on GitHub-hosted ubuntu-24.04 when it is unset. Pull requests always use
+# GitHub-hosted runners, so code from a fork never reaches a self-hosted machine.
+# setup-go's GitHub cache is used on hosted runners only: a self-hosted runner keeps its module and
+# build caches on disk, and restoring the archive over them fails file by file.
+jobs:
+  lint:
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: No os/exec (hard rule 2, tool-free check)
+        run: make noexec
+      - name: go vet
+        run: make vet
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: golangci-lint (incl. gosec, forbidigo, depguard)
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: ${{ env.GOLANGCI_VERSION }}
+          # Build from source with the repo's Go toolchain, so the linter is never
+          # older than the language version it analyzes.
+          install-mode: goinstall
+      # actionlint runs shellcheck only when it is on PATH; fail closed if the runner
+      # image ever drops it, instead of silently skipping the run: script checks.
+      - name: shellcheck present (for actionlint)
+        run: command -v shellcheck && shellcheck --version
+      - name: actionlint (workflow lint + shellcheck on every run script)
+        run: make actionlint ACTIONLINT_VERSION=${{ env.ACTIONLINT_VERSION }}
+
+  test:
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    # The race + coverage run takes about 13–14 min plus the build; 15 left no headroom
+    # (main run 40999603677 was cancelled at the limit in the build step).
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: go test -race -cover, 80 % gates (module total and each COVER_PKGS package)
+        run: make cover
+      - name: Upload coverage profile
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage
+          path: cover.out
+          retention-days: 14
+      - name: Build static binary
+        run: make build
+
+  vulncheck:
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: govulncheck (reachability-aware)
+        run: make vulncheck GOVULNCHECK_VERSION=${{ env.GOVULNCHECK_VERSION }}
+
+  image:
+    needs: [lint, test, vulncheck, e2e, visual] # visual is blocking (redesign slice B); no branch protection on this repo
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build image (not pushed)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          load: true
+          push: false
+          tags: ${{ env.IMAGE }}
+          build-args: VERSION=${{ github.sha }}
+      - name: Smoke test (runs as non-root, version subcommand, no shell)
+        run: |
+          test "$(docker image inspect "$IMAGE" --format '{{.Config.User}}')" = "65532:65532"
+          docker run --rm --read-only --cap-drop ALL "$IMAGE" version
+          if docker run --rm --entrypoint /bin/sh "$IMAGE" -c true 2>/dev/null; then
+            echo "image unexpectedly contains a shell"; exit 1
+          fi
+      - name: Trivy image scan (fail on fixable HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          scan-type: image
+          image-ref: ${{ env.IMAGE }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table
+      - name: SBOM (Syft, SPDX JSON)
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          image: ${{ env.IMAGE }}
+          syft-version: ${{ env.SYFT_VERSION }}
+          format: spdx-json
+          output-file: oob-manager.spdx.json
+          artifact-name: oob-manager.spdx.json
+          upload-release-assets: false
+
+  # End to end against the in-repo Redfish mocks (no real BMC, no secrets).
+  e2e:
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: Go e2e (login, TOTP, pages, API, CSRF, logout)
+        run: make e2e-go
+
+  # Playwright smoke. Uses the runner's preinstalled Node (no extra action to pin);
+  # @playwright/test is pinned exactly in tests/e2e/package-lock.json.
+  # Two parts on two runners, split by measured time (the every-page sweep alone is about 8 min):
+  # "sweep" runs pages + themes, "rest" runs every other spec, including any new one.
+  e2e-ui:
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - part: sweep
+            specs: pages.spec.ts themes.spec.ts
+            ignore: ""
+          - part: rest
+            specs: ""
+            ignore: "**/pages.spec.ts,**/themes.spec.ts"
+    name: e2e-ui (${{ matrix.part }})
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: Playwright smoke (login -> TOTP -> overview)
+        env:
+          OOB_E2E_IGNORE: ${{ matrix.ignore }}
+        run: make e2e-ui PW_INSTALL_FLAGS=--with-deps PW_ARGS="${{ matrix.specs }}"
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-results-${{ matrix.part }}
+          path: tests/e2e/test-results
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # ZAP quick check (plan 06 §3.2): passive baseline of the unauthenticated pages of the
+  # dev harness (mock BMCs). Any WARN or FAIL not allowlisted in tests/zap/rules.tsv fails
+  # the job; the authenticated and API scans run nightly (nightly.yml zap-full).
+  zap:
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: ZAP baseline (unauthenticated pages)
+        run: make zap-quick
+      - name: Upload the ZAP report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: zap-quick
+          path: tests/zap/reports
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # Visual baseline (docs/plans/04 §3, tests/e2e/README.md): visual.spec.ts inside the
+  # pinned Playwright image (Makefile PW_IMAGE), the only place the PNGs in
+  # tests/e2e/visual-baseline/ are valid. Blocking since redesign slice B (it was
+  # advisory, continue-on-error, during slice A).
+  # Run the workflow by hand with visual_update=true to regenerate the baseline: the job
+  # rewrites every PNG, re-checks it, and uploads the folder as the visual-baseline
+  # artifact. A compare run never writes a baseline (--update-snapshots=none): a missing
+  # PNG fails, and its -actual.png is in the visual-diffs artifact.
+  visual:
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: Compare with the baseline
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.visual_update) }}
+        run: make visual VISUAL_ARGS=--update-snapshots=none
+      - name: Regenerate the baseline and re-check it
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.visual_update }}
+        run: make visual-update
+      - name: Upload the baseline
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.visual_update }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: visual-baseline
+          path: tests/e2e/visual-baseline
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Upload diffs (expected, actual, diff per failing page)
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: visual-diffs
+          path: tests/e2e/test-results
+          retention-days: 14
+          if-no-files-found: ignore

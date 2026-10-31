@@ -1,0 +1,22 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{template "servertabs" .Nav}}
+{{template "fresh" .Summary.Fresh}}
+{{- if .HasSnapshot}}
+<div class="g2 even">
+<div>
+  {{template "tempspanel" .}}
+  {{template "fanspanel" .Fans}}
+</div>
+<div>
+  {{template "railspanel" .Volt}}
+  {{template "psupanel" .}}
+</div>
+</div>
+{{- else}}
+<section class="panel" aria-labelledby="ns-h">
+  <h2 id="ns-h">No readings yet</h2>
+  <p class="empty">This server has not been polled successfully yet, so there are no sensor readings to show.</p>
+</section>
+{{- end}}
+{{end}}

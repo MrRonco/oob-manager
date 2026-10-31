@@ -1,0 +1,32 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{- if .Badge}}
+<section class="panel p-maint" aria-labelledby="mn-h">
+  <h2 id="mn-h">Maintenance</h2>
+  <p class="alert a-info" role="status">{{template "sicon" "info"}}<span class="alert-b">{{.ServerName}} already has a maintenance window: {{template "maintbadge" .Badge}}. End or cancel it on the server page before starting another.</span></p>
+  <p class="btn-row"><a class="btn btn-secondary" href="/servers/{{.ServerID}}/activity#maint">Back to {{.ServerName}}</a></p>
+</section>
+{{- else}}
+{{template "formerror" .Error}}
+<form method="post" action="/servers/{{.ServerID}}/maintenance" class="panel form" aria-labelledby="mn-h">
+  <h2 id="mn-h">Start maintenance</h2>
+  <p class="hint">During maintenance the warnings of {{.ServerName}} are shown but not counted, and its health, unreachable, log and power supply alerts are paused. Power actions, consoles, fan leases, sign-in and trust alerts are always sent. One message is sent when it starts and one when it ends.</p>
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <div class="field"><label for="maint-reason">Reason <span class="meta">(required)</span></label>
+    <input id="maint-reason" name="reason" type="text" required maxlength="200" autocomplete="off" value="{{.Form.Reason}}" aria-describedby="maint-reason-h{{if .Error}} form-error{{end}}"{{if eq .Invalid "reason"}} aria-invalid="true"{{end}}>
+    <p class="hint" id="maint-reason-h">Shown with the badge and in the notification, for example "PSU2 replacement".</p></div>
+  <div class="field"><label for="maint-for">Duration</label>
+    <select id="maint-for" name="duration"{{if eq .Invalid "duration"}} aria-invalid="true"{{end}}>
+    {{- range .Durations}}
+      <option value="{{.Key}}"{{if eq .Key $.Form.Duration}} selected{{end}}>{{.Value}}</option>
+    {{- end}}
+    </select></div>
+  <div class="field"><label for="maint-end">Ends at <span class="meta">(only for "until a time I choose")</span></label>
+    <input id="maint-end" name="ends_at" type="datetime-local" min="{{.MinStart}}" max="{{.MaxStart}}" value="{{.Form.EndsAt}}" aria-describedby="maint-zone"{{if eq .Invalid "ends_at"}} aria-invalid="true"{{end}}></div>
+  <div class="field"><label for="maint-start">Start later <span class="meta">(optional, empty starts now)</span></label>
+    <input id="maint-start" name="starts_at" type="datetime-local" min="{{.MinStart}}" max="{{.MaxStart}}" value="{{.Form.StartsAt}}" aria-describedby="maint-zone"{{if eq .Invalid "starts_at"}} aria-invalid="true"{{end}}></div>
+  <p class="hint" id="maint-zone">Times in {{.Zone}}. A window lasts at most 7 days unless it runs until you end it.</p>
+  <div class="btn-row"><button type="submit" class="btn">Start maintenance</button> <a class="btn btn-secondary" href="/servers/{{.ServerID}}/activity#maint">Cancel</a></div>
+</form>
+{{- end}}
+{{end}}

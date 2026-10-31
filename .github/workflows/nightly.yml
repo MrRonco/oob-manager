@@ -1,0 +1,112 @@
+# oob-manager nightly checks (plan 06 §3.9): the soak run that used to be a manual
+# pre-integration step, the fuzz targets (plan 06 §3.5) and the full ZAP scan (§3.2). Same supply-chain rules as ci.yml: actions pinned to a full
+# commit SHA with the tag in the comment, read-only token, no secrets.
+name: nightly
+
+on:
+  schedule:
+    # 16:17 UTC.
+    - cron: "17 16 * * *"
+  workflow_dispatch:
+    # A manual run can pick one job, so proving a change to one job does not spend
+    # Actions minutes on the 45-minute soak.
+    inputs:
+      only:
+        description: Run only this job
+        type: choice
+        default: all
+        options: [all, soak, fuzz, zap-full, dell-catalog]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+# Runner choice (tech_doc §53): every job runs on the runners labelled by the repository variable
+# CI_RUNNER (self-hosted), or on GitHub-hosted ubuntu-24.04 when it is unset. Pull requests always use
+# GitHub-hosted runners, so code from a fork never reaches a self-hosted machine.
+# setup-go's GitHub cache is used on hosted runners only: a self-hosted runner keeps its module and
+# build caches on disk, and restoring the archive over them fails file by file.
+jobs:
+  # Every test three times in a random order with the race detector: catches
+  # order-dependent tests and rare races that a single CI run misses. The seed is
+  # printed (-shuffle=on), so a failure can be replayed with -shuffle=<seed>.
+  soak:
+    if: github.event_name == 'schedule' || inputs.only == 'all' || inputs.only == 'soak'
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: go test -race -count=3 -shuffle=on
+        run: make soak
+
+  # Go native fuzzing (plan 06 §3.5): every target for 30 s, in two parallel sets so the
+  # whole run stays under 10 minutes. A failure uploads the new corpus entry; commit it
+  # under the package's testdata/fuzz/<Target>/ together with the fix.
+  fuzz:
+    if: github.event_name == 'schedule' || inputs.only == 'all' || inputs.only == 'fuzz'
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        set: [A, B]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: make fuzz FUZZ_SET=${{ matrix.set }}
+        run: make fuzz FUZZ_SET=${{ matrix.set }} FUZZTIME=30s
+      - name: upload the failing input
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fuzz-corpus-${{ matrix.set }}
+          path: internal/**/testdata/fuzz/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ZAP full scan (plan 06 §3.2): the authenticated passive baseline (GET-only spider,
+  # state-changing paths excluded, tests/zap/signin.mjs supplies the session) and
+  # zap-api-scan of docs/api/openapi.yaml with the harness's read-only token, throttled
+  # to the token's 60/min limit. Reports are uploaded either way.
+  zap-full:
+    if: github.event_name == 'schedule' || inputs.only == 'all' || inputs.only == 'zap-full'
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: ZAP authenticated baseline + API scan
+        run: make zap-full
+      - name: Upload the ZAP reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: zap-full
+          path: tests/zap/reports
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # The firmware update checker against Dell's real catalog (plan 08 §17): download,
+  # signature, parse. Non-blocking: Dell's service is outside our control.
+  dell-catalog:
+    if: github.event_name == 'schedule' || inputs.only == 'all' || inputs.only == 'dell-catalog'
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04' || vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: { go-version-file: go.mod, cache: "${{ github.event_name == 'pull_request' || vars.CI_RUNNER == '' }}" }
+      - name: go test -tags dellnet ./internal/fwcatalog
+        run: go test -tags dellnet -run TestLiveDellCatalog -count=1 -v ./internal/fwcatalog

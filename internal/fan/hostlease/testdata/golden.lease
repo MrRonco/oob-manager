@@ -1,0 +1,6 @@
+version=1
+server=node-a
+lease_id=0123456789abcdef0123456789abcdef
+pct=55
+issued_at=1800000000
+expires_at=1800001800

@@ -1,0 +1,22 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#License.License",
+  "@odata.id": "/redfish/v1/LicenseService/Licenses/ProductionLicense",
+  "@odata.type": "#License.v1_1_0.License",
+  "AuthorizationScope": "Service",
+  "Description": "iDRAC9 Enterprise Evaluation License",
+  "DownloadURI": "/redfish/v1/LicenseService/Licenses/ProductionLicense/DownloadURI",
+  "EntitlementId": "REDACTED",
+  "ExpirationDate": "2000-02-01T00:00:00+00:00",
+  "Id": "REDACTED",
+  "InstallDate": null,
+  "LicenseInfoURI": "",
+  "LicenseOrigin": "Installed",
+  "LicenseType": "Trial",
+  "Links": {},
+  "Name": "REDACTED",
+  "Removable": true,
+  "Status": {
+    "Health": "Warning",
+    "State": "Enabled"
+  }
+}

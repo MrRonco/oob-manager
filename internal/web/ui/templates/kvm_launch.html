@@ -1,0 +1,10 @@
+{{define "content"}}
+<div class="ph"><h1>Native console: {{.Name}}</h1></div>
+<section class="panel auth wide" aria-labelledby="kvm-h">
+  <h2 id="kvm-h">One-time console login ready</h2>
+  <p>The BMC issued a temporary login for its own HTML5 console. It works once and expires after a short time.</p>
+  <p class="btn-row"><a class="btn" id="kvm-link" href="{{.URL}}" rel="noreferrer noopener">Open the iDRAC console</a></p>
+  <p class="hint">The console opens directly from this browser, so the browser must be able to reach the iDRAC. oob-manager does not keep the temporary login; do not share this page.</p>
+  <p><a href="/servers/{{.ID}}">Back to the server</a></p>
+</section>
+{{end}}

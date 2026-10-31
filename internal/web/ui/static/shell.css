@@ -1,0 +1,321 @@
+/* oob-manager shell. Round-2 redesign slice C, direction A "Quiet signal" (docs/tech_doc.md
+   §41): the top bar (brand, fleet pill, clock, account menu), the phone Menu sheet, the
+   dimmed sidebar with every server and its sub-line, the main column, breadcrumbs, page
+   and server heads, tabs and segmented sub-navigation, the server header menus
+   (Console, Power, More) and their phone bottom bar, the footer, and the frames of the
+   sign-in, step-up, enrolment, error and confirm pages.
+   No colour is defined here: every value comes from tokens.css. The bars are opaque
+   (direction A's own fallback for its glass): a translucent bar would need colour
+   arithmetic, which the contrast test cannot evaluate. */
+
+/* ---- Top bar ----------------------------------------------------------------------------- */
+.bar {
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--sp-4);
+  min-height: var(--bar-h); padding: 0 var(--sp-5); background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.brand { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--tap); flex: none; color: var(--text); text-decoration: none; white-space: nowrap; }
+.brand:hover { text-decoration: none; }
+/* The side-channel mark: a power ring broken by the out-of-band dot. */
+.logo { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: .6rem; background: var(--btn-bg); color: var(--btn-fg); }
+.logo .ic { width: 1.4rem; height: 1.4rem; stroke-width: 2; }
+.wordmark { display: inline-flex; align-items: center; font-size: 1.0625rem; letter-spacing: -.01em; line-height: 1; }
+.wm-a { font-family: var(--font-mono); font-weight: 700; }
+.wm-b { font-weight: 500; }
+/* The wordmark's dot follows the fleet's worst state (decorative; the pill says it in words). */
+.led { width: .4rem; height: .4rem; margin: 0 .25rem; border-radius: 50%; background: var(--field-border); box-shadow: 0 0 0 3px var(--surface-3); }
+.led-ok { background: var(--ok-mark); box-shadow: 0 0 0 3px var(--ok-bg); }
+.led-warn { background: var(--warn-mark); box-shadow: 0 0 0 3px var(--warn-bg); }
+.led-crit { background: var(--danger); box-shadow: 0 0 0 3px var(--crit-bg); }
+.led-stale { background: var(--stale-mark); box-shadow: 0 0 0 3px var(--stale-bg); }
+.led-off { background: var(--off-fill); box-shadow: 0 0 0 3px var(--off-bg); }
+.inst { color: var(--muted); font-size: var(--fs-1); white-space: nowrap; }
+/* Fleet pill: the worst state by fill weight (ok quiet, warning tinted, critical solid). */
+.gpill {
+  display: inline-flex; gap: var(--sp-2); align-items: center; min-height: 2rem; min-width: 0; padding: 0 var(--sp-3);
+  border: 1px solid var(--field-border); border-radius: var(--r-pill); color: var(--text); font-weight: 600;
+  text-decoration: none; font-size: var(--fs-1); white-space: nowrap;
+}
+.gpill:hover { background: var(--surface-2); text-decoration: none; }
+.gpill .ic { width: 1.15em; height: 1.15em; }
+.gp-ok .ic { color: var(--ok-mark); }
+.gp-warn, .gp-warn:hover { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-mark); }
+.gp-warn .ic { color: var(--warn-mark); }
+.gp-crit, .gp-crit:hover { color: var(--on-danger); background: var(--danger); border-color: var(--danger); }
+.gp-stale, .gp-stale:hover { color: var(--stale-fg); background: var(--stale-bg); border: 1px dashed var(--stale-mark); }
+.gp-stale .ic { color: var(--stale-mark); }
+.gp-unknown { color: var(--muted); border-style: dashed; }
+.gp-off, .gp-off:hover { color: var(--on-off); background: var(--off-fill); border-color: var(--off-fill); }
+.gp-maint, .gp-maint:hover { color: var(--info); background: var(--info-bg); border-color: var(--info-mark); }
+.gp-maint .ic { color: var(--info-mark); }
+.pt-short { display: none; }
+.bar-r { display: flex; align-items: center; gap: var(--sp-3); margin-left: auto; min-width: 0; }
+.clock { margin: 0; color: var(--muted); font-size: var(--fs-1); white-space: nowrap; }
+.clock-link { color: var(--text); font-family: var(--font-mono); text-decoration: underline dotted; text-underline-offset: 3px; }
+.clock-link:hover { text-decoration-style: solid; }
+.bar-plain { margin-left: auto; display: inline-flex; gap: var(--sp-2); align-items: center; min-height: var(--tap); }
+
+/* ---- Menus: <details class="menu"> (works without script; app.js adds Escape) -------------- */
+.menu { position: relative; }
+.menu > summary { list-style: none; cursor: pointer; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu[open] > summary .ic-chevron-down { transform: rotate(180deg); }
+.menu-pop {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 25; min-width: 16rem; display: grid; gap: 2px;
+  padding: var(--sp-2); background: var(--surface-3); border: 1px solid var(--field-border); border-radius: var(--r-panel); box-shadow: var(--elev-2);
+}
+.menu-pop a, .menu-pop .btn {
+  display: flex; align-items: center; justify-content: flex-start; gap: var(--sp-3); width: 100%; min-height: 2.5rem;
+  padding: var(--sp-2) var(--sp-3); border: 0; border-radius: var(--r-ctl); color: var(--text); text-decoration: none; font-weight: 500;
+}
+.menu-pop a:hover, .menu-pop .btn:hover { background: var(--surface-2); }
+.menu-pop .ic { color: var(--muted); }
+.menu-pop form { margin: 0; }
+.menu-who { margin: 0; padding: var(--sp-2) var(--sp-3); color: var(--muted); font-size: var(--fs-1); }
+.usermenu > summary { display: flex; align-items: center; gap: var(--sp-2); min-height: var(--tap); padding: 0 var(--sp-2); border-radius: var(--r-ctl); }
+.usermenu > summary:hover { background: var(--surface-2); }
+.avatar {
+  display: inline-grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--surface-3);
+  border: 1px solid var(--field-border); font-size: var(--fs-1); font-weight: 600; text-transform: uppercase;
+}
+.who-n { font-weight: 500; }
+/* Items of the server header menus: icon, label, and a muted sub-line; separators between groups. */
+.menu-list { display: grid; gap: 2px; }
+.menu-list > li.sep { margin-top: var(--sp-1); padding-top: var(--sp-1); border-top: 1px solid var(--border); }
+.menu-pop .mi {
+  display: flex; align-items: flex-start; gap: var(--sp-3); width: 100%; min-height: 2.5rem; padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-ctl); color: var(--text); text-decoration: none; font-weight: 500;
+}
+.mi .ic { margin-top: .1em; }
+.mi-t { display: grid; gap: 1px; text-align: left; }
+.mi-sub { color: var(--muted); font-size: var(--fs-1); font-weight: 400; }
+.menu-pop .mi-danger, .menu-pop .mi-danger .ic { color: var(--crit); }
+.menu-pop .mi-off { color: var(--muted); cursor: not-allowed; }
+.menu-pop .mi-off:hover { background: transparent; }
+
+/* ---- Phone Menu sheet --------------------------------------------------------------------- */
+.sheet { display: none; position: static; flex: none; }
+.sheet > summary { display: inline-flex; gap: var(--sp-2); align-items: center; min-height: var(--tap); padding: 0 var(--sp-3); border: 1px solid var(--field-border); border-radius: var(--r-ctl); font-weight: 600; }
+.sheet > summary:hover { background: var(--surface-2); }
+.sheet-body {
+  position: absolute; left: 0; right: 0; top: 100%; z-index: 25; display: grid; gap: var(--sp-4); align-content: start;
+  max-height: calc(100vh - var(--bar-h)); overflow: auto; padding: var(--sp-4); background: var(--surface);
+  border-bottom: 1px solid var(--field-border); box-shadow: var(--elev-2);
+}
+.sheet-user { margin: 0; color: var(--muted); font-size: var(--fs-1); }
+.sheet-actions { display: grid; gap: var(--sp-2); }
+.sheet-actions form { margin: 0; display: grid; }
+.sheet .side-h { margin-left: 0; }
+
+/* ---- App shell: dimmed sidebar + column ------------------------------------------------------ */
+.app { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); flex: 1; align-items: start; }
+.app.plain { grid-template-columns: minmax(0, 1fr); }
+.side {
+  position: sticky; top: var(--bar-h); height: calc(100vh - var(--bar-h)); overflow: auto;
+  padding: var(--sp-4) var(--sp-3) var(--sp-6); background: var(--bg); border-right: 1px solid var(--border);
+}
+.snav, .slist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.snav a, .slist a {
+  display: flex; align-items: center; gap: var(--sp-3); min-height: 2.5rem; padding: 0 var(--sp-3); border-radius: var(--r-ctl);
+  color: var(--muted); text-decoration: none; font-weight: 500;
+}
+.snav a:hover, .slist a:hover { background: var(--surface-2); color: var(--text); }
+.snav a .cnt { margin-left: auto; }
+.snav [aria-current="page"], .slist [aria-current="page"] { background: var(--accent-bg); color: var(--text); font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
+.snav [aria-current="page"] .ic { color: var(--text); }
+.side-h { display: flex; align-items: center; gap: var(--sp-2); margin: var(--sp-5) var(--sp-3) var(--sp-2); font-size: var(--fs-0); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.side-h .cnt { margin-left: 0; }
+.slist a { min-height: 3rem; padding-top: var(--sp-1); padding-bottom: var(--sp-1); }
+.slist .sm { display: grid; flex: 1; min-width: 0; line-height: 1.25; }
+.slist .sn { color: var(--text); overflow-wrap: anywhere; }
+.slist .sv { color: var(--muted); font-size: var(--fs-1); font-weight: 400; }
+.slist .smaint { flex: none; display: inline-flex; color: var(--info-mark); }
+.slist .smaint .ic { width: 1rem; height: 1rem; }
+.slist-empty { padding: 0 var(--sp-3); }
+.col { display: flex; flex-direction: column; min-width: 0; min-height: calc(100vh - var(--bar-h)); }
+main { flex: 1; width: 100%; max-width: 96rem; margin: 0 auto; padding: var(--sp-6) var(--sp-6) var(--sp-8); }
+.plain main { max-width: 80rem; }
+
+/* ---- Breadcrumbs, page head ------------------------------------------------------------------ */
+.crumb { display: flex; flex-wrap: wrap; align-items: center; gap: .125rem var(--sp-2); margin: 0 0 var(--sp-2); color: var(--muted); font-size: var(--fs-1); }
+.crumb li + li::before { content: "/"; content: "/" / ""; margin-right: var(--sp-2); color: var(--muted); }
+.crumb a { display: inline-block; padding: .15rem 0; }
+.crumb [aria-current] { color: var(--text); }
+.ph { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: var(--sp-2) var(--sp-4); margin-bottom: var(--sp-5); }
+.ph > div { min-width: 0; }
+
+/* ---- Tabs: an ink underline on wide screens, a segmented grid on phones -------------------------- */
+.tabs ul { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin: 0 0 var(--sp-5); border-bottom: 1px solid var(--border); }
+.tabs a, .soon {
+  display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 2.75rem; padding: 0 var(--sp-3);
+  border-radius: var(--r-ctl) var(--r-ctl) 0 0; color: var(--muted); text-decoration: none; font-weight: 500;
+}
+.tabs a:hover { color: var(--text); background: var(--surface-2); }
+.tabs a { position: relative; }
+.tabs [aria-current="page"] { color: var(--text); font-weight: 600; }
+/* The ink is an element of its own (not a box-shadow) so the cross-document view
+   transition can slide it from the old tab to the new one (motion.css). */
+.tab-ink { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); pointer-events: none; }
+.tabs .ic { display: none; }
+/* Segmented sub-navigation (log kind, chart range): pills in one group, the current one filled. */
+.seg ul { display: inline-flex; flex-wrap: wrap; gap: 2px; margin: 0 0 var(--sp-4); padding: 2px; border: 1px solid var(--field-border); border-radius: var(--r-ctl); }
+.seg a { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0 var(--sp-3); border-radius: calc(var(--r-ctl) - 2px); color: var(--text); text-decoration: none; font-weight: 500; }
+.seg a:hover { background: var(--surface-2); }
+.seg [aria-current="page"], .seg [aria-current="page"]:hover { background: var(--btn-bg); color: var(--btn-fg); font-weight: 600; }
+
+/* ---- Server header: name, identity, state chips, the action menus, tabs ------------------------- */
+/* The head is its own stacking context, raised above the page body: with motion allowed its
+   view-transition name makes it one anyway, and the action menus opening from it must stay
+   above the tabs and panels that follow (they were covered without this). */
+.shead { position: relative; z-index: 5; display: grid; gap: var(--sp-3); margin-bottom: var(--sp-2); }
+.shead-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--sp-3) var(--sp-4); }
+.shead-id { min-width: 0; }
+.shead-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
+.pchip .ic { color: var(--muted); }
+.hmenus { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.hmenus .menu > summary { gap: var(--sp-2); }
+.hmenus .menu-pop { min-width: 18rem; }
+.acts-note { display: inline-flex; gap: var(--sp-2); align-items: center; }
+/* Phone bottom bar: the three server verbs in the thumb zone (operators and admins). */
+.bottombar { display: none; }
+
+/* ---- Footer ------------------------------------------------------------------------------------- */
+.foot { padding: var(--sp-4) var(--sp-6); border-top: 1px solid var(--border); color: var(--muted); font-size: var(--fs-1); }
+.foot p { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-4); }
+.foot a { display: inline-block; padding: .25rem 0; }
+.foot-brand { color: var(--text); font-weight: 600; }
+.foot-t { margin-left: auto; }
+
+/* ---- Sign-in, enrolment, step-up and error frames --------------------------------------------- */
+.login { display: grid; grid-template-columns: minmax(0, 1fr) 26rem; gap: var(--sp-8); align-items: center; max-width: 64rem; margin: var(--sp-8) auto; padding: 0 var(--sp-5); }
+.login-l { display: grid; gap: var(--sp-3); justify-items: start; }
+.logo-lg { width: 4rem; height: 4rem; border-radius: 1.1rem; }
+.logo-lg .ic { width: 2.6rem; height: 2.6rem; }
+.login-wm { margin: 0; font-size: 2rem; }
+.login-l .lead { margin: 0; max-width: 24ch; font-size: var(--fs-4); font-weight: 500; line-height: 1.3; text-wrap: balance; }
+.login-r, .auth { padding: var(--sp-6); box-shadow: var(--elev-2); }
+.login-r h1, .auth h1 { margin-bottom: var(--sp-3); }
+.auth { max-width: 28rem; margin: var(--sp-7) auto; }
+.auth.wide { max-width: 44rem; }
+.auth .form { margin-top: var(--sp-3); }
+
+/* ---- Confirm pages: the tier above the question, the form beside what happens ------------------ */
+.cf-head { display: grid; gap: var(--sp-2); justify-items: start; margin-bottom: var(--sp-5); }
+.cf-lead { margin: 0; max-width: 60ch; font-size: var(--fs-h3); }
+.cf-head p { margin: 0; }
+.cf-actions .btn { min-width: 9rem; }
+.stepup h3 { display: flex; align-items: center; gap: var(--sp-2); }
+.stepup h3 .ic { color: var(--info-mark); }
+
+/* ---- Breakpoints -------------------------------------------------------------------------------- */
+/* Below 1024 px the sidebar becomes the Menu sheet and the account menu moves into it. */
+/* ---- Go to palette (palette.js, plan 04 §7; docs/tech_doc.md §52) -------------------------
+   A modal <dialog> built by the script: a search field, a listbox of destinations in groups,
+   and a key legend. Without the script none of it exists (the /go page is the fallback). */
+.pal {
+  width: min(38rem, calc(100vw - 2rem)); max-height: min(34rem, calc(100dvh - 4rem)); margin: 10vh auto auto; padding: 0;
+  border: 0; border-radius: var(--r-panel); background: var(--surface); color: var(--text); box-shadow: var(--elev-2); overflow: hidden;
+}
+.pal[open] { display: flex; flex-direction: column; }
+.pal::backdrop { background: var(--scrim); }
+.pal-head { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4); border-bottom: 1px solid var(--border); }
+.pal-head > .ic { color: var(--muted); }
+.pal-q {
+  flex: 1; min-width: 0; min-height: var(--tap); padding: 0 var(--sp-2); border: 0; background: transparent; color: var(--text);
+  font: inherit; font-size: var(--fs-3);
+}
+.pal-q:focus-visible { outline: 0; box-shadow: none; }
+.pal-head:focus-within { box-shadow: inset 0 -2px 0 var(--focus); }
+.pal-x { flex: none; min-width: var(--tap); }
+.pal-list { flex: 1; overflow: auto; padding: var(--sp-2); }
+.pal-gh { padding: var(--sp-3) var(--sp-3) var(--sp-1); color: var(--muted); font-size: var(--fs-0); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.pal-o {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--sp-3); min-height: var(--tap); padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-ctl); cursor: pointer;
+}
+.pal-o[aria-selected="true"] { background: var(--accent-bg); box-shadow: inset 3px 0 0 var(--accent); }
+.pal-l { font-weight: 500; }
+.pal-o[aria-selected="true"] .pal-l { font-weight: 600; }
+.pal-hint { color: var(--muted); font-size: var(--fs-1); }
+.pal-empty { margin: 0; padding: var(--sp-5) var(--sp-4); color: var(--muted); }
+.pal-note { margin: 0; padding: var(--sp-3) var(--sp-4); border-top: 1px solid var(--warn-mark); background: var(--warn-bg); color: var(--warn); font-weight: 500; }
+.pal-foot {
+  display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); margin: 0; padding: var(--sp-2) var(--sp-4);
+  border-top: 1px solid var(--border); color: var(--muted); font-size: var(--fs-1);
+}
+.pal-foot a { margin-left: auto; }
+.menu-kbd { margin-left: auto; color: var(--muted); font-size: .75rem; }
+.menu-kbd[hidden] { display: none; }
+
+@media (max-width: 63.99rem) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .side, .usermenu, .clock { display: none; }
+  .sheet { display: block; }
+  .bar-r { flex: none; margin-left: auto; }
+}
+@media (max-width: 51.25rem) {
+  .bar { gap: var(--sp-2); padding: 0 var(--sp-3); }
+  .inst { display: none; }
+  /* The wordmark is the brand link's name: hidden visually on phones, kept for screen readers. */
+  .bar .wordmark { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* The pill shows the short worst word ("1 critical"); screen readers get the whole text. */
+  .gpill { flex: 1 1 auto; justify-content: center; min-height: var(--tap); padding: 0 var(--sp-2); font-size: var(--fs-1); }
+  .pt-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .pt-short { display: inline; overflow: hidden; text-overflow: ellipsis; }
+  .bar-r { margin-left: 0; }
+  main { padding: var(--sp-4) var(--sp-4) var(--sp-8); }
+  .foot { padding: var(--sp-4); }
+  .foot-t { margin-left: 0; }
+  .tabs ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-2); border: 0; }
+  .tabs a {
+    flex-direction: column; justify-content: center; gap: 2px; min-height: 3.5rem; padding: var(--sp-1);
+    border: 1px solid var(--field-border); border-radius: var(--r-ctl); font-size: var(--fs-1); text-align: center; overflow-wrap: anywhere;
+  }
+  .tabs .ic { display: block; }
+  .tab-ink { display: none; }
+  .tabs [aria-current="page"], .tabs [aria-current="page"]:hover { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); box-shadow: none; }
+  .seg ul { display: flex; }
+  .seg a { min-height: var(--tap); }
+  .login { grid-template-columns: minmax(0, 1fr); gap: var(--sp-5); margin: var(--sp-5) auto; padding: 0 var(--sp-4); }
+  .login-r { order: -1; padding: var(--sp-5); }
+  .login-l .lead { font-size: var(--fs-3); }
+  .logo-lg { width: 3rem; height: 3rem; }
+  .logo-lg .ic { width: 2rem; height: 2rem; }
+  .login-wm, .login-wm.wordmark { display: inline-flex; font-size: 1.5rem; }
+  .auth { margin: var(--sp-4) auto; padding: var(--sp-5); }
+  /* The server's three verbs move from the header to a bar in the thumb zone. */
+  .has-bottombar .shead .hmenus { display: none; }
+  .bottombar {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+    padding: var(--sp-2) var(--sp-3) calc(var(--sp-2) + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--field-border);
+  }
+  .bottombar .menu { position: static; }
+  .bottombar .menu > summary { width: 100%; padding: 0 var(--sp-2); }
+  .bottombar .menu-pop { left: var(--sp-3); right: var(--sp-3); top: auto; bottom: calc(100% + 6px); min-width: 0; max-height: 70vh; overflow: auto; }
+  body.has-bottombar { padding-bottom: 5rem; }
+  /* Confirm and console pages keep their own bottom bar; the server menus step aside there. */
+  body:has(.cf-actions, .con-bar) .bottombar { display: none; }
+  html:has(.bottombar) { scroll-padding-bottom: 5.5rem; }
+  /* Confirm pages (audit R2-05): Cancel keeps the default focus, but the button row is
+     pinned to the bottom of the phone viewport, so focusing it never scrolls the title,
+     the warnings and the consequences away. The body reserves room under it. */
+  .cf-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; margin: 0; padding: .6rem .75rem; background: var(--surface); border-top: 1px solid var(--field-border); }
+  body:has(.cf-actions) { padding-bottom: 5rem; }
+  html:has(.cf-actions) { scroll-padding-bottom: 5.5rem; }
+}
+@media (max-width: 24rem) {
+  .bar { gap: var(--sp-1); padding: 0 var(--sp-2); }
+  .sheet > summary span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .sheet > summary { padding: 0 var(--sp-3); }
+  .gpill { padding: 0 var(--sp-1); }
+}
+@media (forced-colors: active) {
+  .gpill, .sdot, .menu-pop, .sheet-body, .bottombar, .tabs a { border: 1px solid CanvasText; }
+  .pal { border: 1px solid CanvasText; }
+  .pal-o[aria-selected="true"] { outline: 2px solid Highlight; }
+  .tabs [aria-current="page"], .seg [aria-current="page"], .snav [aria-current="page"], .slist [aria-current="page"] { outline: 2px solid Highlight; }
+  .led { forced-color-adjust: none; }
+}
+@media print {
+  .bar, .side, .tabs, .seg, .foot, .hmenus, .bottombar, .skip { display: none; }
+  .app { display: block; }
+}

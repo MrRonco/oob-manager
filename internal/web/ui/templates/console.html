@@ -1,0 +1,71 @@
+{{define "content"}}
+<link rel="stylesheet" href="/static/console.css?v={{.Version}}">
+<div class="ph">
+  <h1>Graphical console: {{.Name}}</h1>
+  {{- if .Ticket}}<p class="chip con-tr">{{if .TLS}}{{template "icon" "lock"}} VNC over TLS, pinned certificate{{else}}{{template "icon" "triangle-alert"}} VNC, not encrypted on the management network{{end}}</p>{{end}}
+</div>
+{{template "servertabs" .Nav}}
+{{- if .Error}}
+<p class="alert a-crit" role="alert">{{template "sicon" "crit"}}<span class="alert-b"><strong>Error:</strong> {{.Error}}</span></p>
+{{- end}}
+<div class="con-layout">
+<div class="con-main">
+{{- if .Ticket}}
+<div class="con-frame">
+<div class="con-bar" role="toolbar" aria-label="Console controls">
+  <p id="console-status" class="console-status" role="status" aria-live="polite">Connecting…</p>
+  <button type="button" class="btn btn-secondary btn-small" id="console-cad" disabled>Send Ctrl-Alt-Del</button>
+  <button type="button" class="btn btn-secondary btn-small" id="console-fullscreen" disabled>{{template "icon" "maximize"}} Full screen</button>
+  <button type="button" class="btn btn-secondary btn-small" id="console-scale" aria-pressed="true" disabled>Scale to window</button>
+  <button type="button" class="btn btn-secondary btn-small" id="console-viewonly" aria-pressed="false" disabled>View only</button>
+  <button type="button" class="btn btn-danger-outline btn-small con-end" id="console-disconnect" disabled>{{template "icon" "x"}} Disconnect</button>
+</div>
+<div id="console-screen" class="console-screen" role="region" aria-label="Remote screen of {{.Name}}" data-ws="{{.WSPath}}" data-ticket="{{.Ticket}}"></div>
+</div>
+<p class="meta con-hint">The keyboard is captured while the console has focus. Press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd> to return focus to the toolbar.</p>
+<script type="module" src="/static/console.js?v={{.Version}}"></script>
+{{- end}}
+<section class="panel console-connect{{if .Takeover}} p-warn{{end}}" aria-labelledby="cc-h"{{if .Ticket}} id="console-reconnect" hidden{{end}}>
+  <h2 id="cc-h">{{if .Takeover}}In use{{else if .Ticket}}Disconnected{{else}}Connect{{end}}</h2>
+  {{- if .Takeover}}
+  <p>The console is in use by <strong>{{.Card.ActiveUser}}</strong> since <time datetime="{{.Card.ActiveISO}}">{{.Card.ActiveSince}}</time>. Taking over ends their session at once.</p>
+  {{- else}}
+  <p>{{.Card.Message}}</p>
+  {{- end}}
+  <form method="post" action="/servers/{{.ID}}/console" class="btn-row">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    {{- if .Takeover}}
+    <a class="btn btn-secondary" href="/servers/{{.ID}}" autofocus>Cancel</a>
+    <input type="hidden" name="takeover" value="1">
+    <button type="submit" class="btn btn-danger">Take over console</button>
+    {{- else}}
+    <button type="submit" class="btn">{{if .Ticket}}Reconnect{{else}}Connect{{end}}</button>
+    {{- end}}
+  </form>
+</section>
+</div>
+<aside class="con-side" aria-label="Session details">
+  <section class="panel" aria-labelledby="ss-h">
+    <h2 id="ss-h">Session</h2>
+    <dl class="kv">
+      <div><dt>Held by</dt><dd>{{if .Ticket}}{{.User}} (you){{else if .Card.ActiveUser}}{{.Card.ActiveUser}}{{else}}Nobody{{end}}</dd></div>
+      <div><dt>Idle limit</dt><dd>{{.Idle}}</dd></div>
+      <div><dt>Longest session</dt><dd>{{.Max}}</dd></div>
+      <div><dt>Video</dt><dd>{{if .TLS}}VNC over TLS{{else}}VNC, not encrypted{{end}}</dd></div>
+    </dl>
+  </section>
+  <section class="panel" aria-labelledby="ac-h">
+    <h2 id="ac-h">Accessible alternative</h2>
+    <p>This console is a picture of the remote screen; screen readers cannot read it. The serial console is the text, screen-reader friendly alternative where the host uses it (in the server&#39;s Console menu).</p>
+  </section>
+  <section class="panel" aria-labelledby="nt-h">
+    <h2 id="nt-h">Notes</h2>
+    <ul class="dense">
+      <li>The console is equivalent to physical access to the server.</li>
+      <li>It closes after {{.Idle}} without input, after {{.Max}} at most, and when you sign out.</li>
+      <li>While it is open, the iDRAC's own virtual console is unavailable. One session per server.</li>
+    </ul>
+  </section>
+</aside>
+</div>
+{{end}}

@@ -1,0 +1,41 @@
+<!doctype html>
+<!--
+  Source of boot-menu.png, the synthetic host screen the dev harness's fake VNC server
+  shows with OOB_DEV_SHOWCASE=1 (README screenshots only). A generic GRUB-style text-mode
+  menu: no vendor BIOS screen, no logos, nothing from a real host. Re-render it at
+  1024x768, device scale 1, after a change:
+    cd tests/e2e && node showcase/render-frame.mjs
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>boot menu</title>
+<style>
+  @font-face {
+    font-family: "JetBrains Mono";
+    src: url("../../internal/web/ui/static/vendor/fonts/jetbrains-mono-2.304/jetbrains-mono-var-latin.woff2") format("woff2");
+    font-weight: 100 800;
+  }
+  html, body { margin: 0; width: 1024px; height: 768px; background: #000; overflow: hidden; }
+  body { color: #aaa; font: 400 16px/20px "JetBrains Mono", monospace; -webkit-font-smoothing: none; }
+  .title { position: absolute; top: 40px; width: 100%; text-align: center; }
+  .box { position: absolute; left: 48px; right: 48px; top: 100px; height: 440px; border: 2px solid #aaa; padding: 10px 8px; box-sizing: border-box; }
+  .box div { padding: 0 8px; white-space: pre; }
+  .box .sel { background: #aaa; color: #000; }
+  .help { position: absolute; left: 80px; right: 80px; top: 572px; white-space: pre; }
+</style>
+</head>
+<body>
+<div class="title">GNU GRUB  version 2.12</div>
+<div class="box">
+  <div class="sel">*Debian GNU/Linux</div>
+  <div>Advanced options for Debian GNU/Linux</div>
+  <div>Memory test (memtest86+x64.efi)</div>
+  <div>Memory test (memtest86+x64.efi, serial console)</div>
+</div>
+<div class="help">     Use the ↑ and ↓ keys to select which entry is highlighted.
+     Press enter to boot the selected OS, `e' to edit the commands
+     before booting or `c' for a command-line.
+  The highlighted entry will be executed automatically in 4s.</div>
+</body>
+</html>

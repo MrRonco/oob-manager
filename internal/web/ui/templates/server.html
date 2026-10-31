@@ -1,0 +1,77 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{template "servertabs" .Nav}}
+{{- with .Pinned}}{{template "pinnednote" .}}{{end}}
+{{template "fresh" .Summary.Fresh}}
+<div class="g2">
+<div>
+  <section class="panel{{with .Verdict.Panel}} {{.}}{{end}}" id="problems" aria-labelledby="x-h">
+    <h2 id="x-h">Verdict and exceptions</h2>
+    <p class="verdict"{{if .Verdict.Live}} role="status"{{end}}>{{template "health" .Verdict.Health}} <strong>{{.Verdict.Text}}</strong></p>
+    {{- if .Verdict.Items}}
+    <ul class="dense worst">
+    {{- range .Verdict.Items}}
+      <li>{{template "health" .Health}} {{.Text}}{{if .JumpHref}} <a class="jump" href="{{.JumpHref}}">{{.Jump}}<span class="sr-only"> details</span></a>{{end}}</li>
+    {{- end}}
+    </ul>
+    {{- end}}
+    <p class="meta">{{template "chip" .Summary.Fresh}}{{if .Summary.Fresh.At}} as of <time datetime="{{.Summary.Fresh.ISO}}">{{.Summary.Fresh.At}}</time>{{end}}{{if .PollTook}} <span title="How long the last poll of the BMC took">· poll {{.PollTook}}</span>{{end}}</p>
+    {{template "refresh" .Refresh}}
+  </section>
+  {{- if .HasSnapshot}}
+  {{template "statuspanel" .}}
+  {{- end}}
+</div>
+<div>
+  <section class="panel" aria-labelledby="now-h" id="now">
+    <h2 id="now-h">Now</h2>
+    {{- with .Now.Power}}
+    <p id="pw-last" role="status">{{template "health" .Badge}} {{.Text}}</p>
+    {{- end}}
+    {{- with .Now.BMC}}
+    <p id="bmc-last" role="status">{{template "health" .Badge}} {{.Text}}</p>
+    {{- end}}
+    {{- with .Now.Maint}}
+    <p>{{template "maintbadge" .}} <a href="/servers/{{$.Summary.ID}}/activity#maint-h">Maintenance details</a></p>
+    {{- end}}
+    {{- if .Now.Empty}}
+    <p class="empty">Nothing running: no pending power action, BMC restart or maintenance window.</p>
+    {{- end}}
+  </section>
+  {{- with .Console}}{{template "consolecard" .}}{{end}}
+  {{- with .Serial}}{{template "serialcard" .}}{{end}}
+  <section class="panel" aria-labelledby="ev-h">
+    <h2 id="ev-h">Recent events</h2>
+    {{- if .Events}}
+    <ul class="dense feed">
+    {{- range .Events}}
+      <li><time class="mono" datetime="{{.ISO}}" title="{{.Created}}">{{if .Short}}{{.Short}}{{else}}No time{{end}}</time> {{template "health" .Severity}} <span>{{.Message}}{{if .Repeat}} <span class="rep">×{{.Repeat}}</span>{{end}}</span></li>
+    {{- end}}
+    </ul>
+    {{- else}}
+    <p class="empty">No log entries read yet.</p>
+    {{- end}}
+    <p><a href="/servers/{{.Summary.ID}}/events">All events for {{.Summary.Name}}</a></p>
+  </section>
+  <section class="panel" aria-labelledby="sy-h">
+    <h2 id="sy-h">System</h2>
+    {{- if .InventoryNote}}
+    <p class="alert a-stale" role="status">{{template "sicon" "stale"}}<span class="alert-b">{{.InventoryNote}}</span></p>
+    {{- end}}
+    <dl class="kv">
+      <div><dt>BMC model</dt><dd>{{template "v" .BMC.Model}}</dd></div>
+      {{- if not .HasInventory}}
+      <div><dt>BMC firmware</dt><dd>{{template "v" .BMC.Firmware}}</dd></div>
+      {{- end}}
+      <div><dt>Last BMC restart</dt><dd>{{template "v" .BMC.LastReset}}</dd></div>
+    </dl>
+    {{- if .HasInventory}}
+    {{template "kv" .System}}
+    <p><a href="/servers/{{.Summary.ID}}/inventory">Inventory and capabilities</a></p>
+    {{- else}}
+    <p class="empty">Inventory not read yet.</p>
+    {{- end}}
+  </section>
+</div>
+</div>
+{{end}}

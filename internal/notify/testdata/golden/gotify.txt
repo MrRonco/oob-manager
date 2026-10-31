@@ -1,0 +1,6 @@
+POST /gotify/message
+Content-Type: application/json
+User-Agent: oob-manager-notify/1
+X-Gotify-Key: gotify-app-token
+
+{"message":"Storage node reports Critical health (was OK).\n\n• Critical: The power input for power supply 2 is lost.","priority":8,"title":"Storage node: health Critical"}

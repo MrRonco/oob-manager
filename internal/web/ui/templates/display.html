@@ -1,0 +1,63 @@
+{{define "content"}}
+<div class="ph"><h1>Display preferences</h1></div>
+<p class="sub">These apply to you only, in every browser you sign in with. Times are stored in UTC; this only changes how they are shown. Now: <time datetime="{{.SampleISO}}">{{.Sample}}</time>.</p>
+{{template "formerror" .FormError}}
+<form method="post" action="/preferences">
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <section class="panel" aria-labelledby="tz-h">
+    <h2 id="tz-h">Time zone</h2>
+    <div class="field">
+      <label for="p-zone">Show times in</label>
+      <select id="p-zone" name="time_zone" aria-describedby="p-zone-hint"{{if .FormError}} aria-invalid="true"{{end}}>
+        <option value=""{{if not .Zone}} selected{{end}}>App default ({{.AppZone}})</option>
+        {{- $v := .Zone}}
+        {{- range .Zones}}
+        <optgroup label="{{.Region}}">
+          {{- range .Zones}}
+          <option value="{{.Name}}"{{if eq .Name $v}} selected{{end}}>{{.Label}}</option>
+          {{- end}}
+        </optgroup>
+        {{- end}}
+      </select>
+      <p id="p-zone-hint" class="hint">Zones are grouped by region and named after a city in them; type a city's first letters to jump to it. The top bar clock and every time on every page use this zone, with its abbreviation (for example EDT or EST).</p>
+    </div>
+  </section>
+  <section class="panel" aria-labelledby="th-h">
+    <h2 id="th-h">Color theme</h2>
+    <fieldset>
+      <legend class="sr-only">Color theme</legend>
+      <p class="hint">Light or dark stays a separate choice (Theme in the account menu). Every theme has both.</p>
+      <div class="themes">
+      {{- range .Themes}}
+        <div class="theme-opt">
+          <label><input type="radio" name="theme" value="{{.ID}}"{{if .Checked}} checked{{end}}> <span><strong>{{.Label}}</strong>{{if .About}}<br><span class="meta">{{.About}}</span>{{end}}</span></label>
+          {{- if .ID}}
+          <div class="swatch" data-palette="{{.ID}}" aria-hidden="true">
+            <div class="sw-badges"><span class="badge b-ok">{{template "sicon" "ok"}} OK</span><span class="badge b-warn">{{template "sicon" "warn"}} Warning</span><span class="badge b-crit">{{template "sicon" "crit"}} Critical</span><span class="badge b-stale">{{template "sicon" "stale"}} Stale</span></div>
+            <div class="sw-row"><span>CPU1 Temp</span><span class="mono">61</span></div>
+            <div class="sw-row r-warn"><span>Inlet Temp</span><span class="mono">41</span></div>
+            <div class="sw-ctl"><span class="btn btn-small">Button</span><span class="sw-field">Field</span><span class="btn btn-small btn-secondary sw-focus">Focus</span><span class="sw-link">Link</span></div>
+          </div>
+          {{- end}}
+        </div>
+      {{- end}}
+      </div>
+    </fieldset>
+  </section>
+  <section class="panel" aria-labelledby="fmt-h">
+    <h2 id="fmt-h">Formats</h2>
+    <div class="prefs-grid">
+    {{- range .Choices}}
+      <fieldset>
+        <legend>{{.Legend}}</legend>
+        {{- $n := .Name}}
+        {{- range .Options}}
+        <div class="radio"><input type="radio" id="{{.ID}}" name="{{$n}}" value="{{.Value}}"{{if .Checked}} checked{{end}}><label for="{{.ID}}">{{.Label}}</label></div>
+        {{- end}}
+      </fieldset>
+    {{- end}}
+    </div>
+  </section>
+  <div class="btn-row"><button type="submit" class="btn">Save preferences</button> <a href="/">Back to the overview</a></div>
+</form>
+{{end}}

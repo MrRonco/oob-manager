@@ -1,0 +1,219 @@
+name: Hardware report
+description: Tell us how oob-manager worked on your server and BMC, working or not.
+title: "hardware: <vendor> <model>, <BMC> <firmware>"
+labels: ["hardware"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. oob-manager has been tested on two servers only (docs/hardware.md); every report,
+        including "nothing works", helps decide what to support and goes into the compatibility table.
+
+        **Anonymise before you submit.** This issue is public. Remove IP addresses, host names,
+        domains, serial numbers, service tags, MAC addresses, licence IDs, user names and every
+        password, token or setup code. Use `192.0.2.10` for a BMC and `<redacted>` for the rest.
+        Model names and firmware versions are what we need and are fine to share.
+  - type: input
+    id: version
+    attributes:
+      label: oob-manager version
+      description: The page footer or `/about`.
+      placeholder: vX.Y.Z
+    validations:
+      required: true
+  - type: input
+    id: vendor
+    attributes:
+      label: Server vendor
+      placeholder: Dell, HPE, Lenovo, Supermicro, ...
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Server model
+      placeholder: PowerEdge R640
+    validations:
+      required: true
+  - type: dropdown
+    id: bmc-type
+    attributes:
+      label: BMC type
+      options:
+        - Dell iDRAC9
+        - Dell iDRAC8
+        - Dell iDRAC7 or older
+        - HPE iLO
+        - Lenovo XClarity Controller (XCC)
+        - Supermicro BMC
+        - OpenBMC
+        - Other Redfish BMC
+        - Other (say in the notes)
+    validations:
+      required: true
+  - type: input
+    id: bmc-firmware
+    attributes:
+      label: BMC firmware version
+      placeholder: 7.10.30.00
+    validations:
+      required: true
+  - type: input
+    id: licence
+    attributes:
+      label: BMC licence tier
+      description: For example Basic, Express, Enterprise or Datacenter on a Dell iDRAC; "none" if the BMC has no tiers, "unknown" if you are not sure.
+      placeholder: Enterprise
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Server kind configured in oob-manager
+      options:
+        - idrac9
+        - idrac8
+        - redfish
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: "### What worked"
+  - type: dropdown
+    id: inventory
+    attributes:
+      label: Inventory and licence
+      description: "Model, BIOS, BMC firmware, licence tier, components on the server page"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: dropdown
+    id: sensors
+    attributes:
+      label: Sensors, history and event logs
+      description: "Temperatures, fans, PSUs, power draw, history graphs, SEL and Lifecycle log"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: dropdown
+    id: power
+    attributes:
+      label: Power control
+      description: "On, graceful shutdown or restart, force off, power cycle (needs an operator account)"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: dropdown
+    id: bmc-restart
+    attributes:
+      label: BMC restart
+      description: "Restart BMC on the server page (needs an operator account)"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: dropdown
+    id: fan
+    attributes:
+      label: Fan lease
+      description: "`redfish-floor` (iDRAC9) or `host-lease` (a host fan script); say which in the notes"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: dropdown
+    id: graphical
+    attributes:
+      label: Graphical console
+      description: "VNC console in the browser, or the iDRAC9 native console launch; say which in the notes"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: dropdown
+    id: serial
+    attributes:
+      label: Serial console
+      description: "Serial over the BMC's SSH (`console com2`)"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: dropdown
+    id: firmware
+    attributes:
+      label: Firmware view and update check
+      description: "Installed and stored versions; the optional Dell catalog check"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: dropdown
+    id: security
+    attributes:
+      label: BMC security checks
+      description: "The Security tab: TLS, services, accounts, IP filter findings"
+      options:
+        - "Works"
+        - "Partly works (see notes)"
+        - "Does not work (see notes)"
+        - "Not tried"
+        - "Not offered by this BMC or licence"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: |
+        For anything that did not work, or only partly: what you did, what you saw, and the error text on the page.
+        Also any BMC setting you had to change (privileges, VNC, SSH, TLS), and quirks you noticed (slow responses,
+        a console that only works once, a missing sensor).
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log excerpt
+      description: The relevant lines from `docker logs oob-manager`, anonymised as above. A few lines around each warning or error are enough.
+      render: text
+  - type: checkboxes
+    id: anonymised
+    attributes:
+      label: Anonymisation
+      options:
+        - label: I removed IP addresses, host names, serials, service tags, MAC addresses, licence IDs, user names and every credential from this report and its logs.
+          required: true

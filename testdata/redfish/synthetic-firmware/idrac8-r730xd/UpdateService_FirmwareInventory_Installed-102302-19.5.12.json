@@ -1,0 +1,15 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
+  "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Installed-102302-19.5.12",
+  "@odata.type": "#SoftwareInventory.v1_1_1.SoftwareInventory",
+  "Description": "Represents Firmware Inventory (SYNTHETIC fixture written from the captured shape, not captured)",
+  "Id": "Installed-102302-19.5.12",
+  "Name": "Intel(R) Ethernet 10G 2P X520 Adapter - 00:00:5E:00:53:10",
+  "SoftwareId": "102302",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Updateable": true,
+  "Version": "19.5.12"
+}

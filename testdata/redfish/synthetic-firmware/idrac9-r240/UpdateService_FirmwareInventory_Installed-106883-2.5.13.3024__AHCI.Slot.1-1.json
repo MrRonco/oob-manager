@@ -1,0 +1,36 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
+  "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Installed-106883-2.5.13.3024__AHCI.Slot.1-1",
+  "@odata.type": "#SoftwareInventory.v1_9_0.SoftwareInventory",
+  "Description": "Represents Firmware Inventory (SYNTHETIC fixture written from the captured shape, not captured)",
+  "Id": "Installed-106883-2.5.13.3024__AHCI.Slot.1-1",
+  "Name": "BOSS-S1 Adapter",
+  "Oem": {
+    "Dell": {
+      "@odata.type": "#DellOem.v1_3_0.DellOemResources",
+      "DellSoftwareInventory": {
+        "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Installed-106883-2.5.13.3024__AHCI.Slot.1-1/Oem/Dell/DellSoftwareInventory/DCIM:SYNTHETIC__AHCI.Slot.1-1",
+        "@odata.type": "#DellSoftwareInventory.v1_2_0.DellSoftwareInventory",
+        "ComponentID": "106883",
+        "ComponentType": "FRMW",
+        "ElementName": "BOSS-S1 Adapter",
+        "IdentityInfoType": [
+          "OrgID:ComponentType:VendorID:DeviceID:SubVendorID:SubDeviceID"
+        ],
+        "IdentityInfoValue": [
+          "DCIM:firmware:1B4B:9230:1028:1FE2"
+        ],
+        "InstallationDate": "2025-10-18T04:09:18Z",
+        "Status": "Installed"
+      }
+    }
+  },
+  "ReleaseDate": "2022-05-12T00:00:00Z",
+  "SoftwareId": "106883",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Updateable": true,
+  "Version": "2.5.13.3024"
+}

@@ -1,0 +1,48 @@
+{{define "content"}}
+<div class="ph"><div><h1>Confirm the log server certificate</h1><p class="sub">Audit shipping over TLS to <span class="mono">{{.Endpoint}}</span></p></div></div>
+{{template "stepup" .StepUp}}
+<form method="post" action="/settings/integrations/gelf/pin" class="g2">
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <input type="hidden" name="rev" value="{{.Rev}}">
+  {{- range .Hidden}}
+  <input type="hidden" name="{{.Key}}" value="{{.Value}}">
+  {{- end}}
+  {{- range .Choices}}
+  <input type="hidden" name="value_{{.Kind}}" value="{{.Value}}">
+  <input type="hidden" name="proof_{{.Kind}}" value="{{.Proof}}">
+  {{- end}}
+  <section class="panel" aria-labelledby="gfp-h">
+    <h2 id="gfp-h">Fetched from <span class="mono">{{.Endpoint}}</span></h2>
+    <p>Compare the SHA-256 of the public key below with the one your log server shows for its TLS input (for example <code>openssl x509 -in cert.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256</code>). Confirm only if they are identical.</p>
+    <fieldset>
+      <legend>Pin</legend>
+      {{- range .Choices}}
+      <div class="radio"><input type="radio" id="pin-{{.Kind}}" name="pinned" value="{{.Kind}}"{{if .Selected}} checked{{end}}><label for="pin-{{.Kind}}"><strong>{{.Title}}</strong><span class="codeblock mono">{{.Grouped}}</span></label></div>
+      {{template "kv" .Facts}}
+      {{- end}}
+    </fieldset>
+    {{- if .IssuerNote}}
+    <p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">{{.IssuerNote}}</span></p>
+    {{- end}}
+    {{- if .PublicCA}}
+    <p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">The issuing CA is publicly trusted: it signs certificates for anyone. Pinning it accepts any certificate it issued for this server's name. Pin the server's own certificate unless you know the CA is yours.</span></p>
+    {{- end}}
+    {{- if .NoChain}}
+    <p class="hint">Only the server's own certificate can be pinned (it sent no issuer that signed it). When it is renewed, shipping pauses until you confirm the new fingerprint here.</p>
+    {{- else}}
+    <p class="hint">Pinning the issuing CA keeps shipping working when the log server renews its certificate from the same CA. Pin the leaf to trust exactly this one certificate.</p>
+    {{- end}}
+    <p class="hint">Trust on first use: the console saw this certificate once, just now. If it does not match, cancel: something else may be answering at this address.</p>
+  </section>
+  <section class="panel" aria-labelledby="gfpc-h">
+    <h2 id="gfpc-h">Confirm</h2>
+    {{- if .ShippingOn}}
+    <p>Confirming saves the address and the fingerprint, switches the transport to TLS and applies it at once. The change is recorded in the audit log first.</p>
+    {{- else}}
+    <p>Confirming saves the address and the fingerprint and sets the transport to TLS. Shipping stays off until you turn it on.</p>
+    {{- end}}
+    <div class="btn-row cf-actions"><a class="btn btn-secondary" href="/settings/integrations" autofocus>Cancel</a> <button type="submit" class="btn">Confirm fingerprint and apply</button></div>
+    <p class="hint">The confirmation is valid for 5 minutes and only in this session.</p>
+  </section>
+</form>
+{{end}}

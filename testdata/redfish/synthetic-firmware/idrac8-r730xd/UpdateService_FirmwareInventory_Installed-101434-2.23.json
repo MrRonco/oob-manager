@@ -1,0 +1,15 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
+  "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Installed-101434-2.23",
+  "@odata.type": "#SoftwareInventory.v1_1_1.SoftwareInventory",
+  "Description": "Represents Firmware Inventory (SYNTHETIC fixture written from the captured shape, not captured)",
+  "Id": "Installed-101434-2.23",
+  "Name": "Backplane 0",
+  "SoftwareId": "101434",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Updateable": true,
+  "Version": "2.23"
+}

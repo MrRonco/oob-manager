@@ -1,0 +1,58 @@
+{{define "content"}}
+<div class="ph"><h1>About oob-manager</h1></div>
+<div class="g2 even">
+<section class="panel" aria-labelledby="build-h">
+  <h2 id="build-h">This build</h2>
+  <dl class="kv">
+    <div><dt>Version</dt><dd class="mono">{{template "v" .Version}}</dd></div>
+    <div><dt>Commit</dt><dd class="mono">{{template "v" .Commit}}</dd></div>
+    <div><dt>Go</dt><dd class="mono">{{template "v" .GoVersion}}</dd></div>
+    <div><dt>Database schema</dt><dd class="mono">{{template "v" .Schema}}</dd></div>
+  </dl>
+  <p class="hint">For a bug report, copy this block:</p>
+  <code class="codeblock" id="buildinfo">oob-manager {{.Version}} commit {{.Commit}} {{.GoVersion}} schema {{.Schema}}</code>
+  <button type="button" class="btn btn-secondary btn-small" data-copy="buildinfo" hidden>Copy build info</button>
+  <p class="hint" data-copy-status="buildinfo" role="status"></p>
+</section>
+<section class="panel" aria-labelledby="lic-h">
+  <h2 id="lic-h">License</h2>
+  <p>oob-manager is licensed under the Apache License, Version 2.0.</p>
+  <p class="hint">NOTICE: third-party attributions will be published with the first public release. The modules compiled into this binary are listed below.</p>
+  <p>The graphical console page serves <a href="/static/vendor/novnc-1.7.0/LICENSE.txt">noVNC 1.7.0</a> unmodified (core files under the Mozilla Public License 2.0, with pako under the MIT license).</p>
+  <p>The serial console page serves <a href="/static/vendor/xterm-6.0.0/LICENSE">xterm.js 6.0.0</a> and its <a href="/static/vendor/xterm-addon-fit-0.11.0/LICENSE">fit add-on 0.11.0</a> unmodified (MIT license).</p>
+  <p>Every page uses the <a href="/static/vendor/fonts/inter-4.1/OFL.txt">Inter 4.1</a> and <a href="/static/vendor/fonts/jetbrains-mono-2.304/OFL.txt">JetBrains Mono 2.304</a> typefaces, subset for the web, under the SIL Open Font License 1.1.</p>
+  <p>Every page uses icons from <a href="/static/vendor/lucide-1.53.0/LICENSE">Lucide 1.53.0</a>, unmodified shapes, under the ISC license (the icons derived from Feather also under the MIT license).</p>
+  <h3 class="dense-h">Help and support</h3>
+  <ul class="dense">
+    <li><a href="/help">Help and glossary</a></li>
+    <li><a href="/help#hardware">Supported hardware</a></li>
+    <li><a href="/help#accessibility">Accessibility statement</a></li>
+    {{- if .RepoURL}}
+    <li><a href="{{.RepoURL}}" rel="noreferrer">Source code</a></li>
+    <li><a href="{{.DocsURL}}" rel="noreferrer">Documentation</a></li>
+    <li><a href="{{.IssuesURL}}" rel="noreferrer">Report a problem</a></li>
+    <li><a href="{{.SecurityURL}}" rel="noreferrer">Security policy</a></li>
+    {{- else}}
+    <li><a href="/help#report">Report a problem</a></li>
+    {{- end}}
+  </ul>
+</section>
+</div>
+<section class="panel flush" aria-labelledby="mods-h">
+  <h2 id="mods-h" class="pad">Third-party modules</h2>
+  {{- if .Modules}}
+  <div class="tw" role="region" aria-label="Modules table" tabindex="0">
+  <table class="stack">
+    <thead><tr><th scope="col">Module</th><th scope="col">Version</th></tr></thead>
+    <tbody>
+    {{- range .Modules}}
+      <tr><th scope="row" data-label="Module" class="mono wrap">{{.Path}}</th><td data-label="Version" class="mono">{{.Version}}</td></tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+  {{- else}}
+  <p class="empty pad-b">Module information is not available in this build.</p>
+  {{- end}}
+</section>
+{{end}}

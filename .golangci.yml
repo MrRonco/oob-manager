@@ -1,0 +1,98 @@
+# golangci-lint v2 configuration. Pinned linter version lives in the Makefile
+# (GOLANGCI_VERSION) and in .github/workflows/ci.yml; keep them in step.
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+  # Lint the end-to-end harness too (cmd/oob-manager/*e2e*_test.go, dev_test.go).
+  build-tags: [e2e]
+
+linters:
+  default: none
+  enable:
+    - errcheck      # unchecked errors
+    - govet         # go vet analyzers
+    - staticcheck   # SA/S/ST/QF checks (gosimple + stylecheck are merged into it in v2)
+    - gosec         # security (G1xx-G6xx)
+    - revive        # style basics, see rules below
+    - forbidigo     # CLAUDE.md hard rule 2: no shell-outs (call sites)
+    - depguard      # CLAUDE.md hard rule 2: no shell-outs (the import itself)
+    - ineffassign
+    - unused
+    - bodyclose
+    - noctx         # HTTP requests must carry a context
+  settings:
+    depguard:
+      rules:
+        no-exec:
+          list-mode: lax
+          files: ["$all"]
+          deny:
+            - pkg: os/exec
+              desc: "os/exec is forbidden (CLAUDE.md hard rule 2: no shell-outs)"
+    errcheck:
+      check-type-assertions: true
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment  # noisy; struct layout is chosen for readability
+    gosec:
+      severity: low
+      confidence: low
+    forbidigo:
+      analyze-types: true
+      forbid:
+        - pattern: ^exec\.(Command|CommandContext|LookPath)$
+          pkg: ^os/exec$
+          msg: "os/exec is forbidden (CLAUDE.md hard rule 2: no shell-outs)"
+        - pattern: ^(syscall|unix)\.(Exec|ForkExec|StartProcess)$
+          msg: "process execution is forbidden (CLAUDE.md hard rule 2)"
+        - pattern: ^os\.StartProcess$
+          msg: "process execution is forbidden (CLAUDE.md hard rule 2)"
+        - pattern: ^print(ln)?$
+          msg: "use log/slog, not the print builtins"
+    revive:
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: exported
+        - name: increment-decrement
+        - name: var-naming
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: indent-error-flow
+        - name: errorf
+        - name: unreachable-code
+        - name: redefines-builtin-id
+        - name: function-length
+          arguments: [0, 50]   # CLAUDE.md rule 5: functions < 50 lines
+        - name: max-control-nesting
+          arguments: [4]       # CLAUDE.md rule 5: nesting <= 4
+  exclusions:
+    generated: strict
+    presets:
+      - std-error-handling
+    rules:
+      # Table tests are allowed to be long.
+      - path: _test\.go
+        linters: [revive]
+        text: function-length
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - oob-manager
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

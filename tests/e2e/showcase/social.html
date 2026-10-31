@@ -1,0 +1,54 @@
+<!doctype html>
+<!--
+  GitHub social preview (1280x640), rendered by showcase.spec.ts into
+  docs/screenshots/social-preview.png after the dark hero shot. Local assets only:
+  the vendored Inter font, the app logo and that hero screenshot.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>oob-manager social preview</title>
+<style>
+  @font-face {
+    font-family: "Inter";
+    src: url("../../../internal/web/ui/static/vendor/fonts/inter-4.1/inter-var-latin.woff2") format("woff2");
+    font-weight: 100 900;
+  }
+  html, body { margin: 0; width: 1280px; height: 640px; overflow: hidden; }
+  body {
+    position: relative;
+    background: radial-gradient(circle at 1120px 40px, rgb(56 214 219 / 12%) 0, rgb(56 214 219 / 0%) 520px), #0b0f12;
+    color: #eef0f3;
+    font-family: "Inter", sans-serif;
+  }
+  .left { position: absolute; left: 72px; top: 0; bottom: 0; width: 528px; display: flex; flex-direction: column; justify-content: center; }
+  .logo { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 0 0 1px #2a3138; }
+  h1 { margin: 28px 0 0; font-size: 76px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+  p { margin: 20px 0 0; font-size: 30px; font-weight: 400; line-height: 1.3; color: #aab3bd; }
+  .chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+  .chip { font-size: 20px; font-weight: 600; line-height: 1; padding: 9px 14px; border: 1px solid #3a434c; border-radius: 999px; color: #d5dade; }
+  .chip.beta { border-color: #f0b429; color: #f0b429; }
+  .shot {
+    position: absolute; left: 640px; top: 120px; width: 700px; height: 580px; overflow: hidden;
+    border: 1px solid #2a3138; border-radius: 12px; background: #0b0f12;
+    box-shadow: 0 24px 60px rgb(0 0 0 / 55%), 0 2px 8px rgb(0 0 0 / 40%);
+  }
+  /* The hero shot is 1440x900: crop to the title, the menus and the Status card. */
+  .shot img { position: absolute; left: -180px; top: -50px; width: 960px; height: 600px; }
+</style>
+</head>
+<body>
+<div class="left">
+  <img class="logo" src="../../../internal/web/ui/static/logo.svg" alt="">
+  <h1>oob-manager</h1>
+  <p>Out-of-band management<br>for Dell iDRAC</p>
+  <div class="chips">
+    <span class="chip">iDRAC8 · iDRAC9</span>
+    <span class="chip">Redfish</span>
+    <span class="chip">TOTP + audit log</span>
+    <span class="chip beta">Public beta</span>
+  </div>
+</div>
+<div class="shot"><img src="../../../docs/screenshots/hero-server-dark.png" alt=""></div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+{{define "content"}}
+<div class="ph"><h1>Integrations</h1></div>
+{{template "settingstabs" "integrations"}}
+{{template "stepup" .StepUp}}
+{{- if .Locked}}
+<p class="alert a-info" role="status">{{template "icon" "lock"}}<span class="alert-b">This section is locked by <code>settings.locked</code> in config.yaml (it also locks the notification targets). Change it there and restart.</span></p>
+{{- end}}
+{{- if .Note}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">{{.Note}}</span></p>
+{{- end}}
+{{template "formerror" .FormError}}
+<div class="g2">
+<section class="panel" aria-labelledby="gelf-h">
+  <h2 id="gelf-h">Audit shipping (GELF)</h2>
+  <p class="hint">Every audit row (who did what, on which server, with what result; never a password or token) is copied to a log server's GELF TCP or TLS input. The database copy is always kept. Alerts to people are in <a href="/settings/notifications">Notifications</a>.</p>
+  <p role="status">{{template "health" .State.Status}}{{if and .State.Plain (ne .State.Status.Label "Disabled")}} <span class="meta">unencrypted (plain TCP)</span>{{end}}</p>
+  {{- if .State.Lines}}
+  {{template "kv" .State.Lines}}
+  {{- end}}
+  {{- if .State.ErrorMsg}}
+  <p class="alert {{if .State.Paused}}a-crit{{else}}a-warn{{end}}" role="status">{{if .State.Paused}}{{template "sicon" "crit"}}{{else}}{{template "sicon" "warn"}}{{end}}<span class="alert-b">{{.State.ErrorMsg}}</span></p>
+  {{- end}}
+  <form method="post" action="/settings/integrations" class="form" aria-describedby="gelf-nets">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <input type="hidden" name="rev" value="{{.Rev}}">
+    <fieldset>
+      <legend>{{.Enabled.Label}}{{if .Enabled.FileManaged}} <span class="lock">{{template "icon" "lock"}} Managed by config.yaml</span>{{end}}</legend>
+      <div class="radio"><input type="radio" id="i-gelf-enabled-on" name="gelf.enabled" value="on"{{if eq .Enabled.Value "on"}} checked{{end}}{{if .Enabled.FileManaged}} disabled{{end}}{{if .Enabled.Invalid}} aria-invalid="true"{{end}}><label for="i-gelf-enabled-on">On</label></div>
+      <div class="radio"><input type="radio" id="i-gelf-enabled-off" name="gelf.enabled" value="off"{{if ne .Enabled.Value "on"}} checked{{end}}{{if .Enabled.FileManaged}} disabled{{end}}{{if .Enabled.Invalid}} aria-invalid="true"{{end}}><label for="i-gelf-enabled-off">Off</label></div>
+      <p class="hint">{{.Enabled.Help}}</p>
+      <p class="src">{{.Enabled.Source}}</p>
+      {{template "gelfreset" .Enabled}}
+    </fieldset>
+    {{template "gelftext" .Address}}
+    <fieldset>
+      <legend>{{.Transport.Label}}{{if .Transport.FileManaged}} <span class="lock">{{template "icon" "lock"}} Managed by config.yaml</span>{{end}}</legend>
+      <div class="radio"><input type="radio" id="i-gelf-transport-tls" name="gelf.transport" value="tls"{{if eq .Transport.Value "tls"}} checked{{end}}{{if .Transport.FileManaged}} disabled{{end}}{{if .Transport.Invalid}} aria-invalid="true"{{end}}><label for="i-gelf-transport-tls"><strong>TLS</strong><span class="hint">Encrypted; the certificate must match the pinned fingerprint.</span></label></div>
+      <div class="radio"><input type="radio" id="i-gelf-transport-tcp" name="gelf.transport" value="tcp"{{if ne .Transport.Value "tls"}} checked{{end}}{{if .Transport.FileManaged}} disabled{{end}}{{if .Transport.Invalid}} aria-invalid="true"{{end}}><label for="i-gelf-transport-tcp"><strong>Plain TCP</strong><span class="hint">Unencrypted: only on a trusted network segment.</span></label></div>
+      <p class="hint">{{.Transport.Help}}</p>
+      <p class="src">{{.Transport.Source}}</p>
+      {{template "gelfreset" .Transport}}
+    </fieldset>
+    {{template "gelftext" .SNI}}
+    <div class="field">
+      <label for="i-gelf-pin-sha256">{{.Pin.Label}}{{if .Pin.FileManaged}} <span class="lock">{{template "icon" "lock"}} Managed by config.yaml</span>{{end}}</label>
+      {{- if .PinShown}}
+      <p class="codeblock mono" id="i-gelf-pin-current" aria-label="Pinned fingerprint">{{.PinShown}}</p>
+      {{- else}}
+      <p class="meta" id="i-gelf-pin-current">No fingerprint pinned.</p>
+      {{- end}}
+      {{- if not .Pin.FileManaged}}
+      <input id="i-gelf-pin-sha256" name="gelf.pin_sha256" type="text" autocomplete="off" spellcheck="false" value="{{.Pin.Value}}" placeholder="Paste a new fingerprint (optional)" aria-describedby="i-gelf-pin-current i-gelf-pin-sha256-hint i-gelf-pin-sha256-src"{{if .Pin.Invalid}} aria-invalid="true"{{end}}>
+      {{- end}}
+      <p id="i-gelf-pin-sha256-hint" class="hint">{{.Pin.Help}} Leave the box empty to keep the pinned one. Pinning the issuing CA lets the log server renew its certificate without a new pin; a self-signed server can only be pinned by its own certificate, and shipping pauses when it changes.</p>
+      <p id="i-gelf-pin-sha256-src" class="src">{{.Pin.Source}}</p>
+      {{template "gelfreset" .Pin}}
+    </div>
+    <p id="gelf-nets" class="hint">Allowed destinations (<code>audit.gelf.allowed_networks</code> in config.yaml): {{.Networks}}. Loopback, link-local and multicast addresses and this console's own address are always refused; a host name is checked again on every connection.</p>
+    {{- if .CanSave}}
+    {{- if gt .Queued 0}}
+    <p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">{{.Queued}} audit rows are queued for the current destination. Saving a new destination sends them now, or drops them after 3 seconds (the database copy is kept).</span></p>
+    {{- end}}
+    {{- if .PrevUnconfirmed}}
+    <p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">The current destination is not connected: the audit row recording a change of destination may not reach it before the switch (it is kept in this console's audit log either way).</span></p>
+    {{- end}}
+    <div class="btn-row"><button type="submit" class="btn">Save and apply</button> <button type="submit" class="btn btn-secondary" formaction="/settings/integrations/gelf/fingerprint" formnovalidate>Fetch and confirm the certificate</button></div>
+    {{- end}}
+  </form>
+  {{- /* Reset buttons submit this form (form= attribute), so Enter in a field always means Save. */}}
+  <form id="gelf-reset" method="post" action="/settings/integrations/reset" hidden>
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <input type="hidden" name="rev" value="{{.Rev}}">
+  </form>
+  {{- if and (not .Locked) (ne .State.Status.Label "Disabled")}}
+  <form method="post" action="/settings/integrations/gelf/test" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <button type="submit" class="btn btn-secondary">Send test</button>
+    <p class="hint">Writes one test message to the connection and an audit row. GELF has no reply: success means the log server accepted the bytes; check it for the message.</p>
+  </form>
+  {{- end}}
+</section>
+<section class="panel" aria-labelledby="hints-h">
+  <h2 id="hints-h">Dashboards and monitoring</h2>
+  <p class="hint">Copy-ready settings for tools that read this console. Replace <code>&lt;token&gt;</code> with a read-only token from <a href="/settings/tokens">API tokens</a> (one per tool, so each can be revoked on its own). Tokens can only read; they never reach Settings.</p>
+  <h3 id="hint-homepage-h" class="panel-sub">Homepage</h3>
+  <p class="hint">A <code>customapi</code> widget for one server (services.yaml).</p>
+  <pre class="codeblock mono" id="hint-homepage" aria-labelledby="hint-homepage-h" tabindex="0">{{.Hints.Homepage}}</pre>
+  <p><button type="button" class="btn btn-secondary btn-small" data-copy="hint-homepage" hidden>Copy Homepage widget</button></p>
+  <p class="hint" data-copy-status="hint-homepage" role="status"></p>
+  <h3 id="hint-kuma-h" class="panel-sub">Uptime Kuma</h3>
+  <pre class="codeblock mono" id="hint-kuma" aria-labelledby="hint-kuma-h" tabindex="0">{{.Hints.Kuma}}</pre>
+  <p><button type="button" class="btn btn-secondary btn-small" data-copy="hint-kuma" hidden>Copy Kuma monitor</button></p>
+  <p class="hint" data-copy-status="hint-kuma" role="status"></p>
+  {{- if .Hints.MetricsOn}}
+  <p class="hint">To alert on one server instead, a keyword monitor on <code>/metrics</code>:</p>
+  <pre class="codeblock mono" id="hint-kuma-metrics" aria-label="Uptime Kuma metrics monitor" tabindex="0">{{.Hints.KumaMetrics}}</pre>
+  <p><button type="button" class="btn btn-secondary btn-small" data-copy="hint-kuma-metrics" hidden>Copy metrics monitor</button></p>
+  <p class="hint" data-copy-status="hint-kuma-metrics" role="status"></p>
+  {{- end}}
+  <h3 id="hint-prom-h" class="panel-sub">Prometheus <span class="lock">{{template "icon" "lock"}} metrics are file-only</span></h3>
+  <p class="hint">{{if .Hints.MetricsOn}}<code>/metrics</code> is on (<code>metrics.enabled</code>). Scrapes are accepted from: {{.Hints.MetricsAllowed}} (<code>metrics.allow_networks</code>).{{else}}<code>/metrics</code> is off. Set <code>metrics.enabled: true</code> (and <code>metrics.allow_networks</code> to the scraper's address) in config.yaml and restart.{{end}} Mint a dedicated token for the scraper.</p>
+  <pre class="codeblock mono" id="hint-prom" aria-labelledby="hint-prom-h" tabindex="0">{{.Hints.Prometheus}}</pre>
+  <p><button type="button" class="btn btn-secondary btn-small" data-copy="hint-prom" hidden>Copy scrape config</button></p>
+  <p class="hint" data-copy-status="hint-prom" role="status"></p>
+  <p class="hint">Alerts to people (ntfy, Pushover, Gotify, webhook, email) are in <a href="/settings/notifications">Notifications</a>.</p>
+</section>
+</div>
+{{end}}
+
+{{define "gelftext"}}
+<div class="field">
+  <label for="{{.ID}}">{{.Label}}{{if .FileManaged}} <span class="lock">{{template "icon" "lock"}} Managed by config.yaml</span>{{end}}</label>
+  <input id="{{.ID}}" name="{{.Key}}" type="text" autocomplete="off" spellcheck="false" value="{{.Value}}" aria-describedby="{{.ID}}-hint {{.ID}}-src"{{if .FileManaged}} disabled{{end}}{{if .Invalid}} aria-invalid="true"{{end}}>
+  <p id="{{.ID}}-hint" class="hint">{{.Help}}</p>
+  <p id="{{.ID}}-src" class="src">{{.Source}}</p>
+  {{template "gelfreset" .}}
+</div>
+{{end}}
+
+{{define "gelfreset"}}
+{{- if .Resettable}}
+<p><button type="submit" class="btn btn-secondary btn-small" form="gelf-reset" name="reset" value="{{.Key}}" formnovalidate>Reset {{.Label}} to default</button></p>
+{{- end}}
+{{end}}

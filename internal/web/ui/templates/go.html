@@ -1,0 +1,39 @@
+{{define "content"}}
+<div class="ph">
+  <h1>Go to</h1>
+  <p class="meta">Every page you can open, in one list. With scripts on, press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>⌘</kbd>+<kbd>K</kbd> on a Mac) on any page to filter this list as you type.</p>
+</div>
+<form class="filters panel" method="get" action="/go" role="search">
+  <div class="field grow"><label for="go-q">Filter</label>
+    <input id="go-q" name="q" type="search" maxlength="64" value="{{.Query}}" autocomplete="off" spellcheck="false">
+  </div>
+  <button class="btn" type="submit">Filter</button>
+  {{- if .Query}}
+  <a class="btn btn-quiet" href="/go">Show all</a>
+  {{- end}}
+</form>
+<p class="counts"><span class="chip">{{if .Query}}{{.Shown}} of {{.Total}}{{else}}{{.Total}}{{end}} destinations</span></p>
+<div class="golist">
+{{- range .Groups}}
+<section class="panel go-sec" aria-labelledby="go-g-{{.ID}}">
+  <h2 id="go-g-{{.ID}}">{{.Label}}</h2>
+  {{template "golinks" .Links}}
+</section>
+{{- else}}
+<section class="panel" aria-label="Destinations"><p class="empty">Nothing matches “{{.Query}}”. <a href="/go">Show every destination</a>.</p></section>
+{{- end}}
+</div>
+<section class="panel prose" aria-labelledby="shortcuts" id="shortcuts-sec">
+  <h2 id="shortcuts">Keyboard shortcuts</h2>
+  <p>These need scripts. They never act while you type in a field, and they are off on a connected console page, so the remote host gets every key.</p>
+  <dl class="kv sc-list">
+    <div><dt><kbd>Ctrl</kbd>+<kbd>K</kbd>, <kbd>⌘</kbd>+<kbd>K</kbd> on a Mac</dt><dd>Open Go to as a palette: type to filter, <kbd>↑</kbd> <kbd>↓</kbd> to move, <kbd>Enter</kbd> to open, <kbd>Escape</kbd> to close.</dd></div>
+    <div><dt><kbd>/</kbd></dt><dd>Jump to the page's filter field (Events, Firmware, the audit log, this page); on a page without one, open the palette.</dd></div>
+    <div><dt><kbd>g</kbd> then <kbd>o</kbd></dt><dd>Overview.</dd></div>
+    <div><dt><kbd>g</kbd> then <kbd>s</kbd></dt><dd>Servers.</dd></div>
+    <div><dt><kbd>?</kbd></dt><dd>This list of shortcuts.</dd></div>
+  </dl>
+  <p class="go-toggle" id="sc-toggle" hidden><label><input type="checkbox" id="sc-on" checked> Use the single-key shortcuts (<kbd>/</kbd>, <kbd>?</kbd>, <kbd>g</kbd> <kbd>o</kbd>, <kbd>g</kbd> <kbd>s</kbd>) in this browser</label></p>
+  <p class="meta">The palette also lists the tabs of the server you are on and the last pages you opened in this browser tab (kept only until the tab closes).</p>
+</section>
+{{end}}

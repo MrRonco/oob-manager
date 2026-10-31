@@ -1,0 +1,18 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#PowerSubsystem.PowerSubsystem",
+  "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/PowerSubsystem",
+  "@odata.type": "#PowerSubsystem.v1_1_0.PowerSubsystem",
+  "Description": "Represents the properties of a Power Subsystem of the Chassis",
+  "Name": "Power Subsystem for Chassis",
+  "PowerSupplies": {
+    "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/PowerSubsystem/PowerSupplies"
+  },
+  "PowerSupplyRedundancy": [],
+  "Status": {
+    "State": null,
+    "Health": null
+  },
+  "CapacityWatts": null,
+  "Allocation": null,
+  "Id": "PowerSubsystem"
+}

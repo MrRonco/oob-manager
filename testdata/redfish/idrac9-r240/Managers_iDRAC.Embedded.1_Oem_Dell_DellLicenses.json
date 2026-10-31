@@ -1,0 +1,100 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#DellLicenseCollection.DellLicenseCollection",
+  "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Oem/Dell/DellLicenses",
+  "@odata.type": "#DellLicenseCollection.DellLicenseCollection",
+  "Description": "A collection of DellLicense resource",
+  "Members": [
+    {
+      "@odata.context": "/redfish/v1/$metadata#DellLicense.DellLicense",
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Oem/Dell/DellLicenses/ProductionLicense",
+      "@odata.type": "#DellLicense.v1_2_0.DellLicense",
+      "AssignedDevices": [
+        "iDRAC.Embedded.1"
+      ],
+      "AssignedDevices@odata.count": 1,
+      "Description": "An instance of DellLicense represents a feature license installed on a system.",
+      "DeviceFamilyDeviceID": [
+        "11"
+      ],
+      "DeviceFamilyDeviceID@odata.count": 1,
+      "DeviceFamilySubsystemID": [
+        "3"
+      ],
+      "DeviceFamilySubsystemID@odata.count": 1,
+      "DeviceFamilySubsystemVendorID": [
+        "3"
+      ],
+      "DeviceFamilySubsystemVendorID@odata.count": 1,
+      "DeviceFamilyVendorID": [
+        "1912"
+      ],
+      "DeviceFamilyVendorID@odata.count": 1,
+      "EntitlementID": "REDACTED",
+      "EvalLicenseTimeRemainingDays": 0,
+      "Id": "REDACTED",
+      "InstanceID": "REDACTED",
+      "LicenseAttributes": "ValidSubcomponent",
+      "LicenseDescription": [
+        "iDRAC9 Enterprise Evaluation License"
+      ],
+      "LicenseDescription@odata.count": 1,
+      "LicenseDurationDays": 30,
+      "LicenseEndDate": "2000-02-01T00:00:00+00:00",
+      "LicenseInstallDate": "2000-01-01T00:00:00+00:00",
+      "LicensePrimaryStatus": "Warning",
+      "LicenseSoldDate": "2000-01-01T00:00:00+00:00",
+      "LicenseStartDate": null,
+      "LicenseStatusMessage": "The license has expired.",
+      "LicenseStatusMessageID": "LIC006",
+      "LicenseType": "Evaluation",
+      "Name": "DellLicense"
+    },
+    {
+      "@odata.context": "/redfish/v1/$metadata#DellLicense.DellLicense",
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/Oem/Dell/DellLicenses/ProductionLicense",
+      "@odata.type": "#DellLicense.v1_2_0.DellLicense",
+      "AssignedDevices": [
+        "iDRAC.Embedded.1"
+      ],
+      "AssignedDevices@odata.count": 1,
+      "Description": "An instance of DellLicense represents a feature license installed on a system.",
+      "DeviceFamilyDeviceID": [
+        "11"
+      ],
+      "DeviceFamilyDeviceID@odata.count": 1,
+      "DeviceFamilySubsystemID": [
+        "3"
+      ],
+      "DeviceFamilySubsystemID@odata.count": 1,
+      "DeviceFamilySubsystemVendorID": [
+        "3"
+      ],
+      "DeviceFamilySubsystemVendorID@odata.count": 1,
+      "DeviceFamilyVendorID": [
+        "1912"
+      ],
+      "DeviceFamilyVendorID@odata.count": 1,
+      "EntitlementID": "REDACTED",
+      "EvalLicenseTimeRemainingDays": null,
+      "Id": "REDACTED",
+      "InstanceID": "REDACTED",
+      "LicenseAttributes": "ValidSubcomponent",
+      "LicenseDescription": [
+        "iDRAC9 Enterprise License"
+      ],
+      "LicenseDescription@odata.count": 1,
+      "LicenseDurationDays": 0,
+      "LicenseEndDate": null,
+      "LicenseInstallDate": "2000-01-01T00:00:00+00:00",
+      "LicensePrimaryStatus": "OK",
+      "LicenseSoldDate": "2000-01-01T00:00:00+00:00",
+      "LicenseStartDate": null,
+      "LicenseStatusMessage": null,
+      "LicenseStatusMessageID": null,
+      "LicenseType": "Perpetual",
+      "Name": "DellLicense"
+    }
+  ],
+  "Members@odata.count": 2,
+  "Name": "DellLicenseCollection"
+}

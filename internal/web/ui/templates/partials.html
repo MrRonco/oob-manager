@@ -1,0 +1,239 @@
+{{- /* Status badge (C-01): glyph + word + color, never color alone. */}}
+{{define "health"}}<span class="badge b-{{.Class}}">{{template "sicon" .Class}} {{.Label}}</span>{{end}}
+
+{{- /* Age chip (C-02): Live, Aging or Stale with the age; the absolute time is in title. */}}
+{{define "chip"}}<span class="chip age-chip {{.Chip.Class}}"{{if .At}} title="Last successful poll {{.At}}"{{end}}>{{if eq .Chip.Class "chip-stale"}}{{template "sicon" "stale"}}{{else if eq .Chip.Class "chip-aging"}}{{template "sicon" "aging"}}{{else}}{{template "sicon" "live"}}{{end}} {{.Chip.Text}}</span>{{end}}
+
+{{- /* One "no data" vocabulary (UI review F-10): a value the BMC did not report. */}}
+{{define "v"}}{{if .}}{{.}}{{else}}<span class="nodata">Not reported</span>{{end}}{{end}}
+
+{{- /* Headroom meter (C-03). The bar is aria-hidden; the text says the same. */}}
+{{define "meterbar"}}{{if .Has}}<span class="hm" aria-hidden="true"><span class="hm-fill f-{{.Class}} w{{.Fill}}"></span>{{if ge .WarnAt 0}}<span class="hm-tick t{{.WarnAt}}"></span>{{end}}{{if ge .CritAt 0}}<span class="hm-tick hm-crit t{{.CritAt}}"></span>{{end}}</span>{{end}}{{end}}
+
+{{- /* Compact meter for table cells: value, bar, and the headroom text for screen readers. */}}
+{{define "mcell"}}{{if .Value}}<span class="mwrap"><span class="mv">{{.Value}}</span>{{template "meterbar" .}}</span>{{if .Text}}<span class="sr-only">, {{.Text}}</span>{{end}}{{else}}<span class="nodata">Not reported</span>{{end}}{{end}}
+
+{{- /* Stale and no-data banner (state "Stale" in brief §5.5); current data shows nothing. */}}
+{{define "fresh"}}
+{{- if .Restarting}}
+<p class="alert a-stale" role="status">{{template "sicon" "stale"}}<span class="alert-b"><strong>BMC restarting.</strong> {{.Restart}}. Readings{{if .At}} below were read before the restart (last poll <time datetime="{{.ISO}}">{{.At}}</time>) and{{end}} come back when the BMC answers again; the host keeps running.</span></p>
+{{- else if .NoData}}
+<p class="alert a-stale" role="status">{{template "sicon" "stale"}}<span class="alert-b"><strong>No data.</strong> This server has not been polled successfully yet{{if .Error}} (last error: {{.Error}}){{end}}. Check the BMC address and credentials.</span></p>
+{{- else if .Stale}}
+<p class="alert a-stale" role="status">{{template "sicon" "stale"}}<span class="alert-b"><strong>Data stale.</strong> Last successful poll at <time datetime="{{.ISO}}">{{.At}}</time>, {{.Age}} before this page was generated{{if .Error}}; last error: {{.Error}}{{end}}. Values below are not current.</span></p>
+{{- end}}
+{{end}}
+
+{{define "kv"}}
+<dl class="kv">
+{{- range .}}
+  <div><dt>{{.Key}}</dt><dd>{{template "v" .Value}}</dd></div>
+{{- end}}
+</dl>
+{{end}}
+
+{{- /* Server tabs (plan 04 §11 item 8): the same set on every server, in this order.
+     History and Security appear where their services are wired. */}}
+{{define "servertabs"}}
+<nav class="tabs" aria-label="Server sections">
+  <ul>
+    <li><a href="/servers/{{.ID}}"{{if eq .Tab "overview"}} aria-current="page"{{end}}>{{template "icon" "layout-dashboard"}}<span>Overview</span>{{if eq .Tab "overview"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/servers/{{.ID}}/sensors"{{if eq .Tab "sensors"}} aria-current="page"{{end}}>{{template "icon" "thermometer"}}<span>Sensors</span>{{if eq .Tab "sensors"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    {{- if .History}}
+    <li><a href="/servers/{{.ID}}/history"{{if eq .Tab "history"}} aria-current="page"{{end}}>{{template "icon" "activity"}}<span>History</span>{{if eq .Tab "history"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    {{- end}}
+    <li><a href="/servers/{{.ID}}/events"{{if eq .Tab "events"}} aria-current="page"{{end}}>{{template "icon" "scroll-text"}}<span>Events</span>{{if eq .Tab "events"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/servers/{{.ID}}/activity"{{if eq .Tab "activity"}} aria-current="page"{{end}}>{{template "icon" "clock-arrow-up"}}<span>Activity</span>{{if eq .Tab "activity"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/servers/{{.ID}}/inventory"{{if eq .Tab "inventory"}} aria-current="page"{{end}}>{{template "icon" "hard-drive"}}<span>Inventory</span>{{if eq .Tab "inventory"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    {{- if .Security}}
+    <li><a href="/servers/{{.ID}}/security"{{if eq .Tab "security"}} aria-current="page"{{end}}>{{template "icon" "shield-check"}}<span>Security</span>{{if eq .Tab "security"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    {{- end}}
+  </ul>
+</nav>
+{{end}}
+
+{{- /* Server page head: breadcrumb is in the layout; name, tags, identity line, BMC link. */}}
+{{define "serverhead"}}
+<div class="shead-top">
+<div class="shead-id">
+  <h1>{{.Name}}{{if .Tab}}: {{.Tab}}{{end}}{{range .Tags}} <span class="tag{{if ne . "critical"}} tag-plain{{end}}">{{if eq . "critical"}}Critical server{{else}}{{.}}{{end}}</span>{{end}}</h1>
+  <p class="sub">{{if .Identity}}{{.Identity}}{{end}}{{if .BMCURL}}{{if .Identity}} · {{end}}<a href="{{.BMCURL}}" rel="noreferrer">Open BMC web UI {{template "icon" "external-link"}}<span class="sr-only"> ({{.BMCHost}})</span></a>{{end}}</p>
+  {{- if .Health.Class}}
+  <p class="shead-chips"><span class="chip pchip">{{if eq .Power "On"}}{{template "icon" "power"}}{{else}}{{template "icon" "power-off"}}{{end}} Power: {{.Power}}</span> {{template "health" .Health}} {{template "chip" .Fresh}}</p>
+  {{- end}}
+  {{- with .Maint}}
+  <p class="maint-line" role="status">{{template "maintbadge" .}}</p>
+  {{- end}}
+</div>
+{{- with .Menus}}{{template "hmenus" .}}{{end}}
+</div>
+{{end}}
+
+{{- /* Auto-refresh control (UX-17): state, a labelled toggle, and Reload now. */}}
+{{define "refresh"}}
+<form class="refresh" method="post" action="/prefs/refresh">
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <input type="hidden" name="next" value="{{.Next}}">
+  {{- if .On}}
+  <span>Auto-refresh <strong>On</strong> (every {{.Every}} s)</span>
+  <input type="hidden" name="refresh" value="off">
+  <button type="submit" class="btn btn-secondary btn-small">Turn off</button>
+  {{- else}}
+  <span>Auto-refresh <strong>Off</strong></span>
+  <input type="hidden" name="refresh" value="on">
+  <button type="submit" class="btn btn-small">Turn on ({{.Every}} s)</button>
+  {{- end}}
+  <a href="{{.Next}}">Reload now</a>
+</form>
+{{end}}
+
+{{define "formerror"}}{{if .}}<p id="form-error" class="alert a-crit" role="alert">{{template "sicon" "crit"}}<span class="alert-b"><strong>Error:</strong> {{.}}</span></p>{{end}}{{end}}
+
+{{define "settingstabs"}}
+<nav class="tabs" aria-label="Settings">
+  <ul>
+    <li><a href="/settings/users"{{if eq . "users"}} aria-current="page"{{end}}>Users{{if eq . "users"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/settings/tokens"{{if eq . "tokens"}} aria-current="page"{{end}}>API tokens{{if eq . "tokens"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/settings/general"{{if eq . "general"}} aria-current="page"{{end}}>General{{if eq . "general"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/settings/servers"{{if eq . "servers"}} aria-current="page"{{end}}>Servers{{if eq . "servers"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/settings/notifications"{{if eq . "notifications"}} aria-current="page"{{end}}>Notifications{{if eq . "notifications"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/settings/integrations"{{if eq . "integrations"}} aria-current="page"{{end}}>Integrations{{if eq . "integrations"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+    <li><a href="/settings/audit"{{if eq . "audit"}} aria-current="page"{{end}}>Audit log{{if eq . "audit"}}<span class="tab-ink" aria-hidden="true"></span>{{end}}</a></li>
+  </ul>
+</nav>
+{{end}}
+
+{{- /* Step-up state as one line at the top of a page with changes (brief §5.4 Settings). */}}
+{{define "stepup"}}
+{{- if .Fresh}}
+<p class="stepup-line" role="status">{{template "icon" "shield"}} Step-up fresh until <time datetime="{{.UntilISO}}">{{.Until}}</time>. After that, changes ask for an authenticator code.</p>
+{{- else}}
+<p class="stepup-line need" role="status">{{template "icon" "shield"}} Changes need a fresh code from your authenticator. <a href="/stepup?next={{.Next}}">Confirm now</a> (allows changes for {{.Window}}).</p>
+{{- end}}
+{{end}}
+
+{{define "pager"}}
+{{- if gt .Pages 1}}
+<nav class="pager" aria-label="{{.Label}}">
+  <ul>
+    <li>{{if .FirstHref}}<a href="{{.FirstHref}}">First</a>{{else}}<span class="pager-off">First</span>{{end}}</li>
+    <li>{{if .PrevHref}}<a href="{{.PrevHref}}" rel="prev">Newer</a>{{else}}<span class="pager-off">Newer</span>{{end}}</li>
+    <li><span aria-current="page">Page {{.Page}} of {{.Pages}}</span></li>
+    <li>{{if .NextHref}}<a href="{{.NextHref}}" rel="next">Older</a>{{else}}<span class="pager-off">Older</span>{{end}}</li>
+    <li>{{if .LastHref}}<a href="{{.LastHref}}">Last</a>{{else}}<span class="pager-off">Last</span>{{end}}</li>
+  </ul>
+</nav>
+{{- end}}
+{{end}}
+
+{{- /* Fleet table (C-06): severity first, 36 px rows on desktop, stacked on phones. */}}
+{{define "fleettable"}}
+<div class="tw" role="region" aria-label="Fleet table" tabindex="0">
+<table class="stack">
+  <thead><tr><th scope="col">Server</th><th scope="col">State</th><th scope="col">Issue</th><th scope="col">Inlet {{.TempUnit}}</th><th scope="col">CPU {{.TempUnit}}</th><th scope="col" class="num">Fans</th><th scope="col" class="num">PSUs</th><th scope="col" class="num">Draw W</th>{{if .SecurityColumn}}<th scope="col">Security</th>{{end}}<th scope="col">Data</th></tr></thead>
+  <tbody>
+  {{- range .Servers}}
+    <tr class="{{.RowClass}}">
+      <th scope="row" data-label="Server"><span class="who"><a href="/servers/{{.ID}}">{{.Name}}</a>{{if .Critical}} <span class="tag">Crit<span class="sr-only">ical server</span></span>{{end}}{{with .Maint}} <span class="badge b-maint" title="{{.Text}}">{{template "sicon" "maint"}} In maintenance</span>{{end}}</span></th>
+      <td data-label="State">{{template "health" .Health}}</td>
+      <td data-label="Issue" class="issue">{{if .Issue}}{{.Issue}}{{else}}<span class="meta">None</span>{{end}}</td>
+      <td data-label="Inlet {{$.TempUnit}}" class="mcell">{{template "mcell" .Inlet}}</td>
+      <td data-label="CPU {{$.TempUnit}}" class="mcell">{{template "mcell" .CPU}}</td>
+      <td data-label="Fans" class="num">{{template "v" .FanCount}}</td>
+      <td data-label="PSUs" class="num">{{if .PowerUnmonitored}}<span class="meta">Not monitored</span>{{else}}{{template "v" .PSUCount}}{{end}}</td>
+      <td data-label="Draw W" class="num">{{if .PowerUnmonitored}}<span class="meta">Not monitored</span>{{else}}{{template "v" .DrawW}}{{end}}</td>
+      {{- if $.SecurityColumn}}
+      <td data-label="Security">{{with .Security}}{{template "seccell" .}}{{end}}</td>
+      {{- end}}
+      <td data-label="Data">{{template "chip" .Fresh}}</td>
+    </tr>
+  {{- end}}
+  </tbody>
+</table>
+</div>
+{{end}}
+
+{{- /* Icons: a <use> of the page's sprite (sprite.go; Lucide 1.53.0, ISC, plus the mark).
+     Always decorative (aria-hidden) and placed beside a visible label. */}}
+{{define "icon"}}<svg class="ic ic-{{.}}" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-{{.}}"/></svg>{{end}}
+
+{{- /* Status icon for a state class (badges, chips, the pill): the shape carries the
+     state with the word, so no state depends on color alone. */}}
+{{define "sicon"}}
+{{- if eq . "ok" "good"}}{{template "icon" "circle-check"}}
+{{- else if eq . "warn" "near"}}{{template "icon" "triangle-alert"}}
+{{- else if eq . "crit"}}{{template "icon" "octagon-x"}}
+{{- else if eq . "info"}}{{template "icon" "info"}}
+{{- else if eq . "pend"}}{{template "icon" "hourglass"}}
+{{- else if eq . "stale"}}{{template "icon" "clock"}}
+{{- else if eq . "live"}}{{template "icon" "activity"}}
+{{- else if eq . "aging"}}{{template "icon" "clock-arrow-up"}}
+{{- else if eq . "maint"}}{{template "icon" "wrench"}}
+{{- else if eq . "off"}}{{template "icon" "power-off"}}
+{{- else}}{{template "icon" "circle-question-mark"}}
+{{- end}}
+{{- end}}
+
+{{- /* Enrollment stepper (C-18): 1 Password, 2 Authenticator, 3 Done. */}}
+{{define "stepper"}}
+<ol class="stepper" aria-label="Setup steps">
+  <li{{if eq . 1}} aria-current="step"{{else}} class="done"{{end}}><span class="step-n" aria-hidden="true">{{if gt . 1}}{{template "icon" "check"}}{{else}}1{{end}}</span> Password</li>
+  <li{{if eq . 2}} aria-current="step"{{else if gt . 2}} class="done"{{end}}><span class="step-n" aria-hidden="true">2</span> Authenticator</li>
+  <li{{if eq . 3}} aria-current="step"{{end}}><span class="step-n" aria-hidden="true">3</span> Done</li>
+</ol>
+{{end}}
+
+{{define "confirmform"}}
+<h2>Confirm</h2>
+<form method="post" action="/enroll" class="form">
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <div class="field"><label for="c-username">Username</label>
+  <input id="c-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="64" value="{{.Username}}"></div>
+  <div class="field"><label for="c-password">Password</label>
+  <input id="c-password" name="password" type="password" autocomplete="current-password" required maxlength="256"></div>
+  <div class="field"><label for="c-code">Current 6-digit code</label>
+  <input id="c-code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required aria-describedby="c-code-hint">
+  <p id="c-code-hint" class="hint">The digits change every 30 seconds.</p></div>
+  <button type="submit" class="btn">Confirm authenticator</button>
+</form>
+<p class="hint"><a href="/login">Back to sign in</a></p>
+{{end}}
+
+{{- /* Server header menus (plan 04 §11 item 8): Console ▾ · Power ▾ · More ▾, <details>
+     menus that work without script; app.js adds Escape and click-outside. */}}
+{{define "hmenus"}}
+{{- if .Note}}
+<p class="meta acts-note">{{.Note}}</p>
+{{- else}}
+<div class="hmenus" role="group" aria-label="Server actions">{{template "menutrio" .}}</div>
+{{- end}}
+{{end}}
+
+{{define "menutrio"}}
+<details class="menu hmenu"><summary class="btn btn-secondary">{{template "icon" "monitor"}} Console {{template "icon" "chevron-down"}}</summary><div class="menu-pop"><ul class="menu-list">{{template "menuitems" .Console}}</ul></div></details>
+<details class="menu hmenu"><summary class="btn btn-secondary">{{template "icon" "power"}} Power {{template "icon" "chevron-down"}}</summary><div class="menu-pop"><ul class="menu-list">{{template "menuitems" .Power}}</ul></div></details>
+<details class="menu hmenu"><summary class="btn btn-secondary">{{template "icon" "ellipsis"}} More {{template "icon" "chevron-down"}}</summary><div class="menu-pop"><ul class="menu-list">{{template "menuitems" .More}}</ul></div></details>
+{{end}}
+
+{{define "menuitems"}}
+{{- range .}}<li{{if .Sep}} class="sep"{{end}}>{{if .Href}}<a class="mi{{if .Danger}} mi-danger{{end}}" href="{{.Href}}">{{template "icon" .Icon}}<span class="mi-t"><span>{{.Label}}</span>{{if .Sub}}<span class="mi-sub">{{.Sub}}</span>{{end}}</span></a>{{else}}<span class="mi mi-off" aria-disabled="true">{{template "icon" .Icon}}<span class="mi-t"><span>{{.Label}}</span><span class="mi-sub">{{.Why}}</span></span></span>{{end}}</li>{{end}}
+{{- end}}
+
+{{- /* An Activity list (plan 04 §11 item 8): time, person, server and what was done. The
+     view model has no address or parameter field; nothing else can be shown here. */}}
+{{define "activitylist"}}
+{{- if .Unavailable}}
+<p class="empty">{{.Unavailable}}</p>
+{{- else if .Rows}}
+<ul class="dense feed act-list">
+{{- range .Rows}}
+  <li><time class="mono" datetime="{{.ISO}}">{{.Time}}</time> {{template "health" .Result}} <span><strong>{{.Who}}</strong> {{.Text}}{{if not $.Server}} on <a href="/servers/{{.ServerID}}">{{.ServerName}}</a>{{end}}</span></li>
+{{- end}}
+</ul>
+{{- with .OlderHref}}
+<p><a href="{{.}}">Older actions</a></p>
+{{- end}}
+{{- else}}
+<p class="empty">No actions recorded yet.</p>
+{{- end}}
+{{end}}

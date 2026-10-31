@@ -1,0 +1,52 @@
+{{- /* Firmware view (tech_doc §38): shared by /firmware and the Inventory tab. */}}
+{{define "fwname"}}{{if .Unnamed}}<span class="nodata">{{.Component}}</span>{{else}}{{.Component}}{{end}}{{end}}
+
+{{define "fwflags"}}
+{{- range $i, $f := .Flags}}{{if $i}} {{end}}{{template "health" $f}}{{end}}
+{{- if .Minimum}} <span class="meta"><span class="nw">minimum {{.Minimum}}</span>{{if .Note}} · {{.Note}}{{end}}</span>{{end}}
+{{- end}}
+
+{{define "fwlegend"}}
+<p class="hint">Running is the version the device runs; Previous is the rollback copy the BMC keeps; Staged waits for a reboot; a version &ldquo;stored on the BMC&rdquo; is an image the BMC holds but never installed. Latest is the newest release the vendor's catalog lists for this model. <strong>Below minimum</strong>: older than the minimum known good version in config.yaml. <strong>Urgent update</strong> and <strong>Update available</strong>: the vendor lists a newer release (rated Urgent, or Recommended or Optional); this app never installs it: update on the BMC itself. <strong>Not applied</strong>: the BMC holds a newer image than the one installed; install it from the BMC's update page when convenient (most components need a host reboot). <strong>Cannot compare</strong>: the versions have different shapes, so no order is guessed.</p>
+{{- end}}
+
+{{define "fwlatest"}}
+{{- with .Latest}}
+{{- if .Text}}<span class="meta">{{.Text}}</span>{{if .Version}} <span class="meta">(newest listed <span class="mono">{{.Version}}</span>)</span>{{end}}
+{{- else}}<span class="mono">{{.Version}}</span>{{if .Criticality}} <span class="meta">· {{.Criticality}}</span>{{end}}{{if .Released}} <span class="meta">· {{.Released}}</span>{{end}}{{end}}
+{{- if .Href}} <a href="{{.Href}}" rel="noopener noreferrer" target="_blank">Details{{template "icon" "external-link"}}<span class="sr-only"> of {{.Name}} (opens a new tab)</span></a>{{end}}
+{{- if .StoredNote}} <span class="meta">(already stored on the BMC: install it there)</span>{{end}}
+{{- with .Skip}}<br><span class="meta">Skipped {{.Version}} by {{.By}}: {{.Comment}}</span>{{end}}
+{{- with .SkipForm}}{{template "fwskip" .}}{{end}}
+{{- else}}<span class="nodata">None</span>
+{{- end}}
+{{- end}}
+
+{{define "fwskip"}}
+{{- if .Unskip}}
+<form method="post" action="/servers/{{.ServerID}}/firmware/unskip" class="ackf"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="component" value="{{.ComponentID}}"><input type="hidden" name="fqdd" value="{{.FQDD}}"><input type="hidden" name="from" value="{{.From}}"><button type="submit" class="btn btn-secondary btn-small">Unskip<span class="sr-only"> this update</span></button></form>
+{{- else}}
+<details class="more"><summary>{{template "icon" "chevron-right"}}Skip this version…</summary>
+  <form method="post" action="/servers/{{.ServerID}}/firmware/skip" class="stackform">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="component" value="{{.ComponentID}}"><input type="hidden" name="fqdd" value="{{.FQDD}}"><input type="hidden" name="version" value="{{.Version}}"><input type="hidden" name="from" value="{{.From}}">
+    <div class="field"><label for="{{.Anchor}}">Why skip {{.Version}}?</label>
+      <input id="{{.Anchor}}" name="comment" type="text" required maxlength="500" autocomplete="off" aria-describedby="{{.Anchor}}-h">
+      <p class="hint" id="{{.Anchor}}-h">A skipped version stops flagging and is not notified; a newer release flags again. One line, 500 bytes at most; the reason is audited.</p></div>
+    <button type="submit" class="btn btn-secondary">Skip {{.Version}}</button>
+  </form>
+</details>
+{{- end}}
+{{- end}}
+
+{{define "fwscan"}}
+{{if .Name}}<strong>{{.Name}}:</strong> {{end}}{{if .ISO}}<time datetime="{{.ISO}}">{{.Text}}</time>{{else}}{{.Text}}{{end}}
+{{- range .Notes}} <span class="meta">{{.}}</span>{{end}}
+{{- if .Coverage}} <span class="meta">Update check: {{.Coverage}}</span>{{end}}
+{{- with .Rescan}}
+{{- if .CSRF}}
+<form method="post" action="/servers/{{.ServerID}}/firmware/rescan" class="ackf"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="from" value="{{.From}}"><button type="submit" class="btn btn-secondary">Re-scan firmware<span class="sr-only"> of {{.Name}}</span></button></form>
+{{- else}}
+<p class="ackf"><span class="btn btn-disabled" aria-disabled="true">Re-scan firmware<span class="sr-only"> of {{.Name}}</span></span> <span class="why-off">Re-scan: {{.Why}}.</span></p>
+{{- end}}
+{{- end}}
+{{- end}}

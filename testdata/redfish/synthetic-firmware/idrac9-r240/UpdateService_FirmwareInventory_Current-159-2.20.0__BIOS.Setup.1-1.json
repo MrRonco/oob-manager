@@ -1,0 +1,36 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
+  "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Current-159-2.20.0__BIOS.Setup.1-1",
+  "@odata.type": "#SoftwareInventory.v1_9_0.SoftwareInventory",
+  "Description": "Represents Firmware Inventory (SYNTHETIC fixture written from the captured shape, not captured)",
+  "Id": "Current-159-2.20.0__BIOS.Setup.1-1",
+  "Name": "BIOS",
+  "Oem": {
+    "Dell": {
+      "@odata.type": "#DellOem.v1_3_0.DellOemResources",
+      "DellSoftwareInventory": {
+        "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Current-159-2.20.0__BIOS.Setup.1-1/Oem/Dell/DellSoftwareInventory/DCIM:SYNTHETIC__BIOS.Setup.1-1",
+        "@odata.type": "#DellSoftwareInventory.v1_2_0.DellSoftwareInventory",
+        "ComponentID": "159",
+        "ComponentType": "BIOS",
+        "ElementName": "BIOS",
+        "IdentityInfoType": [
+          "OrgID:ComponentType:VendorID:DeviceID:SubVendorID:SubDeviceID"
+        ],
+        "IdentityInfoValue": [
+          "DCIM:BIOS:SYNTHETIC"
+        ],
+        "InstallationDate": "NA",
+        "Status": "AvailableForInstallation"
+      }
+    }
+  },
+  "ReleaseDate": "2024-01-15T00:00:00Z",
+  "SoftwareId": "159",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Updateable": true,
+  "Version": "2.20.0"
+}

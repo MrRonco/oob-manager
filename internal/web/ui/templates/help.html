@@ -1,0 +1,89 @@
+{{define "content"}}
+<div class="ph"><h1>Help</h1></div>
+<div class="g2">
+<div>
+<section class="panel prose" aria-labelledby="setup-h" id="setup">
+  <h2 id="setup-h">Getting started</h2>
+  <ol class="list">
+    <li>The first admin account is created in the browser at <code>/setup</code> with the one-time setup code the container prints in its log on the first start (or on the server with the <code>bootstrap-admin</code> command). Everyone else gets a one-time setup link from an admin (Settings, Users).</li>
+    <li>Servers are added in Settings, Servers: the BMC address (an IP literal), its kind, its TLS certificate fingerprint (confirmed once) and its logins, stored encrypted. They can also be listed in <code>config.yaml</code> (restart after editing).</li>
+    <li>Compare the pinned TLS fingerprint with the one the BMC shows on its certificate page before you trust the data.</li>
+    <li>Dashboards and monitors read the fleet with a read-only API token (Settings, API tokens).</li>
+  </ol>
+  {{- if .DocsURL}}
+  <p>Full documentation: <a href="{{.DocsURL}}" rel="noreferrer">project docs</a>.</p>
+  {{- end}}
+</section>
+<section class="panel prose" aria-labelledby="nav-h" id="navigation">
+  <h2 id="nav-h">Finding your way</h2>
+  <ul class="list">
+    <li>The sidebar (the Menu button on a phone) lists Overview, Servers, Firmware, Events, Activity, Settings and Help, then every server with its state and one line about it.</li>
+    {{- if .SignedIn}}
+    <li><a href="/go">Go to</a> lists every page, server and setting you can open, with a filter (also in the account menu).</li>
+    {{- end}}
+    <li>Every server page has the same tabs: Overview, Sensors, History, Events, Activity, Inventory and Security. Overview answers "is anything wrong?"; Sensors has every reading.</li>
+    <li>A server's actions are in three menus at the top of its pages, in the same place on every tab: Console (graphical and serial), Power (power actions and Restart BMC) and More (fan boost, maintenance, notes, the BMC's web interface). On a phone they sit in a bar at the bottom of the screen. Each menu works from the keyboard: Tab to it, Enter opens it, Escape closes it.</li>
+    <li>Activity lists what people and oob-manager did to the servers (power requests, fan leases, BMC restarts, maintenance), for every role. Sign-ins and settings changes are only in the admins' audit log.</li>
+  </ul>
+</section>
+<section class="panel prose" aria-labelledby="gl-h" id="glossary">
+  <h2 id="gl-h">Glossary</h2>
+  <dl class="kv">
+    <div><dt>BMC</dt><dd>Baseboard management controller: the small computer inside a server that works even when the server is off (Dell iDRAC).</dd></div>
+    <div><dt>Redfish</dt><dd>The standard web API the BMC answers on. oob-manager reads it with a read-only account.</dd></div>
+    <div><dt>System Event Log (SEL)</dt><dd>The BMC's hardware log: power, temperature, fan, intrusion and memory events.</dd></div>
+    <div><dt>Lifecycle log</dt><dd>Dell's configuration and audit log: logins, firmware updates, settings changes.</dd></div>
+    <div><dt>Power-good (PG)</dt><dd>One bit per power rail, set when the rail is in range. Shown as Good or Fault, never as volts.</dd></div>
+    <div><dt>FQDD</dt><dd>Dell's fully qualified device descriptor, an internal name for a component.</dd></div>
+    <div><dt>Firmware view</dt><dd>The Firmware page lists what runs on each component, read from the BMC once a day, after a BMC restart, or when an operator presses Re-scan. It never updates firmware.</dd></div>
+    <div><dt>Running, previous and staged firmware</dt><dd>Running is the version the device reports now. Previous is the rollback copy the BMC keeps. Staged is an image that waits for a reboot to be applied.</dd></div>
+    <div><dt>Stored on the BMC</dt><dd>A firmware image the BMC holds in its own store but never installed (on Dell, the "Current" entry of the firmware inventory when it differs from the "Installed" one). A stored image newer than the running version is flagged Not applied; installing it from the BMC's update page clears the flag.</dd></div>
+    <div><dt>Vendor catalog</dt><dd>The vendor's signed list of firmware releases per server model (Dell's enterprise catalog). oob-manager downloads it only when the online check is on (Settings → General), or imports a copy an admin uploads, checks its signature first, and compares versions. It never downloads or installs firmware.</dd></div>
+    <div><dt>Criticality</dt><dd>The vendor's rating of a release: Urgent (flagged Urgent update and counted in the sidebar), Recommended or Optional (flagged Update available).</dd></div>
+    <div><dt>End of support</dt><dd>When the vendor catalog no longer lists a model, or only lists releases older than five years, updates cannot be checked; the server's update line says so instead of claiming it is up to date.</dd></div>
+    <div><dt>Minimum known good</dt><dd>The oldest version an owner accepts, set in config.yaml (firmware.minimum, and security.min_firmware for the BMC itself). Older versions are flagged Below minimum; versions that cannot be ordered are flagged Cannot compare.</dd></div>
+    <div><dt>Sensor history</dt><dd>The History tab draws every recorded sensor over 24 hours, 7 days, 30 days or a year, with the warning and critical levels of the focused temperature and the period's events. Every reading of each poll is kept for a week by default, then only summaries.</dd></div>
+    <div><dt>Bucket</dt><dd>One point of a history chart: the minimum, average and maximum of the readings in a fixed slice of time (10 minutes for 24 hours, an hour for 7 days, 3 hours for 30 days, a day for a year).</dd></div>
+    <div><dt>Rollup</dt><dd>The hourly and daily summaries (minimum, average, maximum, number of readings) the app keeps after the individual readings are deleted, so long ranges stay small. Settings → General sets how long each is kept.</dd></div>
+    <div><dt>Stale</dt><dd>The BMC has not answered for three poll intervals. Values stay visible but are marked as not current.</dd></div>
+    <div><dt>Step-up</dt><dd>A fresh authenticator code before a change. It stays valid for a few minutes, then you are asked again.</dd></div>
+    <div><dt>BMC restart</dt><dd>Restarts only the management controller (a server's Power menu, admin): consoles close and readings pause for a few minutes, while the host and its operating system keep running. A host restart is a power action and reboots the server itself.</dd></div>
+    <div><dt>Fan lease</dt><dd>A temporary minimum fan speed with a countdown, started from a server's More menu (Fan boost). The host fan script or the BMC applies it, and it ends by itself.</dd></div>
+    <div><dt>Headroom</dt><dd>How far a temperature is below its warning threshold. The bar marks warning and critical.</dd></div>
+  </dl>
+</section>
+</div>
+<div>
+<section class="panel prose" aria-labelledby="kb-h" id="keyboard">
+  <h2 id="kb-h">Keyboard</h2>
+  <ul class="list">
+    <li>Every page starts with a "Skip to content" link.</li>
+    {{- if .SignedIn}}
+    <li><kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>⌘</kbd>+<kbd>K</kbd> on a Mac) opens Go to: type a few letters of a page, a server or a setting, then press <kbd>Enter</kbd>. <kbd>g</kbd> then <kbd>o</kbd> opens the Overview, <kbd>g</kbd> then <kbd>s</kbd> the Servers, and <kbd>/</kbd> jumps to the page's filter field. The single-key shortcuts can be switched off. <a href="/go#shortcuts">All shortcuts</a>.</li>
+    {{- end}}
+    <li>The graphical console captures the keyboard while it has focus. Press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd> to return focus to the console toolbar.</li>
+    <li><kbd>Escape</kbd> closes an open menu.</li>
+  </ul>
+</section>
+<section class="panel prose" aria-labelledby="a11y-h" id="accessibility">
+  <h2 id="a11y-h">Accessibility statement</h2>
+  <p>oob-manager aims to meet WCAG 2.2 level AA in both color schemes, from 320 px wide phones to desktops, with keyboard alone and with a screen reader. Every page is checked with axe-core in automated tests.</p>
+  <p>Known limitation: the graphical console is a picture of the remote screen and cannot be read by a screen reader. The serial console (a server's Console menu) is the text, screen-reader friendly alternative where the BMC and the host support it.</p>
+  <p>Every status is shown as a word and a symbol, never by color alone. Pages work without JavaScript except the graphical console.</p>
+  <p>Motion is short (at most a quarter of a second), never used for alarms or status changes, and switched off completely when your device asks for reduced motion.</p>
+</section>
+<section class="panel prose" aria-labelledby="rp-h" id="report">
+  <h2 id="rp-h">Report a problem</h2>
+  {{- if .IssuesURL}}
+  <p>Report bugs and accessibility barriers on the <a href="{{.IssuesURL}}" rel="noreferrer">issue tracker</a>. Report security problems privately as described in the <a href="{{.SecurityURL}}" rel="noreferrer">security policy</a>.</p>
+  {{- else}}
+  <p>Report bugs and accessibility barriers to the administrator of this installation. Include the version shown on the About page.</p>
+  {{- end}}
+</section>
+<section class="panel prose" aria-labelledby="hw-h" id="hardware">
+  <h2 id="hw-h">Supported hardware</h2>
+  <p>Dell iDRAC8 and iDRAC9 over Redfish, and other Redfish BMCs for read-only health. IPMI is a legacy path. Virtual media, firmware updates, BIOS settings and BMC user management are out of scope by design.</p>
+</section>
+</div>
+</div>
+{{end}}

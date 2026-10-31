@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+  DRAFT Unraid Community Applications template (plan 07 §4.8, docs/plans/09-store-ready-install.md).
+  Not submitted. Before submitting: publish the signed image, set the support thread URL, move this
+  file to the public templates repository (templates/oob-manager.xml) with an icon, and run CA
+  Validate and Scan.
+-->
+<?oob-manager repopolicy:allow host-paths -- an Unraid template names Unraid's standard appdata share as the default data path ?>
+<Container version="2">
+  <Name>oob-manager</Name>
+  <Repository>ghcr.io/mrronco/oob-manager:v0.14</Repository>
+  <Registry>https://github.com/MrRonco/oob-manager/pkgs/container/oob-manager</Registry>
+  <Network>bridge</Network>
+  <Privileged>false</Privileged>
+  <Support>https://forums.unraid.net/topic/SUPPORT-THREAD-TBD/</Support>
+  <Project>https://github.com/MrRonco/oob-manager</Project>
+  <Overview>Out-of-band management for Dell iDRAC 8/9 (other Redfish BMCs untested): health, sensors, event logs, firmware, power and fan control, serial and graphical console, with TOTP sign-in and an audit log. Read-only by default. First start: open the WebUI and enter the one-time setup code from the container log. Back up keys/age-identity in the data folder off this server. The data folder must be writable by the container user (99:100 below); if the log says "not writable", run: chown -R 99:100 /mnt/user/appdata/oob-manager</Overview>
+  <Category>Tools: Network:Management</Category>
+  <WebUI>https://[IP]:[PORT:8443]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/MrRonco/unraid-templates/main/templates/oob-manager.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/MrRonco/unraid-templates/main/icon.png</Icon>
+  <ExtraParams>--user 99:100 --read-only --tmpfs /tmp:size=16m,noexec,nosuid,nodev --cap-drop ALL --security-opt no-new-privileges --memory 256m --memory-swap 256m --pids-limit 64</ExtraParams>
+  <PostArgs/>
+  <Config Name="WebUI (HTTPS)" Target="8443" Default="8443" Mode="tcp" Description="HTTPS port of the web UI. Keep it on your LAN; do not forward it to the internet." Type="Port" Display="always" Required="true" Mask="false">8443</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/oob-manager" Mode="rw" Description="Database, generated keys and certificate. Back up keys/age-identity separately." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/oob-manager</Config>
+  <Config Name="Go memory limit" Target="GOMEMLIMIT" Default="200MiB" Mode="" Description="Soft heap limit below the 256 MiB container limit." Type="Variable" Display="advanced" Required="false" Mask="false">200MiB</Config>
+</Container>

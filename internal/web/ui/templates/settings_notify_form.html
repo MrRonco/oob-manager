@@ -1,0 +1,117 @@
+{{define "content"}}
+<div class="ph"><h1>{{if .New}}Add {{.KindLabel}} target{{else}}Edit {{.Name}}{{end}}</h1></div>
+{{template "settingstabs" "notifications"}}
+{{template "stepup" .StepUp}}
+{{template "formerror" .FormError}}
+<form method="post" action="{{.Action}}" class="g2" autocomplete="off">
+<input type="hidden" name="csrf_token" value="{{.CSRF}}">
+<input type="hidden" name="kind" value="{{.Kind}}">
+<section class="panel" aria-labelledby="dest-h">
+  <h2 id="dest-h">Destination</h2>
+  <p class="hint">{{.KindHelp}}</p>
+  <div class="form">
+    {{- if .New}}
+    <div class="field">
+      <label for="n-id">ID</label>
+      <input id="n-id" name="id" type="text" autocapitalize="none" spellcheck="false" required maxlength="64" pattern="[a-z0-9][a-z0-9_\-]{0,63}" value="{{.ID}}" aria-describedby="n-id-hint">
+      <p id="n-id-hint" class="hint">Lowercase letters, digits, - and _. It cannot be changed later.</p>
+    </div>
+    {{- end}}
+    <div class="field">
+      <label for="n-name">Name</label>
+      <input id="n-name" name="name" type="text" required maxlength="64" value="{{.Name}}" aria-describedby="n-name-hint">
+      <p id="n-name-hint" class="hint">Shown in this list and in failure alerts, for example "Phone".</p>
+    </div>
+    {{- if eq .Kind "email"}}
+    <div class="field">
+      <label for="n-host">SMTP server</label>
+      <input id="n-host" name="smtp_host" type="text" inputmode="url" autocapitalize="none" spellcheck="false" required maxlength="253" value="{{.SMTPHost}}" aria-describedby="n-host-hint">
+      <p id="n-host-hint" class="hint">Host name or IP address of the mail server.</p>
+    </div>
+    <div class="field">
+      <label for="n-port">Port</label>
+      <input id="n-port" name="smtp_port" type="text" inputmode="numeric" required maxlength="5" pattern="[0-9]{1,5}" value="{{.SMTPPort}}" aria-describedby="n-port-hint">
+      <p id="n-port-hint" class="hint">587 for STARTTLS, 465 for TLS, 25 for a plaintext LAN relay.</p>
+    </div>
+    <div class="field">
+      <label for="n-sec">Connection security</label>
+      <select id="n-sec" name="email_security" aria-describedby="n-sec-hint">
+        <option value="starttls"{{if eq .EmailSecurity "starttls"}} selected{{end}}>STARTTLS (required)</option>
+        <option value="tls"{{if eq .EmailSecurity "tls"}} selected{{end}}>TLS from the start</option>
+        <option value="none"{{if eq .EmailSecurity "none"}} selected{{end}}>None (LAN relay, no login)</option>
+      </select>
+      <p id="n-sec-hint" class="hint">A server that does not offer STARTTLS is a failure, never a silent downgrade.</p>
+    </div>
+    <div class="field">
+      <label for="n-from">From</label>
+      <input id="n-from" name="email_from" type="text" inputmode="email" autocapitalize="none" spellcheck="false" required maxlength="254" value="{{.EmailFrom}}">
+    </div>
+    <div class="field">
+      <label for="n-to">To</label>
+      <input id="n-to" name="email_to" type="text" inputmode="email" autocapitalize="none" spellcheck="false" required maxlength="2600" value="{{.EmailTo}}" aria-describedby="n-to-hint">
+      <p id="n-to-hint" class="hint">Up to 10 addresses, separated by commas.</p>
+    </div>
+    {{- else}}
+    <div class="field">
+      <label for="n-url">{{if eq .Kind "ntfy"}}Topic URL{{else if eq .Kind "pushover"}}API URL{{else if eq .Kind "gotify"}}Server URL{{else}}Webhook URL{{end}}</label>
+      <input id="n-url" name="url" type="text" inputmode="url" autocapitalize="none" spellcheck="false" required maxlength="512" value="{{.URL}}" aria-describedby="n-url-hint">
+      <p id="n-url-hint" class="hint">{{if eq .Kind "ntfy"}}For example https://ntfy.sh/your-long-random-topic. Anyone who knows a public topic can read it.{{else if eq .Kind "pushover"}}Leave the default unless you run a compatible service.{{else if eq .Kind "gotify"}}The base address; messages go to /message under it.{{else}}Receives the version 1 JSON body (see the deployment guide).{{end}} Must be https://. Redirects are not followed.</p>
+    </div>
+    {{- end}}
+    <div class="radio"><input type="checkbox" id="n-plain" name="allow_plaintext"{{if .AllowPlaintext}} checked{{end}}><label for="n-plain"><strong>Allow plaintext on the LAN</strong><span class="hint">{{if eq .Kind "email"}}Needed for "None" above.{{else}}Allows http://.{{end}} Only to addresses in notifications.allowed_networks.</span></label></div>
+  </div>
+</section>
+<section class="panel" aria-labelledby="sec-h">
+  <h2 id="sec-h">Secrets</h2>
+  <p class="hint">Stored encrypted and bound to this destination. They are never shown again. {{if not .New}}Leave a field blank to keep the stored value; changing the URL or server clears them, so enter them again.{{end}}</p>
+  {{- if .SecretNote}}<p class="meta">{{.SecretNote}}</p>{{end}}
+  <div class="form">
+    {{- if eq .Kind "pushover"}}
+    <div class="field"><label for="n-token">Application token</label><input id="n-token" name="token" type="password" autocomplete="new-password" maxlength="512"{{if .New}} required{{end}}></div>
+    <div class="field"><label for="n-user">User key</label><input id="n-user" name="user" type="password" autocomplete="new-password" maxlength="512"{{if .New}} required{{end}}></div>
+    {{- else if eq .Kind "email"}}
+    <div class="field"><label for="n-user">SMTP user name (optional)</label><input id="n-user" name="user" type="password" autocomplete="new-password" maxlength="512"></div>
+    <div class="field"><label for="n-pass">SMTP password (optional)</label><input id="n-pass" name="password" type="password" autocomplete="new-password" maxlength="512" aria-describedby="n-pass-hint"><p id="n-pass-hint" class="hint">Sent only over TLS.</p></div>
+    {{- else}}
+    <div class="field">
+      <label for="n-token">{{if eq .Kind "gotify"}}Application token{{else if eq .Kind "webhook"}}Signing secret (optional){{else}}Access token (optional){{end}}</label>
+      <input id="n-token" name="token" type="password" autocomplete="new-password" maxlength="512"{{if and .New (eq .Kind "gotify")}} required{{end}} aria-describedby="n-token-hint">
+      <p id="n-token-hint" class="hint">{{if eq .Kind "webhook"}}With a secret, each request carries X-OOB-Signature: sha256=HMAC over "timestamp.body".{{else if eq .Kind "ntfy"}}Sent as a Bearer token.{{else}}Sent in the X-Gotify-Key header.{{end}}</p>
+    </div>
+    {{- end}}
+    {{- if and .SecretOptional (not .New)}}
+    <div class="radio"><input type="checkbox" id="n-clear" name="clear_secrets"><label for="n-clear"><strong>Remove the stored secrets</strong></label></div>
+    {{- end}}
+  </div>
+</section>
+<section class="panel" aria-labelledby="sub-h">
+  <h2 id="sub-h">What to send</h2>
+  <div class="form">
+    <div class="radio"><input type="checkbox" id="n-enabled" name="enabled"{{if .Enabled}} checked{{end}}><label for="n-enabled"><strong>Enabled</strong></label></div>
+    <div class="field">
+      <label for="n-sev">Minimum severity</label>
+      <select id="n-sev" name="min_severity" aria-describedby="n-sev-hint">
+      {{- range .Severities}}
+        <option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>
+      {{- end}}
+      </select>
+      <p id="n-sev-hint" class="hint">A recovery is sent to every target that received the problem.</p>
+    </div>
+    <fieldset>
+      <legend>Events</legend>
+      {{- range .Classes}}
+      <div class="radio"><input type="checkbox" id="c-{{.Value}}" name="classes" value="{{.Value}}"{{if .Checked}} checked{{end}}><label for="c-{{.Value}}">{{.Label}}{{if .New}} <span class="meta">(new: targets saved before it was added are not subscribed until you tick it)</span>{{end}}</label></div>
+      {{- end}}
+    </fieldset>
+    <div class="radio"><input type="checkbox" id="n-detail" name="include_detail"{{if .IncludeDetail}} checked{{end}}><label for="n-detail"><strong>Include BMC log text</strong><span class="hint">Adds up to five SEL or Lifecycle messages to new-entry alerts. Off by default: the text then leaves your network.</span></label></div>
+    {{- if eq .Kind "pushover"}}
+    <div class="radio"><input type="checkbox" id="n-emerg" name="pushover_emergency"{{if .PushoverEmergency}} checked{{end}}><label for="n-emerg"><strong>Critical as emergency priority</strong><span class="hint">Pushover repeats the alert every 5 minutes for an hour until acknowledged.</span></label></div>
+    {{- end}}
+  </div>
+  <div class="btn-row">
+    <button type="submit" class="btn">{{if .New}}Add target{{else}}Save target{{end}}</button>
+    <a class="btn btn-secondary" href="/settings/notifications">Cancel</a>
+  </div>
+</section>
+</form>
+{{end}}

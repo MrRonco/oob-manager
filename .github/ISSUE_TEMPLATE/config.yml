@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/MrRonco/oob-manager/security/advisories/new
+    about: Please report security problems privately through the Security tab, never in a public issue. See SECURITY.md.
+  - name: Deployment and configuration guide
+    url: https://github.com/MrRonco/oob-manager/blob/main/deploy/README.md
+    about: Install, first-run setup, BMC accounts, enabling each feature, upgrades, backups and recovery.

@@ -1,0 +1,11 @@
+# Supply-chain and gate files need the maintainer's review (docs/security.md §6): CI, the
+# dependency policy, the Makefile gates and the tests and tool that enforce them. This
+# takes effect once branch protection on main requires code-owner review (a repository
+# setting).
+/.github/               @MrRonco
+/renovate.json          @MrRonco
+/Makefile               @MrRonco
+/internal/repopolicy/   @MrRonco
+/internal/covergate/    @MrRonco
+/tools/                @MrRonco
+/internal/web/ui/vendor.sha256 @MrRonco

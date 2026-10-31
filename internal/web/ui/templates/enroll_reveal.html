@@ -1,0 +1,15 @@
+{{define "content"}}
+<section class="panel auth wide" aria-labelledby="reveal-h">
+  {{template "stepper" 2}}
+  <h1 id="reveal-h">Scan your authenticator</h1>
+  <p class="alert a-warn">{{template "sicon" "warn"}}<span class="alert-b"><strong>Only you should see this code.</strong> Don't send it to anyone. It is shown on this page only.</span></p>
+  {{- if .QR}}
+  <img class="qr" src="{{.QR}}" width="200" height="200" alt="QR code containing your authenticator secret">
+  {{- end}}
+  <dl class="kv">
+    <div><dt>Secret (type it if you cannot scan)</dt><dd><code class="grouped" data-secret="{{.Secret}}">{{.Grouped}}</code></dd></div>
+  </dl>
+  <details class="more"><summary>{{template "icon" "chevron-right"}}Provisioning URI</summary><code class="codeblock">{{.URI}}</code></details>
+  {{template "confirmform" .}}
+</section>
+{{end}}

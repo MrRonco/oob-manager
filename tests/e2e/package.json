@@ -1,0 +1,13 @@
+{
+  "name": "oob-manager-e2e",
+  "private": true,
+  "description": "Playwright smoke test for oob-manager against the in-repo mock BMCs (make e2e-ui).",
+  "license": "UNLICENSED",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@axe-core/playwright": "4.13.0"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "Dependency policy (docs/security.md §6, CLAUDE.md rule 10, plan 06 §3.8).",
+    "Nothing is proposed before it is 14 days old; security fixes included.",
+    "A release without a timestamp waits on the Dependency Dashboard instead of passing.",
+    "Nothing merges by itself; internal/repopolicy tests this file."
+  ],
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    "schedule:monthly",
+    "helpers:pinGitHubActionDigests",
+    "docker:pinDigests"
+  ],
+  "enabledManagers": ["gomod", "github-actions", "dockerfile", "npm", "custom.regex"],
+  "ignorePaths": ["**/node_modules/**", "**/testdata/**", "deploy/**"],
+  "minimumReleaseAge": "14 days",
+  "minimumReleaseAgeBehaviour": "timestamp-required",
+  "internalChecksFilter": "strict",
+  "dependencyDashboard": true,
+  "automerge": false,
+  "platformAutomerge": false,
+  "labels": ["dependencies"],
+  "postUpdateOptions": ["gomodTidy"],
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "14 days",
+    "labels": ["dependencies", "security"]
+  },
+  "packageRules": [
+    {
+      "description": "Go modules: one PR for every non-major bump; majors get their own PR.",
+      "matchManagers": ["gomod"],
+      "matchDatasources": ["go"],
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "groupName": "Go modules"
+    },
+    {
+      "description": "GitHub Actions stay pinned to a full commit SHA with the tag in a comment.",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest"],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "description": "A digest-only action update (same tag, new commit) is what a rewritten tag looks like: create it only after approval on the Dependency Dashboard.",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["digest"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Docker base images: tag and digest are updated together.",
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "groupName": "Docker base images"
+    },
+    {
+      "description": "Go toolchain on its own: the go.mod toolchain line and the golang build image move together.",
+      "matchDatasources": ["golang-version"],
+      "groupName": "Go toolchain"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["golang"],
+      "groupName": "Go toolchain"
+    },
+    {
+      "description": "Test-only npm dependencies of the Playwright suite (tests/e2e).",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch", "pin"],
+      "groupName": "e2e test dependencies"
+    },
+    {
+      "description": "Tool pins in the Makefile and ci.yml: one PR edits both files, so they cannot drift.",
+      "matchManagers": ["custom.regex"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "CI and build tools"
+    },
+    {
+      "description": "Playwright: the npm test runner and the visual-baseline image (Makefile PW_IMAGE, which bundles the browsers for that exact version) move together in one PR; internal/repopolicy fails if their versions differ.",
+      "matchPackageNames": ["@playwright/test", "mcr.microsoft.com/playwright"],
+      "groupName": "Playwright"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Lines `# renovate: datasource=<ds> depName=<name>` directly above a `*_VERSION` pin (Makefile `:=`, workflow env `:`).",
+      "managerFilePatterns": ["/(^|/)Makefile$/", "/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\s]+)\\n\\s*[A-Z0-9_]+_VERSION\\s*:=?\\s*(?<currentValue>[^\\s]+)"
+      ]
+    },
+    {
+      "customType": "regex",
+      "description": "The visual-baseline runner image in the Makefile (PW_IMAGE): tag and index digest together, grouped with @playwright/test.",
+      "managerFilePatterns": ["/(^|/)Makefile$/"],
+      "matchStrings": [
+        "PW_IMAGE\\s*\\??=\\s*(?<depName>mcr\\.microsoft\\.com/playwright):(?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+-noble)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-noble$"
+    },
+    {
+      "customType": "regex",
+      "description": "The ZAP scanner image in the Makefile (ZAP_IMAGE): date tag and index digest together.",
+      "managerFilePatterns": ["/(^|/)Makefile$/"],
+      "matchStrings": [
+        "ZAP_IMAGE\\s*\\??=\\s*(?<depName>zaproxy/zap-stable):(?<currentValue>[0-9]{8})@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "regex:^(?<major>\\d{8})$"
+    }
+  ]
+}

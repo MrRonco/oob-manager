@@ -1,0 +1,13 @@
+# ZAP rule allowlist for the baseline scans (plan 06 §3.2). Format: <id> TAB <IGNORE|WARN|FAIL> TAB (<reason>; expires YYYY-MM-DD).
+# Every rule not listed keeps ZAP's default, and the scan fails on any WARN or FAIL.
+# internal/repopolicy fails on an entry without a reason or past its expiry date, so each one is re-justified twice a year.
+90004	IGNORE	(Spectre site isolation: COOP same-origin and CORP same-origin are sent on every response and every subresource is same-origin; COEP require-corp adds nothing for an app that embeds nothing cross-origin; expires 2027-04-30)
+10110	IGNORE	(Dangerous JS functions: only in the vendored xterm.js and noVNC bundles on the admin console pages, pinned by sha256 in vendor.sha256 and reviewed at each bump; expires 2027-04-30)
+10027	IGNORE	(Suspicious comments: licence and implementation comments in the vendored xterm.js and noVNC bundles; app templates carry no comments; expires 2027-04-30)
+10049	IGNORE	(Storable and cacheable content: versioned static assets are public by design, max-age 1 h; every HTML and API response is no-store; expires 2027-04-30)
+10109	IGNORE	(Modern web application: informational, the UI works without JavaScript by design; expires 2027-04-30)
+10015	IGNORE	(Re-examine cache-control: every HTML and API response sends no-store, which RFC 9111 makes sufficient on its own; ZAP also wants no-cache and must-revalidate; expires 2027-04-30)
+10111	IGNORE	(Authentication request identified: informational, it marks the sign-in form; expires 2027-04-30)
+10112	IGNORE	(Session management response identified: informational, it marks the __Host- session cookies; expires 2027-04-30)
+10029	IGNORE	(Cookie poisoning: heuristic; every cookie value is server-generated (random tokens, or the fixed value on for the refresh toggle) and no request value is copied into Set-Cookie (prefs.go, csrf.go, auth cookies); expires 2027-04-30)
+10031	IGNORE	(User-controllable attribute: reflected query values such as range and focus are escaped by html/template in attribute context and the CSP allows no inline script; expires 2027-04-30)

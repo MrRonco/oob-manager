@@ -1,0 +1,16 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{template "servertabs" .Nav}}
+<div class="g2">
+<div>
+  <section class="panel" aria-labelledby="act-h">
+    <h2 id="act-h">Actions on this server</h2>
+    {{template "activitylist" .List}}
+  </section>
+</div>
+<div>
+  {{- with .Maint}}{{template "maintcard" .}}{{end}}
+  {{- with .Notes}}{{template "notescard" .}}{{end}}
+</div>
+</div>
+{{end}}

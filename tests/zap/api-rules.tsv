@@ -1,0 +1,4 @@
+# ZAP rule allowlist for the API scan against docs/api/openapi.yaml (plan 06 §3.2). Same format and policy as rules.tsv.
+90004	IGNORE	(Spectre site isolation: JSON and CSV only, COOP and CORP same-origin on every response; expires 2027-04-30)
+10049	IGNORE	(Storable and cacheable content: informational; every API response is no-store; expires 2027-04-30)
+10015	IGNORE	(Re-examine cache-control: every API response sends no-store, sufficient under RFC 9111; expires 2027-04-30)

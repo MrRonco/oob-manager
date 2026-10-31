@@ -1,0 +1,167 @@
+{{define "content"}}
+<div class="ph">
+  <div>
+    <h1>{{.Name}} {{template "health" .Status}}</h1>
+    <p class="sub"><span class="mono">{{.ID}}</span> · {{.KindLabel}} · <span class="mono">{{.Address}}:{{.Port}}</span> · {{if .FileManaged}}<span class="lock">{{template "icon" "lock"}} Managed by config.yaml</span>{{else}}Managed here{{end}}</p>
+  </div>
+</div>
+{{template "settingstabs" "servers"}}
+{{template "stepup" .StepUp}}
+{{- if not .FileManaged}}
+<ol class="stepper" aria-label="Server setup steps">
+{{- range .Steps}}
+  <li{{if .Current}} aria-current="step"{{else if .Done}} class="done"{{end}}><span class="step-n" aria-hidden="true">{{if and .Done (not .Current)}}{{template "icon" "check"}}{{else}}{{.N}}{{end}}</span> <a href="#{{.Anchor}}">{{.Label}}</a></li>
+{{- end}}
+</ol>
+{{- end}}
+{{template "formerror" .FormError}}
+{{- if .Locked}}<p class="alert a-info" role="status">{{template "icon" "lock"}}<span class="alert-b">This section is locked by <code>settings.locked</code> in config.yaml.</span></p>{{end}}
+{{- if .FileManaged}}<p class="alert a-info" role="status">{{template "icon" "lock"}}<span class="alert-b">This server is defined in config.yaml (<code>servers: id {{.ID}}</code>). Change it there and restart. Test connection works here.</span></p>{{end}}
+{{- if .Shadowed}}<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">This browser copy is ignored: config.yaml also defines <code>{{.ID}}</code> and wins. Remove one of them.</span></p>{{end}}
+{{- if .PinMismatch}}
+<div class="alert a-crit" role="alert">{{template "sicon" "crit"}}<div class="alert-b"><p><strong>Certificate changed.</strong> The BMC now presents a certificate that does not match the confirmed fingerprint, so polling of this server is paused. If the BMC's certificate was renewed on purpose, fetch the new fingerprint, compare it and confirm it; the stored credentials are kept.</p>
+{{- if .Editable}}
+  <form method="post" action="/settings/servers/{{.ID}}/pin/fetch"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="rev" value="{{.Rev}}"><input type="hidden" name="kind" value="tls"><button type="submit" class="btn btn-small">Fetch the new fingerprint</button></form>
+{{- end}}
+</div></div>
+{{- end}}
+{{- if .HostKeyBad}}
+<div class="alert a-crit" role="alert">{{template "sicon" "crit"}}<div class="alert-b"><p><strong>SSH host key changed.</strong> The serial console refused the BMC's SSH host key (the password was not sent). If the key changed on purpose, fetch it, compare it and confirm it.</p>
+{{- if .Editable}}
+  <form method="post" action="/settings/servers/{{.ID}}/pin/fetch"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="rev" value="{{.Rev}}"><input type="hidden" name="kind" value="ssh"><button type="submit" class="btn btn-small">Fetch the new host key</button></form>
+{{- end}}
+</div></div>
+{{- end}}
+{{- if and .Problems (not .FileManaged)}}
+<section class="panel p-warn" aria-labelledby="todo-h">
+  <h2 id="todo-h">Before it can run</h2>
+  <ul>{{range .Problems}}<li>{{.}}</li>{{end}}</ul>
+</section>
+{{- end}}
+
+<section class="panel" id="connection" aria-labelledby="conn-h">
+  <h2 id="conn-h">1. Connection</h2>
+  {{- if .Editable}}
+  <div class="g2 even">
+  <form method="post" action="/settings/servers/{{.ID}}/identity" class="form" aria-label="Name and tags">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="rev" value="{{.Rev}}">
+    <div class="field"><label for="e-name">Name</label><input id="e-name" name="name" type="text" required maxlength="64" value="{{.Name}}"></div>
+    <div class="field"><label for="e-tags">Tags</label><input id="e-tags" name="tags" type="text" maxlength="300" value="{{.Tags}}" aria-describedby="e-tags-hint"><p id="e-tags-hint" class="hint">Separated by spaces; critical marks the server on the overview and in power confirmations.</p></div>
+    <div class="btn-row"><button type="submit" class="btn btn-secondary">Save name and tags</button></div>
+  </form>
+  <form method="post" action="/settings/servers/{{.ID}}/connection/fingerprint" class="form" aria-label="Move the server">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="rev" value="{{.Rev}}">
+    <div class="field"><label for="e-kind">BMC kind</label><select id="e-kind" name="kind">{{range .Kinds}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+    <div class="field"><label for="e-addr">BMC address</label><input id="e-addr" name="address" type="text" required maxlength="45" inputmode="decimal" autocapitalize="none" spellcheck="false" value="{{.Address}}"></div>
+    <div class="field"><label for="e-port">HTTPS port</label><input id="e-port" name="port" type="text" inputmode="numeric" required maxlength="5" value="{{.Port}}"></div>
+    <details><summary>{{template "icon" "chevron-right"}}I already have the new certificate fingerprint</summary>
+      <div class="field"><label for="e-pin">SHA-256 of the certificate's public key</label><input id="e-pin" name="pin" type="text" maxlength="95" autocapitalize="none" spellcheck="false"></div></details>
+    <p class="hint">Moving to another kind, address or port means another BMC: its fingerprint is confirmed again, the stored credentials are <strong>deleted</strong> (they can never follow a server to a new host) and the server is disabled until they are entered again. Refused while a fan lease is active.</p>
+    <div class="btn-row"><button type="submit" class="btn btn-secondary">Move…</button></div>
+  </form>
+  </div>
+  {{- else}}
+  <dl class="kv"><div><dt>Name</dt><dd>{{.Name}}</dd></div><div><dt>Tags</dt><dd>{{if .Tags}}{{.Tags}}{{else}}None{{end}}</dd></div>
+    <div><dt>Kind</dt><dd>{{.KindLabel}}</dd></div><div><dt>Address</dt><dd class="mono">{{.Address}}:{{.Port}}</dd></div></dl>
+  {{- end}}
+</section>
+
+<section class="panel" id="fingerprints" aria-labelledby="fp-h">
+  <h2 id="fp-h">2. Fingerprints</h2>
+  <p class="hint panel-intro">The console talks only to a BMC that holds these keys. Each is fetched once, compared by you and confirmed (trust on first use).</p>
+  {{- range .Pins}}
+  <div class="field pin-item">
+    <h3>{{.Label}}</h3>
+    {{- if .Value}}<p class="mono codeblock">{{.Value}}</p>{{else if .Note}}<p>{{.Note}}</p>{{else}}<p><span class="badge b-warn">{{template "sicon" "warn"}} Not set</span></p>{{end}}
+    {{- if $.Editable}}
+    <form method="post" action="/settings/servers/{{$.ID}}/pin/fetch" class="btn-row"><input type="hidden" name="csrf_token" value="{{$.CSRF}}"><input type="hidden" name="rev" value="{{$.Rev}}"><input type="hidden" name="kind" value="{{.Kind}}"><button type="submit" class="btn btn-secondary btn-small">Fetch and confirm<span class="sr-only"> {{.Label}}</span></button></form>
+    <details><summary>{{template "icon" "chevron-right"}}Paste it instead<span class="sr-only"> ({{.Label}})</span></summary>
+      <form method="post" action="/settings/servers/{{$.ID}}/pin" class="form"><input type="hidden" name="csrf_token" value="{{$.CSRF}}"><input type="hidden" name="rev" value="{{$.Rev}}"><input type="hidden" name="kind" value="{{.Kind}}">
+        <div class="field"><label for="pin-{{.Kind}}">{{.Label}}</label><input id="pin-{{.Kind}}" name="value" type="text" maxlength="2048" autocapitalize="none" spellcheck="false" aria-describedby="pin-{{.Kind}}-hint">
+        <p id="pin-{{.Kind}}-hint" class="hint">{{if eq .Kind "ssh"}}One line: type and key, for example ssh-ed25519 AAAA….{{else}}64 hexadecimal digits.{{if .SameAllowed}} Leave empty to use the HTTPS certificate.{{end}}{{end}}</p></div>
+        <div class="btn-row"><button type="submit" class="btn btn-secondary btn-small">Save<span class="sr-only"> {{.Label}}</span></button></div></form></details>
+    {{- end}}
+  </div>
+  {{- end}}
+</section>
+
+<section class="panel" id="credentials" aria-labelledby="cr-h">
+  <h2 id="cr-h">3. Credentials</h2>
+  <p class="hint panel-intro">Stored sealed (AES-256-GCM) and bound to this server's kind, address and port. They are never shown again: you can only replace them.</p>
+  <div class="gen-grid cred-grid">
+  {{- range .Creds}}
+  <div class="field cred">
+    <h3>{{.Label}}{{if .Needed}} <span class="meta">(needed)</span>{{else}} <span class="meta">(optional)</span>{{end}}</h3>
+    <p>{{if .Set}}<span class="badge b-ok">{{template "sicon" "ok"}} {{.Status}}</span>{{else}}<span class="badge b-{{if .Needed}}warn{{else}}unknown{{end}}">{{if .Needed}}{{template "sicon" "warn"}}{{else}}{{template "sicon" "unknown"}}{{end}} {{.Status}}</span>{{end}}</p>
+    {{- if $.Editable}}
+    <form method="post" action="/settings/servers/{{$.ID}}/credentials/{{.Slot}}" class="form" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{$.CSRF}}"><input type="hidden" name="rev" value="{{$.Rev}}">
+      {{- if .Login}}<div class="field"><label for="c-{{.Slot}}-u">Username</label><input id="c-{{.Slot}}-u" name="username" type="text" maxlength="64" autocomplete="off" autocapitalize="none" spellcheck="false" required></div>{{end}}
+      <div class="field"><label for="c-{{.Slot}}-p">Password</label><input id="c-{{.Slot}}-p" name="password" type="password" maxlength="256" autocomplete="new-password" required></div>
+      <div class="btn-row"><button type="submit" class="btn btn-secondary btn-small">{{if .Set}}Replace{{else}}Store{{end}}<span class="sr-only"> {{.Label}}</span></button></div>
+    </form>
+    {{- end}}
+  </div>
+  {{- end}}
+  </div>
+</section>
+
+<section class="panel" id="features" aria-labelledby="ft-h">
+  <h2 id="ft-h">4. Features</h2>
+  {{- with .Features}}
+  <form method="post" action="/settings/servers/{{$.ID}}/features" class="form">
+    <input type="hidden" name="csrf_token" value="{{$.CSRF}}"><input type="hidden" name="rev" value="{{$.Rev}}">
+    <fieldset{{if not $.Editable}} disabled{{end}}>
+    <legend class="sr-only">Features</legend>
+    <div class="feat-group"><h3 class="feat-h">Fans</h3><div class="feat-grid">
+    <div class="field"><label for="f-fan">Fan lease</label><select id="f-fan" name="fan_mode">{{range .FanModes}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+    <div class="field"><label for="f-safe">Fan floor (safe minimum, %)</label><input id="f-safe" name="safe_min_pct" type="text" inputmode="numeric" maxlength="3" value="{{.SafeMin}}" aria-describedby="f-safe-hint"><p id="f-safe-hint" class="hint">{{.FanFloorHint}} Leases only ever raise fans.</p></div>
+    <div class="field"><label for="f-lease">Longest lease (minutes)</label><input id="f-lease" name="max_lease_min" type="text" inputmode="numeric" maxlength="3" value="{{.MaxLease}}"></div>
+    </div></div>
+    <div class="feat-group"><h3 class="feat-h">Consoles</h3><div class="feat-grid">
+    <div class="field"><label for="f-serial">Serial console</label><select id="f-serial" name="serial">{{range .Serials}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+    <div class="field"><label for="f-ssh">BMC SSH port</label><input id="f-ssh" name="ssh_port" type="text" inputmode="numeric" maxlength="5" value="{{.SSHPort}}"></div>
+    <div class="field"><label for="f-gfx">Graphical console</label><select id="f-gfx" name="graphical">{{range .Graphicals}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+    <div class="field"><label for="f-vnc">VNC port</label><input id="f-vnc" name="vnc_port" type="text" inputmode="numeric" maxlength="5" value="{{.VNCPort}}"></div>
+    </div></div>
+    <div class="feat-group"><h3 class="feat-h">Power and polling</h3><div class="feat-grid">
+    <div class="radio wide"><input type="checkbox" id="f-self" name="self_host"{{if .SelfHost}} checked{{end}}><label for="f-self">This console runs on this server (power actions warn that the console goes offline)</label></div>
+    <div class="field wide"><label for="f-impact">What goes down with it</label><textarea id="f-impact" name="impact" rows="3" maxlength="2048" aria-describedby="f-impact-hint">{{.Impact}}</textarea><p id="f-impact-hint" class="hint">One line each, at most 8, shown on the power confirmation page.</p></div>
+    <div class="field"><label for="f-poll">Poll interval (seconds)</label><input id="f-poll" name="poll_interval_s" type="text" inputmode="numeric" maxlength="3" value="{{.PollInterval}}" aria-describedby="f-poll-hint"><p id="f-poll-hint" class="hint">Empty: the app's poll interval. 30 to 600; never shorter than the BMC's cycle time.</p></div>
+    </div></div>
+    {{- if $.Editable}}<div class="btn-row"><button type="submit" class="btn btn-secondary">Save features</button></div>{{end}}
+    </fieldset>
+  </form>
+  {{- end}}
+</section>
+
+<section class="panel" id="test" aria-labelledby="test-h">
+  <h2 id="test-h">Test connection</h2>
+  <p class="hint">Read-only: the Redfish service root, system and manager, the license, the reset actions, the fan limits, the VNC banner and the SSH host key. Nothing is written to the BMC.</p>
+  {{- with .Test}}
+  <p>{{if .OK}}<span class="badge b-ok">{{template "sicon" "ok"}} {{.Summary}}</span>{{else}}<span class="badge b-{{if eq .Summary "Running…"}}info{{else}}crit{{end}}">{{if eq .Summary "Running…"}}{{template "sicon" "info"}}{{else}}{{template "sicon" "crit"}}{{end}} {{.Summary}}</span>{{end}}</p>
+  {{- if .Steps}}
+  <ul class="dense">{{range .Steps}}<li>{{if .OK}}<span class="badge b-ok">{{template "sicon" "ok"}} {{.Name}}</span>{{else}}<span class="badge b-crit">{{template "sicon" "crit"}} {{.Name}}</span>{{end}} {{.Detail}}</li>{{end}}</ul>
+  {{- end}}
+  {{- end}}
+  {{- if .TestRunning}}<noscript><p class="hint">Reload this page to see the result.</p></noscript>{{end}}
+  <form method="post" action="/settings/servers/{{.ID}}/test" class="btn-row"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><button type="submit" class="btn btn-secondary"{{if .TestRunning}} disabled{{end}}>Test connection</button></form>
+</section>
+
+{{- if not .FileManaged}}
+<section class="panel" id="review" aria-labelledby="rv-h">
+  <h2 id="rv-h">5. Review and enable</h2>
+  {{- if .Shadowed}}
+  <p>Remove this unused copy, or remove <code>{{.ID}}</code> from config.yaml to let it run.</p>
+  {{- else if .Enabled}}
+  <p>Enabled: polled, and its features are offered on the server page.</p>
+  {{- if .Editable}}<p class="btn-row"><a class="btn btn-caution" href="/settings/servers/{{.ID}}/disable">Disable…</a></p>{{end}}
+  {{- else}}
+  <p>Disabled. Enabling checks that the fingerprints and the credentials its features need are in place; it is then polled within one poll interval, without a restart.</p>
+  {{- if .Editable}}<form method="post" action="/settings/servers/{{.ID}}/enable" class="btn-row"><input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="rev" value="{{.Rev}}"><button type="submit" class="btn">Enable server</button></form>{{end}}
+  {{- end}}
+  {{- if not .Locked}}<p class="btn-row"><a class="btn btn-danger-outline" href="/settings/servers/{{.ID}}/delete">Remove…</a></p>{{end}}
+</section>
+{{- end}}
+<p><a href="/settings/servers">Back to servers</a></p>
+{{end}}

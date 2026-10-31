@@ -1,0 +1,12 @@
+{{define "content"}}
+<div class="ph">
+  <div>
+    <h1>Activity</h1>
+    <p class="sub">What people and oob-manager did to the servers: power requests, fan leases, BMC restarts and maintenance windows. Sign-ins and settings changes are in the audit log (admins).</p>
+  </div>
+</div>
+<section class="panel" aria-labelledby="act-h">
+  <h2 id="act-h">Actions, newest first</h2>
+  {{template "activitylist" .List}}
+</section>
+{{end}}

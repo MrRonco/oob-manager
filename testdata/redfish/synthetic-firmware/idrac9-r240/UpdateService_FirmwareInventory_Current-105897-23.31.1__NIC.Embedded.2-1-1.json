@@ -1,0 +1,36 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
+  "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Current-105897-23.31.1__NIC.Embedded.2-1-1",
+  "@odata.type": "#SoftwareInventory.v1_9_0.SoftwareInventory",
+  "Description": "Represents Firmware Inventory (SYNTHETIC fixture written from the captured shape, not captured)",
+  "Id": "Current-105897-23.31.1__NIC.Embedded.2-1-1",
+  "Name": "Broadcom Gigabit Ethernet BCM5720 - 00:00:5E:00:53:01",
+  "Oem": {
+    "Dell": {
+      "@odata.type": "#DellOem.v1_3_0.DellOemResources",
+      "DellSoftwareInventory": {
+        "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/Current-105897-23.31.1__NIC.Embedded.2-1-1/Oem/Dell/DellSoftwareInventory/DCIM:SYNTHETIC__NIC.Embedded.2-1-1",
+        "@odata.type": "#DellSoftwareInventory.v1_2_0.DellSoftwareInventory",
+        "ComponentID": "105897",
+        "ComponentType": "FRMW",
+        "ElementName": "Broadcom Gigabit Ethernet BCM5720 - 00:00:5E:00:53:01",
+        "IdentityInfoType": [
+          "OrgID:ComponentType:VendorID:DeviceID:SubVendorID:SubDeviceID"
+        ],
+        "IdentityInfoValue": [
+          "DCIM:firmware:14E4:165F:1028:088F"
+        ],
+        "InstallationDate": "NA",
+        "Status": "Installed"
+      }
+    }
+  },
+  "ReleaseDate": "2025-09-27T00:00:00Z",
+  "SoftwareId": "105897",
+  "Status": {
+    "Health": "OK",
+    "State": "Enabled"
+  },
+  "Updateable": true,
+  "Version": "23.31.1"
+}

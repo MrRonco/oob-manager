@@ -1,0 +1,46 @@
+{{define "content"}}
+<div class="ph"><h1>Add server</h1></div>
+{{template "settingstabs" "servers"}}
+{{template "stepup" .StepUp}}
+<ol class="stepper" aria-label="Add server steps">
+  <li aria-current="step"><span class="step-n" aria-hidden="true">1</span> Connection</li>
+  <li><span class="step-n" aria-hidden="true">2</span> Fingerprint</li>
+  <li><span class="step-n" aria-hidden="true">3</span> Credentials</li>
+  <li><span class="step-n" aria-hidden="true">4</span> Features</li>
+  <li><span class="step-n" aria-hidden="true">5</span> Review and enable</li>
+</ol>
+{{- if .Locked}}
+<p class="alert a-info" role="status">{{template "icon" "lock"}}<span class="alert-b">This section is locked by <code>settings.locked</code> in config.yaml.</span></p>
+{{- else}}
+{{template "formerror" .FormError}}
+<form method="post" action="/settings/servers/fingerprint" class="panel form" aria-labelledby="new-h">
+  <h2 id="new-h">Connection</h2>
+  <p class="hint">Next, the console fetches the BMC's certificate fingerprint (a TLS handshake only: nothing is sent and no login is tried) for you to compare and confirm. Credentials are asked for only after that.</p>
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <div class="field"><label for="n-id">Id</label>
+    <input id="n-id" name="id" type="text" required maxlength="32" pattern="[a-z0-9][a-z0-9\-]*" autocapitalize="none" spellcheck="false" value="{{.Form.ID}}" aria-describedby="n-id-hint"{{if eq .Invalid "id"}} aria-invalid="true"{{end}}>
+    <p id="n-id-hint" class="hint">Lower-case letters, digits and hyphens, for example edge-1. It appears in addresses and the audit log and cannot be changed later.</p></div>
+  <div class="field"><label for="n-name">Name</label>
+    <input id="n-name" name="name" type="text" required maxlength="64" value="{{.Form.Name}}"{{if eq .Invalid "name"}} aria-invalid="true"{{end}}></div>
+  <div class="field"><label for="n-tags">Tags <span class="meta">(optional)</span></label>
+    <input id="n-tags" name="tags" type="text" maxlength="300" value="{{.Form.Tags}}" aria-describedby="n-tags-hint"{{if eq .Invalid "tags"}} aria-invalid="true"{{end}}>
+    <p id="n-tags-hint" class="hint">Separated by spaces, for example critical lab.</p></div>
+  <div class="field"><label for="n-kind">BMC kind</label>
+    <select id="n-kind" name="kind"{{if eq .Invalid "kind"}} aria-invalid="true"{{end}}>
+    {{- range .Kinds}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
+    </select></div>
+  <div class="field"><label for="n-addr">BMC address</label>
+    <input id="n-addr" name="address" type="text" required maxlength="45" inputmode="decimal" autocapitalize="none" spellcheck="false" value="{{.Form.Address}}" aria-describedby="n-addr-hint"{{if eq .Invalid "address"}} aria-invalid="true"{{end}}>
+    <p id="n-addr-hint" class="hint">An IP address (no host names), inside {{.Networks}}.</p></div>
+  <div class="field"><label for="n-port">HTTPS port</label>
+    <input id="n-port" name="port" type="text" inputmode="numeric" required maxlength="5" value="{{.Form.Port}}"{{if eq .Invalid "port"}} aria-invalid="true"{{end}}></div>
+  <details>
+    <summary>{{template "icon" "chevron-right"}}I already have the certificate fingerprint</summary>
+    <div class="field"><label for="n-pin">SHA-256 of the certificate's public key</label>
+      <input id="n-pin" name="pin" type="text" maxlength="95" autocapitalize="none" spellcheck="false" value="{{.Form.Pin}}" aria-describedby="n-pin-hint"{{if eq .Invalid "pin"}} aria-invalid="true"{{end}}>
+      <p id="n-pin-hint" class="hint">64 hexadecimal digits (colons and spaces are ignored). Pasting it skips the fetch; the audit log records that it was entered by hand.</p></div>
+  </details>
+  <div class="btn-row"><button type="submit" class="btn">Fetch fingerprint</button> <a href="/settings/servers">Cancel</a></div>
+</form>
+{{- end}}
+{{end}}

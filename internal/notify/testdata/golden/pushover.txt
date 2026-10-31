@@ -1,0 +1,5 @@
+POST /1/messages.json
+Content-Type: application/x-www-form-urlencoded
+User-Agent: oob-manager-notify/1
+
+message=Storage+node+reports+Critical+health+%28was+OK%29.%0A%0A%E2%80%A2+Critical%3A+The+power+input+for+power+supply+2+is+lost.&priority=1&timestamp=1792591380&title=Storage+node%3A+health+Critical&token=app-token&user=user-key

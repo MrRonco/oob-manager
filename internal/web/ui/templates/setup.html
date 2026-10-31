@@ -1,0 +1,32 @@
+{{define "content"}}
+<section class="panel auth" aria-labelledby="setup-h">
+  {{template "stepper" 1}}
+  <h1 id="setup-h">Set up the first administrator</h1>
+  <p>No account exists yet. Enter the one-time setup code printed in the container log
+  (<code>docker logs</code>, or the log view of your container manager), then choose the
+  administrator's username and password. The next page shows a code for your authenticator
+  app, once.</p>
+  {{template "formerror" .FormError}}
+  <form method="post" action="/setup" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <div class="field">
+      <label for="s-code">Setup code</label>
+      <input id="s-code" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" required maxlength="64" aria-describedby="s-code-hint"{{if .FormError}} aria-invalid="true"{{end}}>
+      <p id="s-code-hint" class="hint">8 groups of 4 letters and digits. It works once and expires 24 hours after the container started.</p>
+    </div>
+    <div class="field">
+      <label for="s-username">Username</label>
+      <input id="s-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="64" value="{{.Username}}">
+    </div>
+    <div class="field">
+      <label for="s-password">Password (12 characters or more)</label>
+      <input id="s-password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="256">
+    </div>
+    <div class="field">
+      <label for="s-confirm">Repeat the password</label>
+      <input id="s-confirm" name="confirm" type="password" autocomplete="new-password" required minlength="12" maxlength="256">
+    </div>
+    <button type="submit" class="btn">Continue</button>
+  </form>
+</section>
+{{end}}

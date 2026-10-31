@@ -1,0 +1,34 @@
+{{define "content"}}
+<div class="login">
+<section class="login-l" aria-label="About this instance">
+  <span class="logo logo-lg" aria-hidden="true">{{template "icon" "mark"}}</span>
+  <p class="login-wm wordmark"><span class="wm-a">oob</span><span class="led" aria-hidden="true"></span><span class="sr-only">-</span><span class="wm-b">manager</span></p>
+  {{- if .Instance}}<p class="eyebrow">{{.Instance}}</p>{{end}}
+  <p class="lead">Out-of-band access to your servers. Health, logs and console, even when the operating system is down.</p>
+  <p class="meta">First time here? <a href="/help#setup">Setup guide</a></p>
+</section>
+<section class="panel login-r" aria-labelledby="login-h">
+  <h1 id="login-h">Sign in</h1>
+  {{- if .SetupOpen}}
+  <p class="alert a-info" role="status">{{template "sicon" "info"}}<span class="alert-b">No account exists yet. <a href="/setup">Set up the first administrator</a> with the code from the container log.</span></p>
+  {{- end}}
+  {{- if .Info}}
+  <p class="alert a-ok" role="status">{{template "sicon" "ok"}}<span class="alert-b">{{.Info}}</span></p>
+  {{- end}}
+  {{template "formerror" .Error}}
+  <form method="post" action="/login" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="64" value="{{.Username}}"{{if .Error}} aria-invalid="true" aria-describedby="form-error"{{else}} autofocus{{end}}>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"{{if .Error}} aria-invalid="true" aria-describedby="form-error" autofocus{{end}}>
+    </div>
+    <button type="submit" class="btn">Continue</button>
+  </form>
+  <p class="hint">Your administrator creates your account and sends you a one-time setup link. Lost your authenticator? Ask an administrator to reset it.</p>
+</section>
+</div>
+{{end}}

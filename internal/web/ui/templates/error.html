@@ -1,0 +1,18 @@
+{{define "content"}}
+<section class="panel auth" aria-labelledby="err-h">
+  <p class="eyebrow">Error {{.Status}} · {{.Code}}</p>
+  <h1 id="err-h">{{.Heading}}</h1>
+  {{- if .Reason}}
+  <p>{{.Reason}}</p>
+  {{- end}}
+  {{- if .Servers}}
+  <h2>Configured servers</h2>
+  <ul class="slist">
+  {{- range .Servers}}
+    <li><a href="/servers/{{.ID}}"><span class="sdot s-{{.Health.Class}}">{{template "sicon" .Health.Class}}<span class="sr-only">{{.Health.Label}}</span></span><span class="sn">{{.Name}}</span></a></li>
+  {{- end}}
+  </ul>
+  {{- end}}
+  <p class="btn-row">{{if .SignedIn}}<a class="btn" href="/">Go to the overview</a>{{else}}<a class="btn" href="/login">Go to sign in</a>{{end}} <a class="btn btn-secondary" href="/help">Help</a></p>
+</section>
+{{end}}

@@ -1,0 +1,60 @@
+{{define "content"}}
+<div class="ph">
+  <h1>Events</h1>
+  <p class="meta">Times in {{.Zone}}. Repeats are folded (×N). <abbr title="System Event Log">SEL</abbr> and Lifecycle logs refresh every few minutes.</p>
+</div>
+<form class="filters panel" method="get" action="/events">
+  <div class="field"><label for="ev-server">Server</label>
+    <select id="ev-server" name="server">{{range .Servers}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+  </div>
+  <div class="field"><label for="ev-log">Log</label>
+    <select id="ev-log" name="log">{{range .Logs}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+  </div>
+  <div class="field"><label for="ev-sev">Severity</label>
+    <select id="ev-sev" name="severity">{{range .Severity}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+  </div>
+  <div class="field"><label for="ev-range">Range</label>
+    <select id="ev-range" name="range">{{range .Ranges}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+  </div>
+  <div class="field grow"><label for="ev-q">Search message</label>
+    <input id="ev-q" name="q" type="search" maxlength="64" value="{{.Query}}" autocomplete="off" spellcheck="false">
+  </div>
+  <button class="btn" type="submit">Apply</button>
+</form>
+{{- range .Notes}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b"><strong>Warning:</strong> {{.}}</span></p>
+{{- end}}
+<p class="counts"><span class="chip">{{.Total}}</span>{{range .Counts}} <a class="chip" href="{{.Href}}">{{template "sicon" .Class}} {{.N}} {{.Label}}</a>{{end}}{{if .Hidden}} <span class="meta">{{.Hidden}}. <a href="{{.AllHref}}">Show all</a></span>{{end}}</p>
+{{- if .Rows}}
+{{- with .AckAll}}{{template "ackall" .}}{{end}}
+{{template "eventtable" .}}
+{{- else}}
+<section class="panel" aria-label="Fleet events"><p class="empty">No events match these filters.{{if .Hidden}} <a href="{{.AllHref}}">Show info entries too</a>.{{end}}</p></section>
+{{- end}}
+{{end}}
+
+{{define "eventtable"}}
+{{template "pager" .Pager}}
+<div class="tw panel flush" role="region" aria-label="Events table" tabindex="0">
+<table class="stack evt">
+  <thead><tr><th scope="col">Time</th><th scope="col">Severity</th><th scope="col">Server</th><th scope="col">Message</th><th scope="col" class="hide-sm">Log</th><th scope="col" class="hide-sm">ID</th><th scope="col">Acknowledged</th></tr></thead>
+  <tbody>
+  {{- range .Rows}}
+  {{- if .Day}}
+    <tr class="daysep"><th scope="colgroup" colspan="7">{{.Day}}</th></tr>
+  {{- end}}
+    <tr class="ev-{{.Severity.Class}}">
+      <td data-label="Time" class="mono nw">{{if .ISO}}<time datetime="{{.ISO}}" title="{{.Created}}">{{.Short}}</time> <span class="meta">{{.Rel}}</span>{{else}}<span class="nodata">No time</span>{{end}}</td>
+      <td data-label="Severity">{{template "health" .Severity}}</td>
+      <td data-label="Server"><a href="/servers/{{.ServerID}}/events">{{.ServerName}}</a></td>
+      <td data-label="Message">{{template "v" .Message}}{{if .Repeat}} <span class="rep">×{{.Repeat}}</span>{{end}}</td>
+      <td data-label="Log" class="hide-sm">{{.Log}}</td>
+      <td data-label="ID" class="mono hide-sm">{{template "v" .MessageID}}</td>
+      <td data-label="Acknowledged" class="ackc">{{template "ackcell" .}}</td>
+    </tr>
+  {{- end}}
+  </tbody>
+</table>
+</div>
+{{template "pager" .Pager.Bottom}}
+{{end}}

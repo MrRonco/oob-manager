@@ -1,0 +1,11 @@
+POST /oob-alerts
+Authorization: Bearer tk_example
+Content-Type: text/plain; charset=utf-8
+Priority: 5
+Tags: rotating_light
+Title: Storage node: health Critical
+User-Agent: oob-manager-notify/1
+
+Storage node reports Critical health (was OK).
+
+• Critical: The power input for power supply 2 is lost.

@@ -1,0 +1,49 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{template "servertabs" .Nav}}
+<nav class="seg" aria-label="Range">
+  <ul>
+  {{- range .Ranges}}
+    <li><a href="{{.Href}}"{{if .Current}} aria-current="page"{{end}}>{{.Label}}</a></li>
+  {{- end}}
+  </ul>
+</nav>
+{{- if .Notice}}
+<p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">{{.Notice}}</span></p>
+{{- end}}
+{{- if .ClockNote}}
+<p class="alert a-info" role="status">{{template "sicon" "info"}}<span class="alert-b">{{.ClockNote}}</span></p>
+{{- end}}
+{{- if .Empty}}
+<section class="panel" aria-labelledby="hempty-h">
+  <h2 id="hempty-h">No history yet</h2>
+  <p class="empty">Readings are recorded at every poll. Check back after the next one.</p>
+</section>
+{{- end}}
+{{- if .Panels}}
+<p class="meta">The last {{.RangeLabel}}, in your time zone. Pick a sensor in a panel's list to show its range and numbers; event markers are listed under the charts.{{if .ExportAll}} <a href="{{.ExportAll}}" download>Export every sensor (CSV)</a>{{end}}</p>
+<div class="hist">
+{{- range .Panels}}
+{{template "histpanel" .}}
+{{- end}}
+</div>
+<section class="panel" aria-labelledby="hev-h">
+  <h2 id="hev-h">Events in this period</h2>
+  {{- range .Spans}}
+  <p class="meta">{{.}}</p>
+  {{- end}}
+  {{- if .Marks}}
+  <ul class="dense feed">
+  {{- range .Marks}}
+    <li><time class="mono" datetime="{{.ISO}}">{{.When}}</time> {{template "health" .Severity}} <span>{{if .Href}}<a href="{{.Href}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}{{if .Log}} <span class="meta">{{.Log}}</span>{{end}}{{if .Acked}} <span class="meta">acknowledged</span>{{end}}</span></li>
+  {{- end}}
+  </ul>
+  {{- else}}
+  <p class="empty">No warning or critical log entries, power actions, fan leases or BMC restarts in this period.</p>
+  {{- end}}
+  {{- if .MoreMarks}}
+  <p class="meta">{{.MoreMarks}} older events are not drawn.</p>
+  {{- end}}
+</section>
+{{- end}}
+{{end}}

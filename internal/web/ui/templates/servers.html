@@ -1,0 +1,16 @@
+{{define "content"}}
+<div class="ph">
+  <h1>Servers</h1>
+  {{- if .Servers}}
+  {{template "refresh" .Refresh}}
+  {{- end}}
+</div>
+{{- if .Servers}}
+<p class="meta">{{.Counts.Total}} configured · {{.Counts.Stale}} stale or without data · problems first. Each server's <a href="/help#glossary">logs and inventory</a> are on its own page.</p>
+<section class="fleet" aria-label="Configured servers">
+  {{template "fleettable" .}}
+</section>
+{{- else}}
+<section class="panel"><p class="empty">No servers are configured yet. Servers are added in <code>config.yaml</code>; see the <a href="/help#setup">setup guide</a>.</p></section>
+{{- end}}
+{{end}}

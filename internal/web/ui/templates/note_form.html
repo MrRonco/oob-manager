@@ -1,0 +1,12 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{template "formerror" .Error}}
+<form method="post" action="{{.Action}}" class="panel form" aria-labelledby="nf-h">
+  <h2 id="nf-h">{{if .Edit}}Edit note{{else}}Add a note{{end}}</h2>
+  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+  <div class="field"><label for="note-body">Note text</label>
+    <textarea id="note-body" name="body" rows="6" maxlength="{{.MaxBytes}}" required aria-describedby="note-body-h{{if .Error}} form-error{{end}}"{{if .Error}} aria-invalid="true"{{end}}>{{.Body}}</textarea>
+    <p class="hint" id="note-body-h">Plain text, up to 4 KB. Links starting with https:// become clickable. Notes are kept with the server, never sent anywhere.</p></div>
+  <div class="btn-row"><button type="submit" class="btn">{{if .Edit}}Save note{{else}}Add note{{end}}</button> <a class="btn btn-secondary" href="/servers/{{.ServerID}}/activity#notes">Cancel</a></div>
+</form>
+{{end}}

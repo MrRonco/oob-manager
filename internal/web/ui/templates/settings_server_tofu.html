@@ -1,0 +1,26 @@
+{{define "content"}}
+<div class="ph"><div><h1>Confirm the {{.What}}</h1><p class="sub">{{.Purpose}}</p></div></div>
+{{template "stepup" .StepUp}}
+<div class="g2">
+<section class="panel" aria-labelledby="fp-h">
+  <h2 id="fp-h">Fetched from <span class="mono">{{.Endpoint}}</span></h2>
+  <p>{{.Hint}}</p>
+  <p class="codeblock mono" aria-label="Fingerprint">{{.Grouped}}</p>
+  {{template "kv" .Facts}}
+  <p class="hint">Trust on first use: the console saw this {{.What}} once, just now. If it does not match what the BMC shows, cancel: something else may be answering at this address.</p>
+</section>
+<section class="panel" aria-labelledby="fpc-h">
+  <h2 id="fpc-h">Confirm</h2>
+  <form method="post" action="{{.Action}}" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    {{- range .Hidden}}
+    <input type="hidden" name="{{.Key}}" value="{{.Value}}">
+    {{- end}}
+    <input type="hidden" name="value" value="{{.Value}}">
+    <input type="hidden" name="proof" value="{{.Proof}}">
+    <div class="btn-row cf-actions"><a class="btn btn-secondary" href="{{.Cancel}}" autofocus>Cancel</a> <button type="submit" class="btn">{{.Button}}</button></div>
+    <p class="hint">The confirmation is valid for 5 minutes and only in this session.</p>
+  </form>
+</section>
+</div>
+{{end}}

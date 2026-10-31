@@ -1,0 +1,69 @@
+{{define "content"}}
+<header class="shead">{{template "serverhead" .Head}}</header>
+{{template "servertabs" .Nav}}
+{{- with .Flash}}
+<p class="alert a-info" role="status">{{template "sicon" "info"}}<span class="alert-b">{{.}}</span></p>
+{{- end}}
+{{- with .Notice}}
+<p class="alert a-warn" role="alert">{{template "sicon" "warn"}}<span class="alert-b">{{.}}</span></p>
+{{- end}}
+<section class="panel {{if .HasReport}}{{.Summary.Panel}}{{end}}" aria-labelledby="sec-h" id="security">
+  <h2 id="sec-h">BMC security checks</h2>
+  {{- if not .Enabled}}
+  <p class="empty">Security checks are off for this server.</p>
+  {{- else if not .HasReport}}
+  <p class="empty">{{.Pending}}</p>
+  {{- else}}
+  <p class="verdict">{{template "health" .Summary.Badge}} <strong>{{.Summary.Verdict}}</strong></p>
+  <dl class="strip">
+  {{- range .Summary.Counts}}
+    <div class="{{.Class}}"><dt>{{.Label}}</dt><dd>{{.N}}</dd></div>
+  {{- end}}
+  </dl>
+  {{- end}}
+  {{- if $.Details}}
+  <nav class="secmap-nav" aria-label="Check groups">
+    <ol class="secmap">
+    {{- range $.Groups}}
+      <li class="secmap-g g-{{.Tone}}"><a href="#g-{{.ID}}"><span class="pm-cells" aria-hidden="true">{{range .Cells}}<span class="pm pm-{{.}}"></span>{{end}}</span><span class="secmap-t">{{.Title}}</span><span class="secmap-s">{{if .Problems}}{{.Problems}}{{else}}All clear{{end}}</span><span class="sr-only">: {{.Summary}}</span></a></li>
+    {{- end}}
+    </ol>
+  </nav>
+  {{- end}}
+  {{- with .Run}}
+  <p class="meta">{{if .At}}Last run <time datetime="{{.ISO}}">{{.At}}</time>{{if .Took}}, took {{.Took}}{{end}}; next run around <time datetime="{{.NextISO}}">{{.Next}}</time>.{{end}}{{if .Running}} Running now.{{end}}{{if .Requested}} A run was requested; it starts with the next poll.{{end}}{{if .Overdue}} The last run is overdue.{{end}}</p>
+  {{- if .Error}}
+  <p class="alert a-warn" role="status">{{template "sicon" "warn"}}<span class="alert-b">The last run failed ({{.Error}}).{{if $.HasReport}} The results shown are from the run before.{{end}}</span></p>
+  {{- end}}
+  {{- end}}
+  {{- if .Enabled}}{{template "secrerun" .Run.Rerun}}{{end}}
+  <p class="hint">Read-only: these checks read the BMC's settings with the read-only account and look at its network ports (TLS and SSH handshakes, unauthenticated HEAD requests). They never change anything; fixing a finding happens in the BMC's own interface.</p>
+</section>
+{{- if .Details}}
+{{- range .Groups}}
+<section class="panel" aria-labelledby="g-{{.ID}}-h" id="g-{{.ID}}">
+  <h2 id="g-{{.ID}}-h">{{.Title}} <span class="cnt">{{.Summary}}</span></h2>
+  {{- if .Findings}}
+  <ul class="checks">
+  {{- range .Findings}}
+  {{template "secfinding" .}}
+  {{- end}}
+  </ul>
+  {{- else}}
+  <p class="empty">No problems in this group.</p>
+  {{- end}}
+  {{- if .Quiet}}
+  <details class="more chk-quiet"><summary>{{template "icon" "chevron-right"}}{{len .Quiet}} more {{if eq (len .Quiet) 1}}check{{else}}checks{{end}}: {{.QuietSummary}}</summary>
+    <ul class="checks">
+    {{- range .Quiet}}
+    {{template "secfinding" .}}
+    {{- end}}
+    </ul>
+  </details>
+  {{- end}}
+</section>
+{{- end}}
+{{- else if .DetailsNote}}
+<p class="alert a-info" role="status">{{template "sicon" "info"}}<span class="alert-b">{{.DetailsNote}}</span></p>
+{{- end}}
+{{end}}

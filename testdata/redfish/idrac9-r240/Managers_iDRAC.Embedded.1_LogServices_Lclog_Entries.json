@@ -1,0 +1,447 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#LogEntryCollection.LogEntryCollection",
+  "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries",
+  "@odata.type": "#LogEntryCollection.LogEntryCollection",
+  "Description": "LC Logs for this manager",
+  "Members": [
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2090",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T22:44:46+00:00",
+      "Description": "Log Entry 2090",
+      "EntryType": "Oem",
+      "Id": "2090",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and REDFISH.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "IDRAC.2.8.USR0030",
+      "Name": "Log Entry 2090",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2089",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:58:21+00:00",
+      "Description": "Log Entry 2089",
+      "EntryType": "Oem",
+      "Id": "2089",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "The session for root from 192.0.2.10 using GUI is logged off.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "GUI"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "IDRAC.2.8.USR0032",
+      "Name": "Log Entry 2089",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2088",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:58:21+00:00",
+      "Description": "Log Entry 2088",
+      "EntryType": "Oem",
+      "Id": "2088",
+      "Links": {},
+      "Message": "The previous log entry was repeated 24 times.",
+      "MessageArgs": [
+        "24"
+      ],
+      "MessageArgs@odata.count": 1,
+      "MessageId": "IDRAC.2.8.LOG007",
+      "Name": "Log Entry 2088",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2087",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:29:00+00:00",
+      "Description": "Log Entry 2087",
+      "EntryType": "Oem",
+      "Id": "2087",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and REDFISH.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "IDRAC.2.8.USR0030",
+      "Name": "Log Entry 2087",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2086",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:28:25+00:00",
+      "Description": "Log Entry 2086",
+      "EntryType": "Oem",
+      "Id": "2086",
+      "Links": {},
+      "Message": "An existing hash value is updated because some system configuration items are changed.",
+      "MessageId": "IDRAC.2.8.SYS336",
+      "Name": "Log Entry 2086",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Configuration",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2085",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:28:22+00:00",
+      "Description": "Log Entry 2085",
+      "EntryType": "Oem",
+      "Id": "2085",
+      "Links": {},
+      "Message": "The IP blocking range 1 is enabled with 192.0.2.10/255.255.255.255 by root.",
+      "MessageArgs": [
+        "1",
+        "enabled",
+        "192.0.2.10",
+        "255.255.255.255",
+        "root"
+      ],
+      "MessageArgs@odata.count": 5,
+      "MessageId": "IDRAC.2.8.SWC0400",
+      "Name": "Log Entry 2085",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Configuration",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2084",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:28:21+00:00",
+      "Description": "Log Entry 2084",
+      "EntryType": "Oem",
+      "Id": "2084",
+      "Links": {},
+      "Message": "The IP blocking range 1 is Enabled with 192.0.2.10/255.255.255.0 by root.",
+      "MessageArgs": [
+        "1",
+        "Enabled",
+        "192.0.2.10",
+        "255.255.255.0",
+        "root"
+      ],
+      "MessageArgs@odata.count": 5,
+      "MessageId": "IDRAC.2.8.SWC0400",
+      "Name": "Log Entry 2084",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Configuration",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2083",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:28:21+00:00",
+      "Description": "Log Entry 2083",
+      "EntryType": "Oem",
+      "Id": "2083",
+      "Links": {},
+      "Message": "The IP blocking range 1 is disabled with 192.0.2.10/255.255.255.0 by root.",
+      "MessageArgs": [
+        "1",
+        "disabled",
+        "192.0.2.10",
+        "255.255.255.0",
+        "root"
+      ],
+      "MessageArgs@odata.count": 5,
+      "MessageId": "IDRAC.2.8.SWC0400",
+      "Name": "Log Entry 2083",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Configuration",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2082",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:26:49+00:00",
+      "Description": "Log Entry 2082",
+      "EntryType": "Oem",
+      "Id": "2082",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and GUI.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "GUI"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "IDRAC.2.8.USR0030",
+      "Name": "Log Entry 2082",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2081",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:26:49+00:00",
+      "Description": "Log Entry 2081",
+      "EntryType": "Oem",
+      "Id": "2081",
+      "Links": {},
+      "Message": "The previous log entry was repeated 1 times.",
+      "MessageArgs": [
+        "1"
+      ],
+      "MessageArgs@odata.count": 1,
+      "MessageId": "IDRAC.2.8.LOG007",
+      "Name": "Log Entry 2081",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2080",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:16:45+00:00",
+      "Description": "Log Entry 2080",
+      "EntryType": "Oem",
+      "Id": "2080",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Successfully logged in using root, from 192.0.2.10 and REDFISH.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "IDRAC.2.8.USR0030",
+      "Name": "Log Entry 2080",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2079",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:15:17+00:00",
+      "Description": "Log Entry 2079",
+      "EntryType": "Oem",
+      "Id": "2079",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Login attempt alert for root from 192.0.2.10 using REDFISH, IP will be blocked for 60 seconds.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH",
+        "60"
+      ],
+      "MessageArgs@odata.count": 4,
+      "MessageId": "IDRAC.2.8.USR0034",
+      "Name": "Log Entry 2079",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "Warning"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2078",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:15:17+00:00",
+      "Description": "Log Entry 2078",
+      "EntryType": "Oem",
+      "Id": "2078",
+      "Links": {},
+      "Message": "The previous log entry was repeated 2 times.",
+      "MessageArgs": [
+        "2"
+      ],
+      "MessageArgs@odata.count": 1,
+      "MessageId": "IDRAC.2.8.LOG007",
+      "Name": "Log Entry 2078",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2077",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-15T16:15:12+00:00",
+      "Description": "Log Entry 2077",
+      "EntryType": "Oem",
+      "Id": "2077",
+      "Links": {
+        "OriginOfCondition": {
+          "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1"
+        }
+      },
+      "Message": "Unable to log in for root from 192.0.2.10 using REDFISH.",
+      "MessageArgs": [
+        "root",
+        "192.0.2.10",
+        "REDFISH"
+      ],
+      "MessageArgs@odata.count": 3,
+      "MessageId": "IDRAC.2.8.USR0031",
+      "Name": "Log Entry 2077",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    },
+    {
+      "@odata.id": "/redfish/v1/Managers/iDRAC.Embedded.1/LogServices/Lclog/Entries/2076",
+      "@odata.type": "#LogEntry.v1_14_0.LogEntry",
+      "Created": "2025-03-13T01:07:35+00:00",
+      "Description": "Log Entry 2076",
+      "EntryType": "Oem",
+      "Id": "2076",
+      "Links": {},
+      "Message": "System CPU Resetting.",
+      "MessageId": "IDRAC.2.8.SYS1003",
+      "Name": "Log Entry 2076",
+      "Oem": {
+        "Dell": {
+          "@odata.type": "#DellLCLogEntry.v1_1_0.DellLCLogEntry",
+          "Category": "Audit",
+          "Comment": null,
+          "LastUpdatedByUser": null
+        }
+      },
+      "OemRecordFormat": "Dell",
+      "Severity": "OK"
+    }
+  ],
+  "Members@odata.count": 2090,
+  "Name": "Log Entry Collection"
+}

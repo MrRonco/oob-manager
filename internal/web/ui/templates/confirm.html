@@ -1,0 +1,84 @@
+{{define "content"}}
+<div class="cf-head">
+  <p>{{template "health" .Badge}}</p>
+  <h1>{{.Title}}</h1>
+</div>
+<div class="g2 cf">
+<section class="panel {{if eq .Tier "danger"}}p-danger{{else if eq .Tier "caution"}}p-warn{{else}}p-info{{end}}" aria-labelledby="w-h">
+  {{- range .Warnings}}
+  <p class="alert a-crit">{{template "sicon" "crit"}}<span class="alert-b"><strong>Warning:</strong> {{.}}</span></p>
+  {{- end}}
+  <h2 id="w-h">{{.Heading}}</h2>
+  {{- if .Consequences}}
+  <ul class="dense big">
+  {{- range .Consequences}}
+    <li>{{.}}</li>
+  {{- end}}
+  </ul>
+  {{- else if .EmptyNote}}
+  <p>{{.EmptyNote}}</p>
+  {{- end}}
+  {{- if .Impact}}
+  <h3 class="dense-h" id="impact-h">What goes down</h3>
+  <ul class="dense" aria-labelledby="impact-h">
+  {{- range .Impact}}
+    <li>{{.}}</li>
+  {{- end}}
+  </ul>
+  {{- end}}
+  {{- if .Facts}}
+  {{template "kv" .Facts}}
+  {{- end}}
+  {{- if .Note}}
+  <p class="meta">{{.Note}}</p>
+  {{- end}}
+</section>
+<section class="panel" aria-labelledby="c-h">
+  <h2 id="c-h">Confirm</h2>
+  {{template "formerror" .Error}}
+  <form method="post" action="{{.Action}}" class="form">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <input type="hidden" name="confirm" value="yes">
+    {{- if .Typed}}
+    <div class="field">
+      <label for="typed">Type <code>{{.Typed}}</code> to confirm</label>
+      <input id="typed" name="typed" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" required maxlength="64" aria-describedby="typed-hint{{if .TypedInvalid}} form-error{{end}}"{{if .TypedInvalid}} aria-invalid="true"{{end}}>
+      <p id="typed-hint" class="hint">{{.TypedWhy}} Exact match, including case. You can paste.</p>
+    </div>
+    {{- end}}
+    {{- with .Lease}}
+    <div class="field">
+      <label for="fan-pct">Minimum fan speed (%)</label>
+      <input id="fan-pct" name="pct" type="text" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" required value="{{.Pct}}" aria-describedby="fan-pct-hint{{if .PctInvalid}} form-error{{end}}"{{if .PctInvalid}} aria-invalid="true"{{end}}>
+      <p id="fan-pct-hint" class="hint">{{.SafeMin}} to 100. Lower values are raised to {{.SafeMin}} %.</p>
+    </div>
+    <div class="field">
+      <label for="fan-min">Duration</label>
+      <select id="fan-min" name="minutes">
+        {{- range .Durations}}
+        <option value="{{.Minutes}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>
+        {{- end}}
+      </select>
+    </div>
+    {{- end}}
+    {{- if .StepUp.Fresh}}
+    <p class="stepup-line" role="status">{{template "icon" "shield"}} Step-up fresh until <time datetime="{{.StepUp.UntilISO}}">{{.StepUp.Until}}</time>: no code needed.</p>
+    {{- else}}
+    <div class="stepup" role="group" aria-labelledby="su-h">
+      <h3 id="su-h">{{template "icon" "shield"}} Authenticator code</h3>
+      <p><strong>{{.ActionLabel}}</strong> needs a fresh code.</p>
+      <div class="field">
+        <label for="code">6-digit code for {{.User}}</label>
+        <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required aria-describedby="code-hint{{if .CodeInvalid}} form-error{{end}}"{{if .CodeInvalid}} aria-invalid="true"{{end}}>
+        <p id="code-hint" class="hint">The digits change every 30 seconds. Changes stay allowed for {{.StepUp.Window}} afterwards.</p>
+      </div>
+    </div>
+    {{- end}}
+    <div class="btn-row cf-actions">
+      <a class="btn btn-secondary" href="{{.CancelHref}}" autofocus>Cancel</a>
+      <button class="btn{{if eq .Tier "danger"}} btn-danger{{else if eq .Tier "caution"}} btn-caution{{end}}" type="submit">{{.Button}}</button>
+    </div>
+  </form>
+</section>
+</div>
+{{end}}

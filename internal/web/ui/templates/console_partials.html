@@ -1,0 +1,71 @@
+{{- /* Graphical console card on the server page (P5). States: docs/research/console.md §4.4. */}}
+{{define "consolecard"}}
+<section class="panel console-card" aria-labelledby="gc-h">
+  <h2 id="gc-h">Graphical console</h2>
+  <p><span class="badge {{if eq .State "ready"}}b-ok{{else if or (eq .State "in-use") (eq .State "setup")}}b-info{{else}}b-unknown{{end}}">{{if eq .State "ready"}}{{template "sicon" "ok"}}{{else if or (eq .State "in-use") (eq .State "setup")}}{{template "sicon" "info"}}{{else}}{{template "sicon" "unknown"}}{{end}} {{.Title}}</span> {{.Message}}</p>
+  {{- if eq .State "in-use"}}
+  <p>Session by <strong>{{.ActiveUser}}</strong> since <time datetime="{{.ActiveISO}}">{{.ActiveSince}}</time>.</p>
+  {{- end}}
+  {{- if .Allowed}}
+  {{- if .Steps}}
+  <details class="more"><summary>{{template "icon" "chevron-right"}}How to set it up</summary><ol class="list">{{range .Steps}}<li>{{.}}</li>{{end}}</ol></details>
+  {{- end}}
+  {{- range .Warnings}}
+  <p class="hint">{{.}}</p>
+  {{- end}}
+  <div class="btn-row">
+    {{- if .OpenVNC}}
+    <a class="btn btn-secondary btn-small" href="/servers/{{.ID}}/console">Open console</a>
+    {{- else if eq .State "in-use"}}
+    <a class="btn btn-secondary btn-small" href="/servers/{{.ID}}/console">Take over</a>
+    {{- end}}
+    {{- if .KVM}}
+    <form method="post" action="/servers/{{.ID}}/console/kvm-launch" target="_blank">
+      <input type="hidden" name="csrf_token" value="{{.KVMCSRF}}">
+      <button type="submit" class="btn btn-quiet btn-small">Open native iDRAC console</button>
+    </form>
+    {{- else if .KVMNote}}
+    <span class="btn btn-disabled btn-small" aria-disabled="true" aria-describedby="kvm-why">Open native iDRAC console</span>
+    <span id="kvm-why" class="why-off">{{.KVMNote}}</span>
+    {{- end}}
+  </div>
+  {{- if .OpenVNC}}
+  <p class="hint">{{if .TLS}}VNC over TLS to the BMC.{{else}}VNC traffic to the BMC is not encrypted on the management network.{{end}} While this console is open, the iDRAC's own virtual console is unavailable. Opening it needs a fresh confirmation with your authenticator.</p>
+  {{- end}}
+  {{- else}}
+  <p class="hint">Needs the admin role.</p>
+  {{- end}}
+  {{- if and .BMCURL (or (eq .State "unsupported") (eq .State "license") (eq .State "setup"))}}
+  <p><a href="{{.BMCURL}}" rel="noreferrer">Open the BMC web interface</a></p>
+  {{- end}}
+</section>
+{{end}}
+
+{{- /* Serial console card on the server's Overview tab (P4). */}}
+{{define "serialcard"}}
+<section class="panel serial-card" aria-labelledby="sc-h">
+  <h2 id="sc-h">Serial console</h2>
+  <p><span class="badge {{if eq .State "ready"}}b-ok{{else if or (eq .State "in-use") (eq .State "setup")}}b-info{{else}}b-unknown{{end}}">{{if eq .State "ready"}}{{template "sicon" "ok"}}{{else if or (eq .State "in-use") (eq .State "setup")}}{{template "sicon" "info"}}{{else}}{{template "sicon" "unknown"}}{{end}} {{.Title}}</span> {{.Message}}</p>
+  {{- if eq .State "in-use"}}
+  <p>Session by <strong>{{.ActiveUser}}</strong> since <time datetime="{{.ActiveISO}}">{{.ActiveSince}}</time>.</p>
+  {{- end}}
+  {{- if .Allowed}}
+  {{- if .Steps}}
+  <details class="more"><summary>{{template "icon" "chevron-right"}}How to set it up</summary><ol class="list">{{range .Steps}}<li>{{.}}</li>{{end}}</ol></details>
+  {{- end}}
+  {{- range .Warnings}}
+  <p class="hint">{{.}}</p>
+  {{- end}}
+  {{- if .Open}}
+  <div class="btn-row"><a class="btn btn-secondary btn-small" href="/servers/{{.ID}}/serial">{{template "icon" "square-terminal"}} Open serial console</a></div>
+  {{- else if eq .State "in-use"}}
+  <div class="btn-row"><a class="btn btn-secondary btn-small" href="/servers/{{.ID}}/serial">Take over</a></div>
+  {{- end}}
+  {{- else}}
+  <p class="hint">Needs the admin role.</p>
+  {{- end}}
+  {{- if and .BMCURL (or (eq .State "unsupported") (eq .State "setup"))}}
+  <p><a href="{{.BMCURL}}" rel="noreferrer">Open the BMC web interface</a></p>
+  {{- end}}
+</section>
+{{end}}

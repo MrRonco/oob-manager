@@ -1,0 +1,8 @@
+POST /hooks/oob?src=lab
+Content-Type: application/json
+X-OOB-Delivery: 0123456789abcdef0123456789abcdef
+X-OOB-Event: health
+X-OOB-Signature: sha256=8f1a4c743a80b2aefe279ee4fa920edfda02f1e66f2ea18119f91a3d535a30d6
+X-OOB-Timestamp: 1792591380
+
+{"version":"1","id":"0123456789abcdef0123456789abcdef","time":"2026-10-21T14:03:00Z","instance":"Lab OOB","class":"health","severity":"critical","recovery":false,"server":{"id":"srv-a","name":"Storage node"},"title":"Storage node: health Critical","message":"Storage node reports Critical health (was OK).","detail":["Critical: The power input for power supply 2 is lost."]}
