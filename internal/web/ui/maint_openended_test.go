@@ -14,6 +14,7 @@ import (
 // "Open-ended maintenance" warning once it has lasted 24 h (not before); timed windows
 // never do; the reason is escaped.
 func TestOpenEndedMaintenanceWarning(t *testing.T) {
+	t.Parallel()
 	e := newMaintEnv(t)
 	ctx := context.Background()
 	a := actorFor(t, e.settingsEnv, "morgan")

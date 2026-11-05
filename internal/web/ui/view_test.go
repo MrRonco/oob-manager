@@ -9,6 +9,7 @@ import (
 )
 
 func TestTimeFmtVariants(t *testing.T) {
+	t.Parallel()
 	loc, err := display.LoadZone("America/New_York")
 	must(t, err)
 	at := time.Date(2026, 10, 21, 18, 5, 9, 0, time.UTC)
@@ -47,6 +48,7 @@ func TestTimeFmtVariants(t *testing.T) {
 }
 
 func TestTempUnitConversion(t *testing.T) {
+	t.Parallel()
 	f := unitOf(display.Fahrenheit)
 	ts := f.convert([]bmc.Temperature{{Name: "CPU1", Celsius: bmc.ReadingOf(40), WarnAbove: bmc.ReadingOf(87), CritAbove: bmc.NoReading()}})
 	if ts[0].Celsius.Value != 104 || ts[0].WarnAbove.Value != 188.6 || ts[0].CritAbove.Valid {

@@ -8,6 +8,7 @@ import (
 )
 
 func TestReadingChange(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		cur, prev bmc.Reading
 		want      string
@@ -26,6 +27,7 @@ func TestReadingChange(t *testing.T) {
 }
 
 func TestSensorRowsMarkChanges(t *testing.T) {
+	t.Parallel()
 	prevT := []bmc.Temperature{{Name: "CPU1 Temp", Context: "CPU", Celsius: bmc.ReadingOf(50)}, {Name: "Inlet", Context: "Intake", Celsius: bmc.ReadingOf(21)}}
 	curT := []bmc.Temperature{{Name: "CPU1 Temp", Context: "CPU", Celsius: bmc.ReadingOf(53)}, {Name: "Inlet", Context: "Intake", Celsius: bmc.ReadingOf(21)},
 		{Name: "Exhaust", Context: "Exhaust", Celsius: bmc.ReadingOf(30)}}
@@ -55,6 +57,7 @@ func TestSensorRowsMarkChanges(t *testing.T) {
 // TestSensorTablesCarryTheChangeClass: the Sensors tab marks a changed reading's cell
 // (motion.css tints it; nothing else uses the class).
 func TestSensorTablesCarryTheChangeClass(t *testing.T) {
+	t.Parallel()
 	rd, err := newRenderer()
 	must(t, err)
 	cur := []bmc.Temperature{{Name: "Inlet", Context: "Intake", Celsius: bmc.ReadingOf(24)}}

@@ -11,6 +11,7 @@ import (
 // names that change (accept or remove a risk, maintenance, notes, acknowledgements), not
 // "Make changes". Only a configured server's name is interpolated.
 func TestKeptFormLabels(t *testing.T) {
+	t.Parallel()
 	name := func(id string) string {
 		if id == "edge" {
 			return "Edge router"
@@ -44,6 +45,7 @@ func TestKeptFormLabels(t *testing.T) {
 // The Security tab's step-up page says what the kept form does; without a kept form it
 // names the tab's changes.
 func TestSecurityStepUpNamesTheChange(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	const tab = "/servers/r730xd/security"

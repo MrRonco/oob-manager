@@ -22,6 +22,7 @@ func hostAt(now time.Time, id, name string, tags []string, st bmc.PowerState, si
 // TestPoweredOffServerIsNotHealthy (audit R2-01): a powered-off server is its own
 // non-OK state on the Overview, the fleet row, the pill, the sidebar and its verdict.
 func TestPoweredOffServerIsNotHealthy(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	now := h.clock.Now()
 	h.fleet.servers = []ServerView{
@@ -52,6 +53,7 @@ func TestPoweredOffServerIsNotHealthy(t *testing.T) {
 }
 
 func TestPoweredOffCriticalServerIsCritical(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	now := h.clock.Now()
 	h.fleet.servers = []ServerView{
@@ -74,6 +76,7 @@ func TestPoweredOffCriticalServerIsCritical(t *testing.T) {
 // A graceful shutdown this app ran for a user reads calmly: who, when, and that it was
 // asked for; it is still counted as off, never as healthy.
 func TestPlannedShutdownReadsCalmly(t *testing.T) {
+	t.Parallel()
 	fp := &fakePower{last: map[string]power.Operation{}, info: map[string]power.Info{"b": {Configured: true, Operator: true}}}
 	h, c := signedIn(t, func(d *Deps) { d.Power = fp })
 	now := h.clock.Now()
@@ -106,6 +109,7 @@ func TestPlannedShutdownReadsCalmly(t *testing.T) {
 }
 
 func TestTransitionalAndUnknownPowerStates(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	now := h.clock.Now()
 	h.fleet.servers = []ServerView{
@@ -118,6 +122,7 @@ func TestTransitionalAndUnknownPowerStates(t *testing.T) {
 }
 
 func TestOffPill(t *testing.T) {
+	t.Parallel()
 	if p := pillOf(fleetCounts{Total: 3, OK: 2, Off: 1}); p.Class != "gp-off" || p.Text != "2 OK · 1 off" {
 		t.Fatalf("pill %+v", p)
 	}
@@ -133,6 +138,7 @@ func TestOffPill(t *testing.T) {
 // verified transition that is newer than the last poll, the header, the fleet row, the
 // Status panel and the Operations tab all show that state, with its source.
 func TestVerifiedPowerStateIsShownEverywhere(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	now := h.clock.Now()
 	polled, verified := now.Add(-2*time.Minute), now.Add(-time.Minute)

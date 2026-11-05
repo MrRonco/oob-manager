@@ -129,6 +129,7 @@ func (e *secEnv) userClient(t *testing.T, name string, role authz.Role, ip strin
 }
 
 func TestSecurityTabViewerSeesTheSummaryOnly(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	viewer := e.userClient(t, "vera", authz.RoleViewer, "192.0.2.31")
 	page := result(viewer.get("/servers/r730xd/security")).status(t, http.StatusOK)
@@ -144,6 +145,7 @@ func TestSecurityTabViewerSeesTheSummaryOnly(t *testing.T) {
 }
 
 func TestSecurityTabOperatorSeesFindings(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	page := result(op.get("/servers/r730xd/security")).status(t, http.StatusOK)
@@ -160,6 +162,7 @@ func TestSecurityTabOperatorSeesFindings(t *testing.T) {
 }
 
 func TestSecurityTabAdminForms(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	page := result(adm.get("/servers/r730xd/security")).status(t, http.StatusOK)
@@ -186,6 +189,7 @@ func TestSecurityTabAdminForms(t *testing.T) {
 }
 
 func TestSecurityChangeRefusals(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	result(adm.submit("/servers/r730xd/security", "/servers/r730xd/security/accept",
@@ -223,6 +227,7 @@ func TestSecurityChangeRefusals(t *testing.T) {
 }
 
 func TestSecurityTabStates(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	result(adm.get("/servers/r240/security")).status(t, http.StatusOK).contains(t, "Running now", "Not checked yet")
@@ -237,6 +242,7 @@ func TestSecurityTabStates(t *testing.T) {
 }
 
 func TestSecurityHiddenWithoutTheService(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	adm := e.adminClient()
 	result(adm.get("/servers/r730xd")).status(t, http.StatusOK).lacks(t, "/servers/r730xd/security")
@@ -245,6 +251,7 @@ func TestSecurityHiddenWithoutTheService(t *testing.T) {
 }
 
 func TestFleetSecurityColumn(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	viewer := e.userClient(t, "vera", authz.RoleViewer, "192.0.2.31")
 	for _, path := range []string{"/servers"} {
@@ -269,6 +276,7 @@ func seenOf(t *testing.T, check string) string {
 // request, and a finding that changed since the page was loaded is refused with the tab
 // re-rendered and a notice, nothing accepted.
 func TestAcceptNeedsTheFindingAsShown(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	const tab, action = "/servers/r730xd/security", "/servers/r730xd/security/accept"
@@ -293,6 +301,7 @@ func mostlyUnknownReport() bmcsec.Report {
 // TestMostlyUnknownIsNotOK: a run whose checks mostly could not be evaluated is shown as
 // unknown, on the tab and in the fleet column, never as a green "OK".
 func TestMostlyUnknownIsNotOK(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	e.sec.reports["r240"] = mostlyUnknownReport()
 	e.sec.status["r240"] = bmcsec.RunStatus{Enabled: true, HasReport: true, AsOf: secAt}
@@ -311,6 +320,7 @@ func TestMostlyUnknownIsNotOK(t *testing.T) {
 // TestFailedRunTextWithoutAnEarlierRun: "the results shown are from the run before" is
 // only said when there is a run before.
 func TestFailedRunTextWithoutAnEarlierRun(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	e.sec.status["r240"] = bmcsec.RunStatus{Enabled: true, Error: bmc.ClassTimeout}
 	adm := e.adminClient()
@@ -323,6 +333,7 @@ func TestFailedRunTextWithoutAnEarlierRun(t *testing.T) {
 // TestAcceptedCommentWrapsAndSaysItsLimit: a long accepted comment cannot widen the page,
 // and the form says the limit is in bytes.
 func TestAcceptedCommentWrapsAndSaysItsLimit(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	result(adm.get("/static/app.css")).contains(t, ".acked { margin: 0; overflow-wrap: anywhere; }")
@@ -333,6 +344,7 @@ func TestAcceptedCommentWrapsAndSaysItsLimit(t *testing.T) {
 // get the posture map as the group jump list, and passes fold into "N more checks";
 // viewers keep the summary only.
 func TestSecurityTabPostureMapAndQuietChecks(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	page := result(adm.get("/servers/r730xd/security")).status(t, http.StatusOK)

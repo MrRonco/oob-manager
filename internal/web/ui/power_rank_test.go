@@ -14,6 +14,7 @@ import (
 // a powered-off server is listed after critical servers and before warnings, never
 // among the OK ones; maintenance still sorts after every counted problem.
 func TestOffSortsBetweenCriticalAndWarning(t *testing.T) {
+	t.Parallel()
 	rows := []summaryRow{
 		{ID: "ok", Health: healthView{Class: "ok"}},
 		{ID: "maint", Health: healthView{Class: "crit"}, Maint: &maintBadge{}},
@@ -35,6 +36,7 @@ func TestOffSortsBetweenCriticalAndWarning(t *testing.T) {
 // TestStalePillIsNotHiddenByOff: stale data outranks a powered-off server in the pill,
 // so "1 stale · 1 off" carries the stale class.
 func TestStalePillIsNotHiddenByOff(t *testing.T) {
+	t.Parallel()
 	p := pillOf(fleetCounts{Total: 2, Off: 1, Stale: 1})
 	if p.Class != "gp-stale" || p.Text != "1 stale · 1 off" {
 		t.Fatalf("pill %+v", p)
@@ -53,6 +55,7 @@ func warnHostAt(now time.Time, id, name string, st bmc.PowerState) ServerView {
 // replaces an OK badge. A sensor warning keeps its badge, count and row tint (as metrics
 // and notifications do); the attention item still says what the power state is.
 func TestPowerUnknownKeepsASensorWarning(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	now := h.clock.Now()
 	h.fleet.servers = []ServerView{warnHostAt(now, "q", "Quiet", bmc.PowerUnknown), warnHostAt(now, "up", "Booting", bmc.PowerPoweringOn)}

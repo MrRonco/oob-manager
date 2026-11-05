@@ -86,6 +86,7 @@ func newFWUpdEnv(t *testing.T) *fwUpdEnv {
 }
 
 func TestFirmwarePageShowsUpdates(t *testing.T) {
+	t.Parallel()
 	e := newFWUpdEnv(t)
 	adm := e.adminClient()
 	page := result(adm.get("/firmware")).status(t, http.StatusOK)
@@ -108,6 +109,7 @@ func TestFirmwarePageShowsUpdates(t *testing.T) {
 }
 
 func TestSkipAndUnskipNeedAdminAndAFreshStepUp(t *testing.T) {
+	t.Parallel()
 	e := newFWUpdEnv(t)
 	adm := e.adminClient()
 	form := url.Values{"component": {"159"}, "fqdd": {"BIOS.Setup.1-1"}, "version": {"2.25.2"}, "comment": {"next window"},
@@ -134,6 +136,7 @@ func TestSkipAndUnskipNeedAdminAndAFreshStepUp(t *testing.T) {
 }
 
 func TestSkipRefusesAChangedOrUnknownUpdate(t *testing.T) {
+	t.Parallel()
 	e := newFWUpdEnv(t)
 	adm := e.adminClient()
 	cases := []struct {
@@ -158,6 +161,7 @@ func TestSkipRefusesAChangedOrUnknownUpdate(t *testing.T) {
 }
 
 func TestDetailsHrefAllowlist(t *testing.T) {
+	t.Parallel()
 	for raw, want := range map[string]string{
 		"https://www.dell.com/support/x?driverId=1": "https://www.dell.com/support/x?driverId=1",
 		"https://dell.com/x":                        "https://dell.com/x",

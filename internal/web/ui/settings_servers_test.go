@@ -147,6 +147,7 @@ func (e *serversEnv) fetchAndConfirm(t *testing.T, c *client, id, address string
 }
 
 func TestServersListAndAccess(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	result(c.get("/settings/servers")).status(t, http.StatusOK).contains(t, `aria-current="page">Servers`,
@@ -160,6 +161,7 @@ func TestServersListAndAccess(t *testing.T) {
 }
 
 func TestAddServerTOFUFlow(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	confirm := result(c.submit("/settings/servers/new", "/settings/servers/fingerprint", url.Values{"id": {"edge1"},
@@ -186,6 +188,7 @@ func TestAddServerTOFUFlow(t *testing.T) {
 }
 
 func TestAddServerRefusals(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	post := func(addr, port, kind string) *httpResult {
@@ -220,6 +223,7 @@ func TestAddServerRefusals(t *testing.T) {
 }
 
 func TestServerCredentialsEnableAndTest(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.fetchAndConfirm(t, c, "edge1", "192.0.2.12").status(t, http.StatusSeeOther)
@@ -262,6 +266,7 @@ func TestServerCredentialsEnableAndTest(t *testing.T) {
 }
 
 func TestServerPinsAndMove(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.fetchAndConfirm(t, c, "edge1", "192.0.2.12").status(t, http.StatusSeeOther)
@@ -292,6 +297,7 @@ func TestServerPinsAndMove(t *testing.T) {
 }
 
 func TestServerPageStates(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	e.fleet.servers[0].PinMismatch = true
 	c := e.adminClient()
@@ -308,6 +314,7 @@ func TestServerPageStates(t *testing.T) {
 }
 
 func TestRemoveServerTypedID(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.fetchAndConfirm(t, c, "edge1", "192.0.2.12").status(t, http.StatusSeeOther)
@@ -326,6 +333,7 @@ func TestRemoveServerTypedID(t *testing.T) {
 }
 
 func TestDisableServerConfirm(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.fetchAndConfirm(t, c, "edge1", "192.0.2.12").status(t, http.StatusSeeOther)
@@ -340,6 +348,7 @@ func TestDisableServerConfirm(t *testing.T) {
 }
 
 func TestFingerprintRateLimitAndLock(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	fields := url.Values{"id": {"x1"}, "name": {"X"}, "kind": {"idrac9"}, "address": {"192.0.2.12"}, "port": {"443"}}
@@ -360,6 +369,7 @@ func TestFingerprintRateLimitAndLock(t *testing.T) {
 }
 
 func TestFingerprintFetchError(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	e.prober.fail = &tofu.Error{Class: tofu.ClassNotTLS}
 	c := e.adminClient()
@@ -372,6 +382,7 @@ func TestFingerprintFetchError(t *testing.T) {
 }
 
 func TestServersLockedSection(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "settings: { locked: [servers], bmc_networks: [192.0.2.0/24] }")
 	c := e.adminClient()
 	result(c.get("/settings/servers")).status(t, http.StatusOK).contains(t, "locked by <code>settings.locked</code>").
@@ -383,6 +394,7 @@ func TestServersLockedSection(t *testing.T) {
 }
 
 func TestServerAuditSentences(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.fetchAndConfirm(t, c, "edge1", "192.0.2.12").status(t, http.StatusSeeOther)
@@ -390,6 +402,7 @@ func TestServerAuditSentences(t *testing.T) {
 }
 
 func TestCertTextSanitised(t *testing.T) {
+	t.Parallel()
 	if got := certText("CN=a\u202egnp.exe\x00\n" + strings.Repeat("x", 300)); strings.ContainsAny(got, "\u202e\x00\n") ||
 		len([]rune(got)) != maxCertText+1 || !strings.HasPrefix(got, "CN=agnp.exe") {
 		t.Fatalf("certText = %q", got)
@@ -402,6 +415,7 @@ func TestCertTextSanitised(t *testing.T) {
 // TestProofBoundToPurpose: a proof from Add server cannot confirm a pin of another
 // server at the same address.
 func TestProofBoundToPurpose(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.fetchAndConfirm(t, c, "edge1", "192.0.2.12").status(t, http.StatusSeeOther)

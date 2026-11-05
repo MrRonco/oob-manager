@@ -121,6 +121,7 @@ func multipartPost(t *testing.T, c *client, csrf string, gz, sig []byte) *httpte
 }
 
 func TestCatalogCheckNow(t *testing.T) {
+	t.Parallel()
 	e, cat := newCatalogEnv(t)
 	op := e.userClient(t, "olga", authz.RoleOperator, "192.0.2.21")
 	page := result(op.get("/firmware")).status(t, http.StatusOK)
@@ -140,6 +141,7 @@ func TestCatalogCheckNow(t *testing.T) {
 }
 
 func TestCatalogSettingsPanelUploadAndConfirm(t *testing.T) {
+	t.Parallel()
 	e, cat := newCatalogEnv(t)
 	adm := e.adminClient()
 	gen := result(adm.get("/settings/general")).status(t, http.StatusOK)
@@ -188,6 +190,7 @@ func TestCatalogSettingsPanelUploadAndConfirm(t *testing.T) {
 }
 
 func TestEnablingTheCatalogCheckIsAudited(t *testing.T) {
+	t.Parallel()
 	e, cat := newCatalogEnv(t)
 	adm := e.adminClient()
 	gen := adm.get("/settings/general").Body.String()
@@ -205,6 +208,7 @@ func TestEnablingTheCatalogCheckIsAudited(t *testing.T) {
 // Right after the online check is switched on, before its first check finishes, the line
 // says the check is running instead of "not checked" (v0.9.1).
 func TestCatalogLineFirstCheckRunning(t *testing.T) {
+	t.Parallel()
 	now := time.Date(2026, 10, 29, 19, 0, 0, 0, time.UTC)
 	running, _ := catalogLine(fwcatalog.Status{Enabled: true, Online: true}, timeFmt{loc: time.UTC}, now)
 	if !strings.Contains(running, "first online check is running") {

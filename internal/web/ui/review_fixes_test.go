@@ -15,6 +15,7 @@ import (
 // Tests for the fixes from docs/reviews/2026-10-21-ui-layout-review.md (F-xx).
 
 func TestF02StaleServersNeverShowOK(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.servers[1] = withHealth(h.fleet.servers[1], bmc.HealthOK) // R240: stale but last said OK
 	result(c.get("/")).status(t, http.StatusOK)
@@ -47,6 +48,7 @@ func between(s, from, to string) string {
 }
 
 func TestF03TruthfulTimesAndAutoRefresh(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	r := result(c.get("/")).status(t, http.StatusOK)
 	r.contains(t, "Page generated", "Auto-refresh <strong>Off</strong>", "Reload now", "Last successful poll 2026-10-20 11:59:40 UTC").
@@ -64,6 +66,7 @@ func TestF03TruthfulTimesAndAutoRefresh(t *testing.T) {
 }
 
 func TestF04NavigationCurrentPageAndBreadcrumb(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/")).contains(t, `<a href="/" aria-current="page">`, `href="/events"`, `href="/about"`,
 		`<aside class="side"`, `href="/servers/r240"`).lacks(t, `href="/settings"`)
@@ -74,6 +77,7 @@ func TestF04NavigationCurrentPageAndBreadcrumb(t *testing.T) {
 }
 
 func TestF05ErrorPagesKeepTheSignedInLayout(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	r := result(c.get("/servers/nope")).status(t, http.StatusNotFound)
 	r.contains(t, "Server not found", "Error 404", "Configured servers", `href="/servers/r730xd"`, "Sign out",
@@ -85,6 +89,7 @@ func TestF05ErrorPagesKeepTheSignedInLayout(t *testing.T) {
 }
 
 func TestF06PagerAndF07LogLayout(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.logs["r730xd/sel"] = eventLog(1, true)
 	result(c.get("/servers/r730xd/events")).contains(t, "1 entry in the order the BMC keeps them", "ID SEL9901",
@@ -95,6 +100,7 @@ func TestF06PagerAndF07LogLayout(t *testing.T) {
 }
 
 func TestF09ScrollRegionsAreFocusableAndHealthIsSecond(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	body := result(c.get("/servers/r730xd/sensors")).rec.Body.String()
 	if n := strings.Count(body, `class="tw" role="region"`); n != strings.Count(body, `class="tw"`) || n < 2 {
@@ -116,6 +122,7 @@ func TestF09ScrollRegionsAreFocusableAndHealthIsSecond(t *testing.T) {
 }
 
 func TestF10OneNoDataVocabulary(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	for _, p := range []string{"/", "/servers/r730xd", "/servers/spare", "/servers/r730xd/inventory"} {
 		body := result(c.get(p)).status(t, http.StatusOK).rec.Body.String()
@@ -129,6 +136,7 @@ func TestF10OneNoDataVocabulary(t *testing.T) {
 }
 
 func TestF11PSURatingIsNotLiveInput(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	snap := bmc.NewSnapshot(bmc.SnapshotParams{TakenAt: h.clock.Now(), PowerState: bmc.PowerOn, Health: bmc.HealthOK,
 		PSUs: []bmc.PSU{{Name: "PS1", CapacityWatts: bmc.ReadingOf(750), RatedInputWatts: bmc.ReadingOf(900),
@@ -144,6 +152,7 @@ func TestF11PSURatingIsNotLiveInput(t *testing.T) {
 }
 
 func TestF12OverviewSummaryAttentionAndTable(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/")).contains(t, "<span class=\"meta\">3 servers</span>", "<span>Draw 241 W</span>",
 		"No answer from the BMC for 10 min (last error: timed out)", "No data: never polled successfully",
@@ -152,6 +161,7 @@ func TestF12OverviewSummaryAttentionAndTable(t *testing.T) {
 }
 
 func TestF13LoginKeepsUsernameAndTiesErrors(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.5")
@@ -168,6 +178,7 @@ func TestF13LoginKeepsUsernameAndTiesErrors(t *testing.T) {
 }
 
 func TestF14BrandingFooterAndStaticCaching(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/")).contains(t, `<link rel="icon" href="/static/favicon-stale.svg?v=`, `<span class="logo" aria-hidden="true">`,
 		`<meta name="robots" content="noindex, nofollow">`, `<footer class="foot">`, "<span>dev</span>")
@@ -184,6 +195,7 @@ func TestF14BrandingFooterAndStaticCaching(t *testing.T) {
 }
 
 func TestF15ActionsCardExplainsAvailability(t *testing.T) {
+	t.Parallel()
 	_, oc := signedInOperator(t)
 	result(oc.get("/servers/r730xd")).contains(t, "Power control: not set up", `aria-disabled="true"`,
 		"Fan control: not set up").lacks(t, "Actions</h2>")
@@ -196,6 +208,7 @@ func TestF15ActionsCardExplainsAvailability(t *testing.T) {
 }
 
 func TestF18RoleChipHiddenWhenItRepeatsTheName(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("admin", authz.RoleAdmin, true)
 	c := h.client("192.0.2.5")
@@ -206,6 +219,7 @@ func TestF18RoleChipHiddenWhenItRepeatsTheName(t *testing.T) {
 }
 
 func TestEventsPage(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.logs["r730xd/sel"] = eventLog(3, true)
 	crit := bmc.NewEventLog("x", []bmc.Event{{ID: "9", Message: "PSU lost", Severity: bmc.SeverityCritical,
@@ -228,6 +242,7 @@ func TestEventsPage(t *testing.T) {
 }
 
 func TestStepUpPageWhenAlreadyFresh(t *testing.T) {
+	t.Parallel()
 	_, c := signedInAdmin(t)
 	result(c.get("/stepup?next=/settings/users")).status(t, http.StatusOK).
 		contains(t, "already confirmed", `href="/settings/users"`, "Continue")
@@ -235,6 +250,7 @@ func TestStepUpPageWhenAlreadyFresh(t *testing.T) {
 }
 
 func TestCompareNewest(t *testing.T) {
+	t.Parallel()
 	a, b := time.Unix(1, 0), time.Unix(2, 0)
 	if compareNewest(a, b) <= 0 || compareNewest(b, a) >= 0 || compareNewest(time.Time{}, a) <= 0 ||
 		compareNewest(a, time.Time{}) >= 0 || compareNewest(time.Time{}, time.Time{}) != 0 {

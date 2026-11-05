@@ -33,6 +33,7 @@ func serialHarness(t *testing.T, role authz.Role, tweak ...func(*Deps)) (*harnes
 }
 
 func TestServerPageShowsSerialCard(t *testing.T) {
+	t.Parallel()
 	_, admin, _ := serialHarness(t, authz.RoleAdmin)
 	result(admin.get("/servers/r730xd")).status(t, http.StatusOK).contains(t,
 		`<h2 id="sc-h">Serial console</h2>`, `href="/servers/r730xd/serial">`, "Open serial console",
@@ -46,6 +47,7 @@ func TestServerPageShowsSerialCard(t *testing.T) {
 }
 
 func TestSerialPageNeedsAdminAndFreshStepUp(t *testing.T) {
+	t.Parallel()
 	h, admin, _ := serialHarness(t, authz.RoleAdmin)
 	result(admin.get("/servers/r730xd/serial")).status(t, http.StatusOK).
 		contains(t, `action="/servers/r730xd/serial"`, ">Connect</button>").
@@ -78,6 +80,7 @@ func serialCSRF(t *testing.T, c *client) string {
 }
 
 func TestSerialStartIssuesTicketAndRendersPage(t *testing.T) {
+	t.Parallel()
 	_, c, fs := serialHarness(t, authz.RoleAdmin)
 	rec := c.do(http.MethodPost, "/servers/r730xd/serial", url.Values{csrfField: {serialCSRF(t, c)}})
 	result(rec).status(t, http.StatusOK).contains(t, `data-ticket="stk-r730xd"`, `data-ws="/servers/r730xd/serial/ws"`,
@@ -101,6 +104,7 @@ func TestSerialStartIssuesTicketAndRendersPage(t *testing.T) {
 }
 
 func TestSerialTakeoverAndErrors(t *testing.T) {
+	t.Parallel()
 	h, c, fs := serialHarness(t, authz.RoleAdmin)
 	since := h.clock.Now().Add(-time.Minute)
 	st := fs.Status("r730xd")
@@ -137,6 +141,7 @@ func TestSerialTakeoverAndErrors(t *testing.T) {
 }
 
 func TestSerialCardStates(t *testing.T) {
+	t.Parallel()
 	v := fleetAt(time.Now())[0]
 	unknown := fleetAt(time.Now())[2]
 	capable := v
@@ -184,6 +189,7 @@ func TestSerialCardStates(t *testing.T) {
 }
 
 func TestSerialWebSocket(t *testing.T) {
+	t.Parallel()
 	h, c, fs := serialHarness(t, authz.RoleAdmin)
 	srv := httptest.NewServer(h.handler)
 	t.Cleanup(srv.Close)
@@ -245,6 +251,7 @@ func serialDial(t *testing.T, srv *httptest.Server, path, cookie, origin string)
 }
 
 func TestSerialWebSocketRefusals(t *testing.T) {
+	t.Parallel()
 	h, c, fs := serialHarness(t, authz.RoleAdmin)
 	srv := httptest.NewServer(h.handler)
 	t.Cleanup(srv.Close)

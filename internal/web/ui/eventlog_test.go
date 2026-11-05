@@ -11,6 +11,7 @@ import (
 )
 
 func TestFoldRepeats(t *testing.T) {
+	t.Parallel()
 	es := []bmc.Event{ // newest first, as the BMC returns them
 		{ID: "5", Message: "The previous log entry was repeated 22 times.", MessageID: "LOG007"},
 		{ID: "4", Message: "Unable to log in for root from 192.0.2.77.", Severity: bmc.SeverityWarning},
@@ -35,6 +36,7 @@ func TestFoldRepeats(t *testing.T) {
 }
 
 func TestLogSeverityInfoIsNotOK(t *testing.T) {
+	t.Parallel()
 	if h := logSeverity(bmc.SeverityOK); h.Label != "Info" || h.Class != "info" {
 		t.Fatalf("informational entry = %+v", h)
 	}
@@ -57,6 +59,7 @@ func eventsFleet(h *harness) {
 }
 
 func TestEventsDefaultIsWarningAndWorseOverSevenDays(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	eventsFleet(h)
 	r := result(c.get("/events")).status(t, http.StatusOK)
@@ -67,6 +70,7 @@ func TestEventsDefaultIsWarningAndWorseOverSevenDays(t *testing.T) {
 }
 
 func TestEventsFilters(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	eventsFleet(h)
 	result(c.get("/events?severity=all&range=all")).contains(t, "Clock synchronized.", "The chassis is open.",

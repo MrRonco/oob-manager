@@ -13,6 +13,7 @@ import (
 // TestOverviewHeroIsVerdictFirst (round-2 slice C): the hero names the fleet's verdict,
 // leads with the worst item, and carries the counts and the data age.
 func TestOverviewHeroIsVerdictFirst(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	r := result(c.get("/")).status(t, http.StatusOK)
 	r.contains(t, `class="hero hero-stale" id="verdict"`, `<span class="eyebrow">Overview</span>`,
@@ -28,6 +29,7 @@ func TestOverviewHeroIsVerdictFirst(t *testing.T) {
 // TestIncidentModeOnlyWhileCritical: B's incident mode (display numeral, glow class) is
 // on while a server is critical, and off otherwise.
 func TestIncidentModeOnlyWhileCritical(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	now := h.clock.Now()
 	h.fleet.servers = []ServerView{
@@ -41,6 +43,7 @@ func TestIncidentModeOnlyWhileCritical(t *testing.T) {
 }
 
 func TestHeroTitleAndCounts(t *testing.T) {
+	t.Parallel()
 	v := overviewView{Counts: fleetCounts{Total: 2, OK: 2}, Attention: []attentionItem{{Server: "a", Text: "x"}},
 		Servers: []summaryRow{{Name: "a", Health: healthView{Class: "ok"}}}}
 	if h := heroOf(v); h.Title != "Warning or critical events in the last 24 h" || h.Tone != "warn" || h.Worst == nil {
@@ -63,6 +66,7 @@ func TestHeroTitleAndCounts(t *testing.T) {
 // per server on one 24 h axis, each with a text summary and a data table; a server
 // without history says so. Without history only the compact list is drawn.
 func TestOverviewRecorder(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t, withHistory(t))
 	r := result(c.get("/")).status(t, http.StatusOK)
 	r.contains(t, `<div class="rec only-wide">`, `class="rec-svg" viewBox="0 0 720 40" preserveAspectRatio="none" aria-hidden="true"`,
@@ -79,6 +83,7 @@ func TestOverviewRecorder(t *testing.T) {
 }
 
 func TestWithoutReadings(t *testing.T) {
+	t.Parallel()
 	p := history.SparkPlan(time.Date(2026, 10, 23, 12, 10, 0, 0, time.UTC))
 	for have, want := range map[int]string{48: "No gaps", 47: "30 min without readings", 43: "2 h 30 min without readings",
 		46: "1 h without readings"} {
@@ -91,6 +96,7 @@ func TestWithoutReadings(t *testing.T) {
 // TestHeroNamesTheServerOfThePillsWorstState (review L5): the title follows the same
 // classification as the counts, the tone and incident mode, whatever the row order.
 func TestHeroNamesTheServerOfThePillsWorstState(t *testing.T) {
+	t.Parallel()
 	stale := summaryRow{Name: "Old", Health: healthView{Label: "Stale (last: Critical)", Class: "stale"}, Fresh: freshness{Stale: true}}
 	crit := summaryRow{Name: "Gate", Health: healthView{Label: "Critical", Class: "crit"}}
 	rows := []summaryRow{stale, crit}

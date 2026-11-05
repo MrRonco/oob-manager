@@ -28,6 +28,7 @@ func goList(t *testing.T, c *client, path string) string {
 }
 
 func TestGoPageRequiresSession(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	result(h.client("192.0.2.41").get("/go")).status(t, http.StatusSeeOther).location(t, "/login")
 }
@@ -36,6 +37,7 @@ func TestGoPageRequiresSession(t *testing.T) {
 // account links, never Settings or a settings tab. This harness has no firmware view, so
 // nobody gets /firmware here; TestGoLinksFirmwareByRole wires it for every role.
 func TestGoPageViewerSeesOnlyWhatTheSidebarShows(t *testing.T) {
+	t.Parallel()
 	_, c := goClient(t, authz.RoleViewer)
 	list := goList(t, c, "/go")
 	for _, want := range []string{`href="/"`, `href="/servers"`, `href="/events"`, `href="/activity"`, `href="/help"`,
@@ -53,6 +55,7 @@ func TestGoPageViewerSeesOnlyWhatTheSidebarShows(t *testing.T) {
 }
 
 func TestGoPageAdminSeesSettings(t *testing.T) {
+	t.Parallel()
 	_, c := goClient(t, authz.RoleAdmin)
 	list := goList(t, c, "/go")
 	for _, l := range settingsLinks() {
@@ -68,6 +71,7 @@ func TestGoPageAdminSeesSettings(t *testing.T) {
 // TestGoPageWorksWithoutScript: the list, a GET filter with a label and the shortcut
 // table are plain HTML; the script-only toggle is hidden until palette.js shows it.
 func TestGoPageWorksWithoutScript(t *testing.T) {
+	t.Parallel()
 	_, c := goClient(t, authz.RoleViewer)
 	result(c.get("/go")).status(t, http.StatusOK).contains(t,
 		"<h1>Go to</h1>", `<form class="filters panel" method="get" action="/go" role="search">`,
@@ -77,6 +81,7 @@ func TestGoPageWorksWithoutScript(t *testing.T) {
 }
 
 func TestGoPageFilters(t *testing.T) {
+	t.Parallel()
 	_, c := goClient(t, authz.RoleViewer)
 	list := goList(t, c, "/go?q="+url.QueryEscape("  SPARE "))
 	if !strings.Contains(list, `href="/servers/spare"`) || strings.Contains(list, `href="/servers/r730xd"`) ||
@@ -93,6 +98,7 @@ func TestGoPageFilters(t *testing.T) {
 }
 
 func TestGoPageRejectsBadFilter(t *testing.T) {
+	t.Parallel()
 	_, c := goClient(t, authz.RoleViewer)
 	result(c.get("/go?q="+strings.Repeat("a", maxGoQuery+1))).status(t, http.StatusBadRequest)
 	result(c.get("/go?q="+url.QueryEscape("a\x00b"))).status(t, http.StatusBadRequest)
@@ -101,6 +107,7 @@ func TestGoPageRejectsBadFilter(t *testing.T) {
 }
 
 func TestFilterGoKeepsGroupsImmutable(t *testing.T) {
+	t.Parallel()
 	all := []goGroup{{ID: "a", Label: "Pages", Links: []goLink{{"Overview", "", "/"}, {"Help", "", "/help"}}}}
 	got := filterGo(all, "help")
 	if len(got) != 1 || len(got[0].Links) != 1 || got[0].Links[0].Href != "/help" {
@@ -123,6 +130,7 @@ func TestFilterGoKeepsGroupsImmutable(t *testing.T) {
 // TestLayoutCarriesThePaletteOnlyWhenSignedIn: a signed-in page loads palette.js (deferred,
 // from 'self') and the inert destination list; the sign-in page has neither.
 func TestLayoutCarriesThePaletteOnlyWhenSignedIn(t *testing.T) {
+	t.Parallel()
 	h, c := goClient(t, authz.RoleViewer)
 	page := result(c.get("/events")).status(t, http.StatusOK)
 	page.contains(t, `<script src="/static/palette.js?v=dev" defer></script>`, `<template id="oob-go">`,
@@ -137,6 +145,7 @@ func TestLayoutCarriesThePaletteOnlyWhenSignedIn(t *testing.T) {
 // TestRecentMarksOnlyPlainViews: palette.js may remember a signed-in GET view answered
 // 200, never an error, the Go to page itself, a confirm page or a pre-session page.
 func TestRecentMarksOnlyPlainViews(t *testing.T) {
+	t.Parallel()
 	h, c := goClient(t, authz.RoleAdmin)
 	const mark = `<meta name="oob-recent" content="on">`
 	for _, p := range []string{"/", "/servers/r730xd", "/events", "/servers", "/activity", "/help"} {
@@ -155,6 +164,7 @@ func TestRecentMarksOnlyPlainViews(t *testing.T) {
 }
 
 func TestPaletteScriptIsServedAndPlain(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	rec := result(c.get("/static/palette.js")).status(t, http.StatusOK)
 	if ct := rec.rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/javascript") {
@@ -175,6 +185,7 @@ func TestPaletteScriptIsServedAndPlain(t *testing.T) {
 }
 
 func TestRecentOKNeedsAPlainSignedInGET(t *testing.T) {
+	t.Parallel()
 	get := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/x", nil)
 	post := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/x", nil)
 	user := layoutData{User: "pat"}
@@ -202,6 +213,7 @@ func TestRecentOKNeedsAPlainSignedInGET(t *testing.T) {
 }
 
 func TestParseGoQuery(t *testing.T) {
+	t.Parallel()
 	for raw, want := range map[string]string{"  a\u00a0b\t c ": "a b c", "": "", strings.Repeat("é", maxGoQuery): strings.Repeat("é", maxGoQuery)} {
 		if got, ok := parseGoQuery(raw); !ok || got != want {
 			t.Errorf("parseGoQuery(%q) = %q, %v; want %q", raw, got, ok, want)

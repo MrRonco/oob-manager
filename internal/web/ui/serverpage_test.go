@@ -10,6 +10,7 @@ import (
 )
 
 func TestServerPageIsAnomalyFirst(t *testing.T) {
+	t.Parallel()
 	h, c := signedInOperator(t)
 	v := h.fleet.servers[0]
 	v.Tags = []string{"critical", "storage"}
@@ -55,6 +56,7 @@ func TestServerPageIsAnomalyFirst(t *testing.T) {
 }
 
 func TestServerPageBMCLinkForOperatorsOnly(t *testing.T) {
+	t.Parallel()
 	bmcURL := func(d *Deps) { d.BMCWebURL = func(string) string { return "https://192.0.2.70/" } }
 	_, viewer := signedIn(t, bmcURL)
 	result(viewer.get("/servers/r730xd")).lacks(t, "Open BMC web UI")
@@ -69,6 +71,7 @@ func TestServerPageBMCLinkForOperatorsOnly(t *testing.T) {
 // retired; its old address moves permanently to the server, whose header menus list
 // the same actions, each a link or disabled with its reason.
 func TestOldOperationsAddressMovesToTheHeaderMenus(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/servers/r730xd/operations")).status(t, http.StatusFound).location(t, "/servers/r730xd")
 	result(c.get("/servers/r730xd/operations?x=1")).status(t, http.StatusFound).location(t, "/servers/r730xd?x=1")
@@ -85,6 +88,7 @@ func TestOldOperationsAddressMovesToTheHeaderMenus(t *testing.T) {
 }
 
 func TestInventoryHasCapabilities(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/servers/r730xd/inventory")).status(t, http.StatusOK).
 		contains(t, "Capabilities", "System Event Log", "Power control", "Firmware")

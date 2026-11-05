@@ -20,6 +20,7 @@ func postLogin(c *client, user, pass string) *httpResult {
 }
 
 func TestLoginFlowEndToEnd(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -38,6 +39,7 @@ func TestLoginFlowEndToEnd(t *testing.T) {
 }
 
 func TestLoginWrongPassword(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -57,12 +59,14 @@ func TestLoginWrongPassword(t *testing.T) {
 }
 
 func TestLoginUnconfirmedTOTPRefused(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("newbie", authz.RoleViewer, false)
 	postLogin(h.client("192.0.2.5"), "newbie", testPassword).status(t, http.StatusUnauthorized)
 }
 
 func TestLoginCSRFRejected(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -86,6 +90,7 @@ func TestLoginCSRFRejected(t *testing.T) {
 }
 
 func TestTOTPCSRFBoundToSession(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleAdmin, true)
 	a, b := h.client("192.0.2.100"), h.client("192.0.2.101")
@@ -98,6 +103,7 @@ func TestTOTPCSRFBoundToSession(t *testing.T) {
 }
 
 func TestTOTPWrongCode(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -108,6 +114,7 @@ func TestTOTPWrongCode(t *testing.T) {
 }
 
 func TestTOTPPendingExpired(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -122,6 +129,7 @@ func TestTOTPPendingExpired(t *testing.T) {
 }
 
 func TestTOTPPageRedirects(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -133,6 +141,7 @@ func TestTOTPPageRedirects(t *testing.T) {
 }
 
 func TestLoginRateLimitPerIP(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.66")
@@ -154,6 +163,7 @@ func TestLoginRateLimitPerIP(t *testing.T) {
 }
 
 func TestLoginRateLimitPerAccount(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("morgan", authz.RoleAdmin, true)
 	for i := range 10 {
@@ -164,6 +174,7 @@ func TestLoginRateLimitPerAccount(t *testing.T) {
 }
 
 func TestTOTPRateLimit(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, func(d *Deps) { d.LoginPerIP = RateLimit{Events: 2, Per: time.Minute} })
 	h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -179,6 +190,7 @@ func TestTOTPRateLimit(t *testing.T) {
 }
 
 func TestAccountLockoutShowsRetryAfter(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("morgan", authz.RoleAdmin, true)
 	var last *httpResult
@@ -192,6 +204,7 @@ func TestAccountLockoutShowsRetryAfter(t *testing.T) {
 }
 
 func TestLogout(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleViewer, true)
 	c := h.client("192.0.2.100")
@@ -210,6 +223,7 @@ func TestLogout(t *testing.T) {
 }
 
 func TestLogoutNeedsCSRF(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleViewer, true)
 	c := h.client("192.0.2.100")
@@ -219,6 +233,7 @@ func TestLogoutNeedsCSRF(t *testing.T) {
 }
 
 func TestCrossOriginPostRejected(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -232,6 +247,7 @@ func TestCrossOriginPostRejected(t *testing.T) {
 }
 
 func TestAuditFailureBlocksLogin(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -246,6 +262,7 @@ func TestAuditFailureBlocksLogin(t *testing.T) {
 }
 
 func TestMalformedFormBody(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	c := h.client("192.0.2.100")
 	big := url.Values{"username": {strings.Repeat("a", maxFormBytes+10)}}

@@ -15,6 +15,7 @@ import (
 // window; a stale one is sent to the step-up page (the form kept) and audited. A re-run
 // only reads.
 func TestAcceptNeedsAFreshStepUp(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	const tab = "/servers/r730xd/security"
@@ -42,6 +43,7 @@ func (e *secEnv) stepUpAndResume(c *client, loc, next, id string) *httpResult {
 // removal posted after the step-up window lapsed is kept across the step-up and replayed
 // once, with the comment and the "seen" value exactly as the form carried them.
 func TestSecurityChangesResumeAfterTheStepUp(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	const tab = "/servers/r730xd/security"
@@ -67,6 +69,7 @@ func TestSecurityChangesResumeAfterTheStepUp(t *testing.T) {
 // TestResumedAcceptOfAChangedFinding: when the finding changed between the stash and the
 // replay, the replay gets the normal 409 "changed" notice and nothing is accepted.
 func TestResumedAcceptOfAChangedFinding(t *testing.T) {
+	t.Parallel()
 	e := newSecEnv(t)
 	adm := e.adminClient()
 	const tab = "/servers/r730xd/security"

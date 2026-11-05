@@ -28,6 +28,7 @@ func consoleHarness(t *testing.T, role authz.Role, tweak ...func(*Deps)) (*harne
 }
 
 func TestServerPageShowsConsoleCard(t *testing.T) {
+	t.Parallel()
 	_, admin, _, _ := consoleHarness(t, authz.RoleAdmin)
 	result(admin.get("/servers/r730xd")).status(t, http.StatusOK).contains(t,
 		`<h2 id="gc-h">Graphical console</h2>`, `href="/servers/r730xd/console">Open console</a>`,
@@ -42,6 +43,7 @@ func TestServerPageShowsConsoleCard(t *testing.T) {
 }
 
 func TestConsolePageNeedsAdminAndFreshStepUp(t *testing.T) {
+	t.Parallel()
 	h, admin, _, _ := consoleHarness(t, authz.RoleAdmin)
 	result(admin.get("/servers/r730xd/console")).status(t, http.StatusOK).
 		contains(t, `action="/servers/r730xd/console"`, ">Connect</button>").lacks(t, "data-ticket", "console.js")
@@ -65,6 +67,7 @@ func consoleCSRF(t *testing.T, c *client, path string) string {
 }
 
 func TestConsoleStartIssuesTicketAndRendersPage(t *testing.T) {
+	t.Parallel()
 	_, c, fc, _ := consoleHarness(t, authz.RoleAdmin)
 	tok := consoleCSRF(t, c, "/servers/r730xd/console")
 	rec := c.do(http.MethodPost, "/servers/r730xd/console", url.Values{csrfField: {tok}})
@@ -92,6 +95,7 @@ func TestConsoleStartIssuesTicketAndRendersPage(t *testing.T) {
 }
 
 func TestConsoleStartErrors(t *testing.T) {
+	t.Parallel()
 	h, c, fc, _ := consoleHarness(t, authz.RoleAdmin)
 	tok := consoleCSRF(t, c, "/servers/r730xd/console")
 	fc.issueErr = &console.InUseError{Active: console.Active{Username: "alice", Since: h.clock.Now()}}
@@ -110,6 +114,7 @@ func TestConsoleStartErrors(t *testing.T) {
 }
 
 func TestConsoleStartRateLimitAndStaleStepUp(t *testing.T) {
+	t.Parallel()
 	h, c, _, _ := consoleHarness(t, authz.RoleAdmin, func(d *Deps) { d.ConsolePerUser = RateLimit{Events: 2, Per: time.Minute} })
 	tok := consoleCSRF(t, c, "/servers/r730xd/console")
 	for range 2 {
@@ -122,6 +127,7 @@ func TestConsoleStartRateLimitAndStaleStepUp(t *testing.T) {
 }
 
 func TestConsoleRoutesHiddenWithoutBroker(t *testing.T) {
+	t.Parallel()
 	_, c := signedInAdmin(t)
 	result(c.get("/servers/r730xd/console")).status(t, http.StatusNotFound)
 	result(c.do(http.MethodPost, "/servers/r730xd/console", url.Values{})).status(t, http.StatusNotFound)
@@ -130,6 +136,7 @@ func TestConsoleRoutesHiddenWithoutBroker(t *testing.T) {
 }
 
 func TestKVMLaunch(t *testing.T) {
+	t.Parallel()
 	h, c, _, fk := consoleHarness(t, authz.RoleAdmin)
 	page := c.get("/servers/r240").Body.String()
 	tok := csrfFor(t, page, "/servers/r240/console/kvm-launch")
@@ -161,6 +168,7 @@ func TestKVMLaunch(t *testing.T) {
 // is shown disabled (direction B C-10: aria-disabled + visible .why-off reason), never
 // as a form.
 func TestServerPageExplainsMissingNativeLaunch(t *testing.T) {
+	t.Parallel()
 	_, admin, _, fk := consoleHarness(t, authz.RoleAdmin)
 	fk.mu.Lock()
 	fk.available = map[string]bool{}

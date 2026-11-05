@@ -146,6 +146,7 @@ func (e *fwEnv) userClient(t *testing.T, name string, role authz.Role, ip string
 }
 
 func TestFirmwarePageViewer(t *testing.T) {
+	t.Parallel()
 	e := newFWEnv(t)
 	viewer := e.userClient(t, "vera", authz.RoleViewer, "192.0.2.31")
 	page := result(viewer.get("/firmware")).status(t, http.StatusOK)
@@ -179,6 +180,7 @@ func TestFirmwarePageViewer(t *testing.T) {
 }
 
 func TestFirmwareRescanOperator(t *testing.T) {
+	t.Parallel()
 	e := newFWEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	page := result(op.get("/firmware")).status(t, http.StatusOK)
@@ -215,6 +217,7 @@ func TestFirmwareRescanOperator(t *testing.T) {
 }
 
 func TestFirmwareRescanRefusals(t *testing.T) {
+	t.Parallel()
 	e := newFWEnv(t)
 	viewer := e.userClient(t, "vera", authz.RoleViewer, "192.0.2.31")
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
@@ -235,6 +238,7 @@ func TestFirmwareRescanRefusals(t *testing.T) {
 }
 
 func TestFirmwareCSVFromTheUI(t *testing.T) {
+	t.Parallel()
 	e := newFWEnv(t)
 	viewer := e.userClient(t, "vera", authz.RoleViewer, "192.0.2.31")
 	rec := viewer.get("/firmware.csv?server=r730xd")
@@ -254,6 +258,7 @@ func TestFirmwareCSVFromTheUI(t *testing.T) {
 }
 
 func TestInventoryFirmwareSection(t *testing.T) {
+	t.Parallel()
 	e := newFWEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	page := result(op.get("/servers/r730xd/inventory")).status(t, http.StatusOK)
@@ -271,6 +276,7 @@ func TestInventoryFirmwareSection(t *testing.T) {
 }
 
 func TestFirmwareHiddenWithoutService(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/firmware")).status(t, http.StatusNotFound)
 	result(c.get("/firmware.csv")).status(t, http.StatusNotFound)
@@ -281,6 +287,7 @@ func TestFirmwareHiddenWithoutService(t *testing.T) {
 }
 
 func TestFirmwareHelpersAndFlags(t *testing.T) {
+	t.Parallel()
 	now := fwNow
 	for _, c := range []struct {
 		next time.Time
@@ -316,6 +323,7 @@ func formOf(kv ...string) url.Values {
 // does not wrap but a long note does (C-M3), and the sidebar count comes from WarnCount
 // (S-L4).
 func TestFirmwareReviewFixes(t *testing.T) {
+	t.Parallel()
 	e := newFWEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	e.fw.rescanErr = &fwinventory.CooldownError{Left: 20 * time.Second}

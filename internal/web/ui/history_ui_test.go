@@ -78,6 +78,7 @@ func section(t *testing.T, body, id string) string {
 }
 
 func TestHistoryTabViewer(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t, withHistory(t))
 	h.fleet.logs["r730xd/sel"] = bmc.NewEventLog("", []bmc.Event{{ID: "9", Created: h.clock.Now().Add(-3 * time.Hour),
 		Severity: bmc.SeverityCritical, Message: "<b>PSU 2</b> lost input"}}, true)
@@ -101,6 +102,7 @@ func TestHistoryTabViewer(t *testing.T) {
 }
 
 func TestHistoryRangesAndFocus(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t, withHistory(t))
 	week := result(c.get("/servers/r730xd/history?range=7d&focus=temp:0")).status(t, http.StatusOK)
 	week.contains(t, `aria-current="page">7 days</a>`, `<title id="h-temp-t">Temperatures: System Board Inlet Temp, last 7 days</title>`,
@@ -117,6 +119,7 @@ func TestHistoryRangesAndFocus(t *testing.T) {
 }
 
 func TestHistorySparklinesOnTheHardwareTab(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t, withHistory(t))
 	page := result(c.get("/servers/r730xd")).status(t, http.StatusOK)
 	page.contains(t, `<a class="spark" href="/servers/r730xd/history?focus=temp%3A2&amp;range=24h#h-temp">`,
@@ -130,6 +133,7 @@ func TestHistorySparklinesOnTheHardwareTab(t *testing.T) {
 }
 
 func TestHistoryHiddenWithoutTheService(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/servers/r730xd")).status(t, http.StatusOK).lacks(t, ">History</a>", `class="spark"`)
 	result(c.get("/servers/r730xd/history")).status(t, http.StatusNotFound)
@@ -137,6 +141,7 @@ func TestHistoryHiddenWithoutTheService(t *testing.T) {
 }
 
 func TestHistoryCSV(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t, withHistory(t))
 	rec := c.get("/servers/r730xd/history.csv?sensor=temp:1&range=24h")
 	if rec.Code != http.StatusOK || rec.Header().Get("Content-Type") != "text/csv; charset=utf-8" ||
@@ -169,6 +174,7 @@ func TestHistoryCSV(t *testing.T) {
 }
 
 func TestHistoryExportAllForOperators(t *testing.T) {
+	t.Parallel()
 	_, c := signedInOperator(t, withHistory(t))
 	result(c.get("/servers/r730xd/history")).status(t, http.StatusOK).
 		contains(t, `href="/servers/r730xd/history.csv?all=1&amp;range=24h" download>Export every sensor (CSV)</a>`)
@@ -184,6 +190,7 @@ func TestHistoryExportAllForOperators(t *testing.T) {
 // with the size line, switches as On/Off and retention in days, a file-managed key
 // locked, and saves them like the other keys.
 func TestGeneralHistoryGroup(t *testing.T) {
+	t.Parallel()
 	e, svc := newGeneralEnv(t, "history: { daily_days: 400 }\n")
 	e.deps.History = newHistorySvc(t, e.clock.Now())
 	app, err := New(e.deps)
@@ -208,6 +215,7 @@ func TestGeneralHistoryGroup(t *testing.T) {
 // TestHistoryPanelCapsItsLists: a kind with hundreds of sensors draws 16 lines, lists 48
 // more as links and counts the rest.
 func TestHistoryPanelCapsItsLists(t *testing.T) {
+	t.Parallel()
 	var series []history.Series
 	for i := 0; i < 100; i++ {
 		series = append(series, history.Series{Key: store.SensorKey{ID: int64(i), Key: fmt.Sprintf("temp:%03d", i),
@@ -236,6 +244,7 @@ func (b brokenHistory) WriteCSV(_ context.Context, w io.Writer, _ func(), _ hist
 // response (http.ErrAbortHandler through the middleware), so net/http drops the
 // connection instead of ending a cut file cleanly.
 func TestHistoryCSVFailureAbortsTheDownload(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t, func(d *Deps) { d.History = brokenHistory{newHistorySvc(t, d.Now())} })
 	defer func() {
 		if v := recover(); v != http.ErrAbortHandler { //nolint:errorlint // the sentinel value net/http re-panics
@@ -250,6 +259,7 @@ func TestHistoryCSVFailureAbortsTheDownload(t *testing.T) {
 // operator-only export is rate limited first, and each kind of refusal is audited once a
 // minute.
 func TestRefusedExportsDoNotFloodTheAudit(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t, withHistory(t))
 	for i := 0; i < 20; i++ {
 		_ = c.get("/servers/r730xd/history.csv?all=1&range=24h")
@@ -271,6 +281,7 @@ func TestRefusedExportsDoNotFloodTheAudit(t *testing.T) {
 // TestHistoryNotesAClockAhead (review MEDIUM-1): after a restart with the clock days
 // ahead of the last janitor pass, the History tab says retention is catching up.
 func TestHistoryNotesAClockAhead(t *testing.T) {
+	t.Parallel()
 	now := time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)
 	ctx := context.Background()
 	path := filepath.Join(t.TempDir(), "h.db")

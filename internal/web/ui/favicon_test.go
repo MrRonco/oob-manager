@@ -11,6 +11,7 @@ import (
 // fleet's worst state; signed-out pages show the plain mark and no build fingerprint.
 
 func TestFaviconFollowsTheWorstState(t *testing.T) {
+	t.Parallel()
 	if got := (pillView{Class: "gp-unknown", Text: "No servers", Empty: true}).Favicon(); got != "" {
 		t.Errorf("an empty fleet must keep the plain mark, got %q", got)
 	}
@@ -38,6 +39,7 @@ func TestFaviconFollowsTheWorstState(t *testing.T) {
 }
 
 func TestFaviconFilesAndLinks(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t, func(d *Deps) { d.Build = Build{Version: "1.2.3"} })
 	result(c.get("/")).contains(t, `<link rel="icon" href="/static/favicon-stale.svg?v=1.2.3" type="image/svg+xml">`)
 	result(h.client("192.0.2.41").get("/login")).contains(t, `<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">`).
@@ -59,6 +61,7 @@ func TestFaviconFilesAndLinks(t *testing.T) {
 // TestFaviconWithoutUserIsPlain: a page without a signed-in user never shows the fleet's
 // state, even if a pill were filled in.
 func TestFaviconWithoutUserIsPlain(t *testing.T) {
+	t.Parallel()
 	d := layoutData{Pill: pillView{Class: "gp-crit", Text: "1 critical"}}
 	if got := d.Favicon(); got != "" {
 		t.Errorf("no user: favicon %q, want the plain mark", got)
@@ -75,6 +78,7 @@ var paintRE = regexp.MustCompile(`(fill|stroke)="#[0-9a-f]{6}"`)
 // TestFaviconShapesDiffer: the five status favicons differ by the badge's shape, not
 // only by its colour (greyscale and colour-vision safe), like the status icons.
 func TestFaviconShapesDiffer(t *testing.T) {
+	t.Parallel()
 	seen := map[string]string{}
 	for _, s := range []string{"ok", "warn", "crit", "stale", "off"} {
 		b, err := staticFS.ReadFile("static/favicon-" + s + ".svg")

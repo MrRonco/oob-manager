@@ -94,6 +94,7 @@ func (e *powerEnv) post(path string, fields url.Values) *httpResult {
 }
 
 func TestPowerNotWiredKeepsPlaceholders(t *testing.T) {
+	t.Parallel()
 	_, c := signedInOperator(t)
 	result(c.get("/servers/r730xd")).status(t, http.StatusOK).
 		contains(t, notSetUp).lacks(t, "Not yet:")
@@ -102,6 +103,7 @@ func TestPowerNotWiredKeepsPlaceholders(t *testing.T) {
 }
 
 func TestPowerMenuItems(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleOperator)
 	body := result(e.c.get("/servers/edge")).status(t, http.StatusOK).
 		contains(t, `href="/servers/edge/power/graceful-shutdown"`, `href="/servers/edge/power/graceful-restart"`,
@@ -116,6 +118,7 @@ func TestPowerMenuItems(t *testing.T) {
 }
 
 func TestPowerMenuItemsAdmin(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleAdmin)
 	result(e.c.get("/servers/store")).status(t, http.StatusOK).
 		contains(t, `href="/servers/store/power/force-off"`, `href="/servers/store/power/force-restart"`,
@@ -131,6 +134,7 @@ func TestPowerMenuItemsAdmin(t *testing.T) {
 }
 
 func TestPowerConfirmSafeAction(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleOperator)
 	result(e.c.get("/servers/store/power/graceful-shutdown")).status(t, http.StatusOK).
 		contains(t, "<h1>Graceful shutdown Storage node?</h1>", "Safe action", "What happens",
@@ -150,6 +154,7 @@ func TestPowerConfirmSafeAction(t *testing.T) {
 }
 
 func TestPowerConfirmCriticalAndImpact(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleAdmin)
 	result(e.c.get("/servers/edge/power/power-cycle")).status(t, http.StatusOK).
 		contains(t, "Forced action", "Edge router is tagged critical: other systems depend on it.", "What goes down",
@@ -161,6 +166,7 @@ func TestPowerConfirmCriticalAndImpact(t *testing.T) {
 }
 
 func TestPowerForcedNeedsTypedName(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleAdmin)
 	path := "/servers/edge/power/force-off"
 	e.post(path, url.Values{"confirm": {"yes"}, "typed": {"edge router"}}).
@@ -182,6 +188,7 @@ func TestPowerForcedNeedsTypedName(t *testing.T) {
 }
 
 func TestPowerUnconfirmedAndCSRF(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleOperator)
 	path := "/servers/store/power/graceful-shutdown"
 	e.post(path, url.Values{}).status(t, http.StatusSeeOther).location(t, path)
@@ -202,6 +209,7 @@ func TestPowerUnconfirmedAndCSRF(t *testing.T) {
 }
 
 func TestPowerDeniedWithoutStepUp(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleOperator)
 	path := "/servers/edge/power/graceful-restart"
 	e.h.clock.Advance(6 * time.Minute)
@@ -220,6 +228,7 @@ func TestPowerDeniedWithoutStepUp(t *testing.T) {
 }
 
 func TestPowerStepUpInlineCode(t *testing.T) {
+	t.Parallel()
 	fp := &fakePower{last: map[string]power.Operation{}, info: map[string]power.Info{"edge": {Configured: true, Operator: true}}}
 	h := newHarness(t, func(d *Deps) { d.Power = fp })
 	h.fleet.servers = []ServerView{powerServer(h.clock.Now().Add(time.Hour), "edge", "Edge router", nil, allResetTypes)}
@@ -236,6 +245,7 @@ func TestPowerStepUpInlineCode(t *testing.T) {
 }
 
 func TestPowerServiceErrors(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		err    error
 		status int
@@ -258,6 +268,7 @@ func TestPowerServiceErrors(t *testing.T) {
 }
 
 func TestPowerRateLimit(t *testing.T) {
+	t.Parallel()
 	fp := &fakePower{last: map[string]power.Operation{}, info: map[string]power.Info{"edge": {Configured: true, Operator: true}}}
 	h := newHarness(t, func(d *Deps) {
 		d.Power = fp
@@ -277,6 +288,7 @@ func TestPowerRateLimit(t *testing.T) {
 }
 
 func TestPowerStatusOnOperations(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleOperator)
 	at := e.h.clock.Now()
 	for _, c := range []struct {
@@ -303,6 +315,7 @@ func TestPowerStatusOnOperations(t *testing.T) {
 }
 
 func TestPowerStateFromFinishedOperation(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleOperator)
 	// The snapshot (one hour ahead) says On; an operation finished later says Off.
 	later := e.h.clock.Now().Add(2 * time.Hour)
@@ -311,6 +324,7 @@ func TestPowerStateFromFinishedOperation(t *testing.T) {
 }
 
 func TestPowerViewerSeesRoleReason(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t, func(d *Deps) {
 		d.Power = &fakePower{info: map[string]power.Info{"r730xd": {Configured: true, Operator: true}}}
 	})
@@ -335,6 +349,7 @@ func (f *fakeAudit) denied(action, class string) bool {
 }
 
 func TestStepUpPageNamesPowerAction(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleAdmin)
 	e.h.clock.Advance(6 * time.Minute)
 	result(e.c.get("/stepup?next="+url.QueryEscape("/servers/edge/power/force-off"))).contains(t, "Force off · Edge router")

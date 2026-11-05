@@ -29,6 +29,7 @@ func spriteNames(t *testing.T) (string, []string) {
 // TestSpriteHoldsTheVendoredIcons: one symbol per Lucide file plus the mark, about 40
 // icons (plan 04 §11 item 10), and nothing but shapes.
 func TestSpriteHoldsTheVendoredIcons(t *testing.T) {
+	t.Parallel()
 	sprite, names := spriteNames(t)
 	files, err := fs.Glob(iconFS, lucideIconDir+"/*.svg")
 	if err != nil {
@@ -60,6 +61,7 @@ func TestSpriteHoldsTheVendoredIcons(t *testing.T) {
 // TestEveryPageIncludesTheSpriteAndResolvesItsIcons renders signed-in and signed-out
 // pages: each carries the sprite exactly once and every <use> points at one of its symbols.
 func TestEveryPageIncludesTheSpriteAndResolvesItsIcons(t *testing.T) {
+	t.Parallel()
 	_, names := spriteNames(t)
 	h, c := signedIn(t)
 	anon := h.client("192.0.2.40")
@@ -122,6 +124,7 @@ func usedIcons(t *testing.T) map[string]string {
 // reach (settings, confirm and console pages) and the Go-chosen ones (fan, power,
 // monitor): every icon named anywhere exists in the sprite.
 func TestTemplatesUseKnownIcons(t *testing.T) {
+	t.Parallel()
 	_, names := spriteNames(t)
 	used := usedIcons(t)
 	if len(used) < 20 {
@@ -141,6 +144,7 @@ func TestTemplatesUseKnownIcons(t *testing.T) {
 
 // TestEverySpriteIconIsUsedOrReserved: no unexplained bytes in every page.
 func TestEverySpriteIconIsUsedOrReserved(t *testing.T) {
+	t.Parallel()
 	_, names := spriteNames(t)
 	used := usedIcons(t)
 	for _, n := range names {
@@ -161,6 +165,7 @@ func TestEverySpriteIconIsUsedOrReserved(t *testing.T) {
 }
 
 func TestIconShapesAllowList(t *testing.T) {
+	t.Parallel()
 	const head = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">`
 	ok, err := iconShapes([]byte(head + `<path d="M12 2v10"/><circle cx="1" cy="2" r="3" fill="currentColor" stroke="none"/>` +
 		`<rect x="1" y="1" width="4" height="4" rx="1"/><line x1="0" y1="0" x2="1" y2="1"/><polyline points="1 2 3 4"/></svg>`))
@@ -197,6 +202,7 @@ func TestIconShapesAllowList(t *testing.T) {
 }
 
 func TestBuildSpriteErrors(t *testing.T) {
+	t.Parallel()
 	good := `<svg viewBox="0 0 24 24"><path d="M1 1"/></svg>`
 	for name, fsys := range map[string]fstest.MapFS{
 		"no icon dir": {markFile: {Data: []byte(good)}},
@@ -217,6 +223,7 @@ func TestBuildSpriteErrors(t *testing.T) {
 }
 
 func TestSpriteIsServedWithThePage(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/about")).contains(t, `<a href="/static/vendor/lucide-1.53.0/LICENSE">Lucide 1.53.0</a>`)
 	result(c.get("/static/vendor/lucide-1.53.0/LICENSE")).status(t, http.StatusOK).contains(t, "ISC License")
@@ -235,6 +242,7 @@ func TestSpriteIsServedWithThePage(t *testing.T) {
 // TestStatusIconsAreDistinct: every state class the "sicon" partial knows gets its own
 // shape, so shape plus word carries the state (live is not drawn like stale).
 func TestStatusIconsAreDistinct(t *testing.T) {
+	t.Parallel()
 	rd, err := newRenderer()
 	if err != nil {
 		t.Fatal(err)

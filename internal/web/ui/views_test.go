@@ -9,6 +9,7 @@ import (
 )
 
 func TestFmtAge(t *testing.T) {
+	t.Parallel()
 	cases := map[time.Duration]string{
 		-time.Second:                   "0 s",
 		42 * time.Second:               "42 s",
@@ -25,6 +26,7 @@ func TestFmtAge(t *testing.T) {
 }
 
 func TestFreshness(t *testing.T) {
+	t.Parallel()
 	now := time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)
 	v := ServerView{HasSnapshot: true, LastSuccess: now.Add(-3 * time.Minute)}
 	if f := freshnessOf(v, now, 3*time.Minute, fmtIn(time.UTC)); f.Stale {
@@ -40,6 +42,7 @@ func TestFreshness(t *testing.T) {
 }
 
 func TestSummaries(t *testing.T) {
+	t.Parallel()
 	pct := []bmc.Fan{{Speed: bmc.ReadingOf(30), Units: bmc.FanPercent, Health: bmc.HealthOK},
 		{Speed: bmc.ReadingOf(40), Units: bmc.FanPercent, Health: bmc.HealthOK},
 		{Speed: bmc.ReadingOf(9000), Units: bmc.FanRPM, Health: bmc.HealthCritical}, {Speed: bmc.NoReading()}}
@@ -62,6 +65,7 @@ func TestSummaries(t *testing.T) {
 }
 
 func TestErrorClassText(t *testing.T) {
+	t.Parallel()
 	for c, want := range map[bmc.ErrorClass]string{bmc.ClassTimeout: "timed out", bmc.ClassAuth: "credentials rejected",
 		bmc.ClassTLS: "certificate does not match the pin", bmc.ClassUnreachable: "BMC unreachable", "": "",
 		bmc.ClassOther: "unexpected error"} {
@@ -72,6 +76,7 @@ func TestErrorClassText(t *testing.T) {
 }
 
 func TestStaleHealth(t *testing.T) {
+	t.Parallel()
 	if h := staleOf(healthOf(bmc.HealthOK), false); h.Label != "Stale (last: OK)" || h.Class != "stale" {
 		t.Fatalf("stale OK = %+v", h)
 	}
@@ -81,6 +86,7 @@ func TestStaleHealth(t *testing.T) {
 }
 
 func TestEnumLabels(t *testing.T) {
+	t.Parallel()
 	for h, want := range map[bmc.Health]string{bmc.HealthOK: "ok", bmc.HealthWarning: "warn",
 		bmc.HealthCritical: "crit", bmc.HealthUnknown: "unknown", "weird": "unknown"} {
 		if got := healthOf(h).Class; got != want {
@@ -102,6 +108,7 @@ func TestEnumLabels(t *testing.T) {
 }
 
 func TestDetailRows(t *testing.T) {
+	t.Parallel()
 	rows := tempRows([]bmc.Temperature{{Name: "hot", Celsius: bmc.ReadingOf(50), WarnAbove: bmc.ReadingOf(45)}}, celsius())
 	if !rows[0].Alert {
 		t.Fatal("reading above warning not flagged")
@@ -121,6 +128,7 @@ func TestDetailRows(t *testing.T) {
 }
 
 func TestPaging(t *testing.T) {
+	t.Parallel()
 	cases := []struct{ page, size, n, wantPage, wantPages, lo, hi int }{
 		{1, 50, 0, 1, 1, 0, 0},
 		{1, 50, 120, 1, 3, 0, 50},

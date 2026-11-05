@@ -24,6 +24,7 @@ func warningLog(now time.Time, n int) bmc.EventLog {
 // above and below the table; the two navigation landmarks carry different labels, so
 // axe's landmark-unique rule passes on Events and on a server's Logs.
 func TestPagerLandmarksAreUnique(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.logs["r730xd/sel"] = warningLog(h.clock.Now(), 60)
 	for _, tc := range []struct{ path, label string }{

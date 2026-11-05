@@ -17,6 +17,7 @@ func themeCSRF(t *testing.T, body string) string {
 }
 
 func TestThemePreferenceIsAServerRenderedForm(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	page := c.get("/events").Body.String()
 	if strings.Contains(page, "data-theme=") {
@@ -40,6 +41,7 @@ func TestThemePreferenceIsAServerRenderedForm(t *testing.T) {
 }
 
 func TestThemePreferenceRejectsBadInput(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	page := c.get("/").Body.String()
 	result(c.do(http.MethodPost, "/prefs/theme", url.Values{csrfField: {themeCSRF(t, page)}, "theme": {"neon"}})).
@@ -54,6 +56,7 @@ func TestThemePreferenceRejectsBadInput(t *testing.T) {
 }
 
 func TestThemeCookieAppliesBeforeSignIn(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	c := h.client("192.0.2.9")
 	c.jar[themeCookie] = "light"
@@ -63,6 +66,7 @@ func TestThemeCookieAppliesBeforeSignIn(t *testing.T) {
 }
 
 func TestShellSidebarPillAndClock(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.logs["r730xd/sel"] = bmc.NewEventLog("", []bmc.Event{
 		{ID: "1", Created: h.clock.Now().Add(-2 * time.Hour), Message: "PSU lost input", Severity: bmc.SeverityWarning},
@@ -82,17 +86,20 @@ func TestShellSidebarPillAndClock(t *testing.T) {
 }
 
 func TestPlainShellBeforeSignIn(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, func(d *Deps) { d.InstanceName = "Lab OOB" })
 	r := result(h.client("192.0.2.9").get("/login")).status(t, http.StatusOK)
 	r.contains(t, `class="app plain"`, "Lab OOB", `href="/help"`).lacks(t, `class="side"`, "gpill")
 }
 
 func TestFooterShowsVersionAndCommit(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t, func(d *Deps) { d.Build = Build{Version: "1.2.3", Commit: "abc1234def"} })
 	result(c.get("/")).contains(t, "v1.2.3 (abc1234)", "About and licenses", `href="/help"`).lacks(t, "licences")
 }
 
 func TestHelpPageIsPublicAndExplainsTerms(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	r := result(h.client("192.0.2.9").get("/help")).status(t, http.StatusOK)
 	r.contains(t, "<h1>Help</h1>", "Glossary", "System Event Log", "Power-good", "Step-up", "Accessibility",

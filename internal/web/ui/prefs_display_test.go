@@ -24,6 +24,7 @@ func (e *settingsEnv) signInViewer(t *testing.T, name, ip string) *client {
 }
 
 func TestDisplayUserOverrideWins(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "ui: { time_zone: America/New_York }\n")
 	admin := e.adminClient()
 	viewer := e.signInViewer(t, "victor", "192.0.2.20")
@@ -64,6 +65,7 @@ func TestDisplayUserOverrideWins(t *testing.T) {
 }
 
 func TestDisplayRejectsInvalidAndCSRF(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "")
 	c := e.adminClient()
 	result(c.submit("/preferences", "/preferences", url.Values{"time_zone": {"Mars/Olympus"}})).
@@ -83,6 +85,7 @@ func TestDisplayRejectsInvalidAndCSRF(t *testing.T) {
 }
 
 func TestDisplayNoStepUpNeeded(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "")
 	c := e.adminClient()
 	e.clock.Advance(20 * 60e9) // 20 minutes: the step-up window is long gone
@@ -91,12 +94,14 @@ func TestDisplayNoStepUpNeeded(t *testing.T) {
 }
 
 func TestSignInPageUsesAppDefaults(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "ui: { theme: high-contrast, time_zone: Europe/Paris }\n")
 	anon := e.client("192.0.2.99")
 	result(anon.get("/login")).status(t, http.StatusOK).contains(t, `data-palette="high-contrast"`).lacks(t, "/preferences")
 }
 
 func TestClockLinksToPreferences(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "")
 	c := e.adminClient()
 	result(c.get("/")).contains(t, `<a class="clock-link" href="/preferences" title="Time zone: UTC.`,
@@ -111,6 +116,7 @@ func TestClockLinksToPreferences(t *testing.T) {
 // unit and density (Settings → General) apply to users who chose none and to the
 // sign-in page; a file key is locked; a user's own choice still wins.
 func TestAppDisplayDefaults(t *testing.T) {
+	t.Parallel()
 	e, svc := newGeneralEnv(t, "ui: { density: comfortable }\n")
 	admin := e.adminClient()
 	result(admin.get("/settings/general")).status(t, http.StatusOK).contains(t,

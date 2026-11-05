@@ -37,6 +37,7 @@ func signedInOperator(t *testing.T, tweak ...func(*Deps)) (*harness, *client) {
 }
 
 func TestPagesRequireSession(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	c := h.client("192.0.2.100")
 	for _, p := range []string{"/", "/servers/r730xd", "/servers/r730xd/events", "/servers/r730xd/inventory", "/activity",
@@ -57,6 +58,7 @@ func fleetTable(c *client) string {
 }
 
 func TestOverview(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	r := result(c.get("/")).status(t, http.StatusOK)
 	r.contains(t, "Storage node R730XD", "Edge node R240", "Spare box",
@@ -76,12 +78,14 @@ func TestOverview(t *testing.T) {
 }
 
 func TestOverviewEmptyFleet(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.servers = nil
 	result(c.get("/")).status(t, http.StatusOK).contains(t, "No servers are configured yet.", "First-run checklist")
 }
 
 func TestServerPage(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	r := result(c.get("/servers/r730xd")).status(t, http.StatusOK)
 	r.contains(t, "Inlet", "b-crit", "390 W", "power: timeout", "PowerEdge R730xd", "SVCTAG1", "Live ")
@@ -92,6 +96,7 @@ func TestServerPage(t *testing.T) {
 }
 
 func TestServerPageStaleAndEmpty(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/servers/r240")).status(t, http.StatusOK).
 		contains(t, "Data stale.", "Values below are not current.", "Inventory not read yet.")
@@ -101,11 +106,13 @@ func TestServerPageStaleAndEmpty(t *testing.T) {
 }
 
 func TestStaleThresholdIsConfigurable(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t, func(d *Deps) { d.StaleAfter = time.Hour })
 	result(c.get("/servers/r240")).status(t, http.StatusOK).lacks(t, "Data stale.")
 }
 
 func TestServerNotFound(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	for _, p := range []string{"/servers/nope", "/servers/R730XD", "/servers/a%20b", "/servers/nope/events",
 		"/servers/nope/inventory"} {
@@ -114,6 +121,7 @@ func TestServerNotFound(t *testing.T) {
 }
 
 func TestInventoryPage(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/servers/r730xd/inventory")).status(t, http.StatusOK).
 		contains(t, "Integrated Dell Remote Access Controller", "2.86.86.86", "25227", "Installed", "56 threads",
@@ -131,6 +139,7 @@ func eventLog(n int, complete bool) bmc.EventLog {
 }
 
 func TestLogsPagination(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.logs["r730xd/sel"] = eventLog(120, true)
 	r := result(c.get("/servers/r730xd/events")).status(t, http.StatusOK)
@@ -146,6 +155,7 @@ func TestLogsPagination(t *testing.T) {
 }
 
 func TestLogsStates(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.logs["r730xd/sel"] = eventLog(3, false)
 	h.fleet.logs["r240/sel"] = eventLog(0, true)
@@ -159,6 +169,7 @@ func TestLogsStates(t *testing.T) {
 }
 
 func TestAuthzDenyUnknownRole(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("guest", authz.Role("guest"), true)
 	c := h.client("192.0.2.100")
@@ -174,6 +185,7 @@ func TestAuthzDenyUnknownRole(t *testing.T) {
 }
 
 func TestAuthzCalledWithEveryPageAction(t *testing.T) {
+	t.Parallel()
 	var asked []authz.Action
 	deny := func(_ authz.Principal, a authz.Action, _ bool) error {
 		asked = append(asked, a)
@@ -200,6 +212,7 @@ func TestAuthzCalledWithEveryPageAction(t *testing.T) {
 }
 
 func TestUnknownRoutesAndMethods(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	for _, p := range []string{"/admin/users", "/servers/r730xd/power", "/nope", "/settings/nope"} {
 		result(c.get(p)).status(t, http.StatusNotFound)
@@ -209,6 +222,7 @@ func TestUnknownRoutesAndMethods(t *testing.T) {
 }
 
 func TestStaticCSS(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	rec := h.client("192.0.2.100").get("/static/app.css")
 	result(rec).status(t, http.StatusOK).contains(t, ":focus-visible")
@@ -220,6 +234,7 @@ func TestStaticCSS(t *testing.T) {
 }
 
 func TestSessionStoreErrorIs500(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.deps.Auth = brokenAuth{h.authn}
 	app, err := New(h.deps)

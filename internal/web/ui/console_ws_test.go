@@ -40,6 +40,7 @@ func wsDial(t *testing.T, srv *httptest.Server, path, cookie, origin string) (*w
 }
 
 func TestConsoleWebSocket(t *testing.T) {
+	t.Parallel()
 	h, c, fc, _ := consoleHarness(t, authz.RoleAdmin)
 	srv := httptest.NewServer(h.handler)
 	t.Cleanup(srv.Close)
@@ -80,6 +81,7 @@ func TestConsoleWebSocket(t *testing.T) {
 }
 
 func TestConsoleWebSocketRefusals(t *testing.T) {
+	t.Parallel()
 	h, c, _, _ := consoleHarness(t, authz.RoleAdmin)
 	srv := httptest.NewServer(h.handler)
 	t.Cleanup(srv.Close)
@@ -109,6 +111,7 @@ func TestConsoleWebSocketRefusals(t *testing.T) {
 }
 
 func TestConsoleWatchdogStrictStepUp(t *testing.T) {
+	t.Parallel()
 	h, c, fc, _ := consoleHarness(t, authz.RoleAdmin, func(d *Deps) { d.CloseConsoleOnStepUpExpiry = true })
 	srv := httptest.NewServer(h.handler)
 	t.Cleanup(srv.Close)

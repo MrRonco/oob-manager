@@ -8,6 +8,7 @@ import (
 
 // TestTemplatesUseUSEnglish is the copy lint of UX-15: user-facing text is US English.
 func TestTemplatesUseUSEnglish(t *testing.T) {
+	t.Parallel()
 	bad := regexp.MustCompile(`(?i)\b(licence|enrolment|colour|organis|behaviour|cancelled)`)
 	err := fs.WalkDir(templateFS, "templates", func(p string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {

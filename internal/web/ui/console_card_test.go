@@ -19,6 +19,7 @@ func capsView(gc, kvm bool, tier bmc.LicenseTier) ServerView {
 }
 
 func TestConsoleCardStates(t *testing.T) {
+	t.Parallel()
 	now := time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)
 	ready := console.Status{Configured: true, HasPassword: true, TLS: true, Probe: console.Probe{State: console.ProbeOK}}
 	cases := map[string]struct {
@@ -65,6 +66,7 @@ func TestConsoleCardStates(t *testing.T) {
 }
 
 func TestHumanDuration(t *testing.T) {
+	t.Parallel()
 	for d, want := range map[time.Duration]string{15 * time.Minute: "15 minutes", time.Minute: "1 minute",
 		time.Hour: "1 hour", 4 * time.Hour: "4 hours", 90 * time.Minute: "90 minutes"} {
 		if got := humanDuration(d); got != want {

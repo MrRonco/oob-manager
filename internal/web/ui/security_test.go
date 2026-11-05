@@ -27,6 +27,7 @@ func containsAny(s string, subs ...string) bool {
 // TestEveryPageIsCSPClean renders every page and checks for anything the strict CSP
 // would block or that would leak a secret.
 func TestEveryPageIsCSPClean(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleAdmin, true)
 	anon := h.client("192.0.2.70")
@@ -62,6 +63,7 @@ func TestEveryPageIsCSPClean(t *testing.T) {
 }
 
 func TestFormsHaveLabels(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	c := h.client("192.0.2.70")
 	for _, p := range []string{"/login", "/enroll"} {
@@ -78,6 +80,7 @@ func TestFormsHaveLabels(t *testing.T) {
 }
 
 func TestCookiesAreHostPrefixedAndStrict(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	rec := h.client("192.0.2.70").get("/login")
 	cs := rec.Result().Cookies()
@@ -88,6 +91,7 @@ func TestCookiesAreHostPrefixedAndStrict(t *testing.T) {
 }
 
 func TestNewValidates(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	cases := map[string]func(*Deps){
 		"no auth":   func(d *Deps) { d.Auth = nil },
@@ -115,6 +119,7 @@ var cssURLRE = regexp.MustCompile(`url\(\s*["']?([^"')]*)`)
 // may only reference the vendored fonts by relative URL; no imports, no other origin, no
 // script-ish values (round-2 slice B grew the sheets, tech_doc §40).
 func TestStylesheetsStaySelfContained(t *testing.T) {
+	t.Parallel()
 	files, err := fs.Glob(staticFS, "static/*.css")
 	if err != nil || len(files) < 4 {
 		t.Fatalf("stylesheets: %v %v", files, err)

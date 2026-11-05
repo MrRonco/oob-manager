@@ -15,6 +15,7 @@ import (
 // what was done to the servers to every role, and never addresses, sign-ins, step-ups,
 // token or settings changes, or refusals.
 func TestActivityShowsActionsOnlyToEveryRole(t *testing.T) {
+	t.Parallel()
 	e := newMaintEnv(t)
 	ctx := context.Background()
 	const ip = "203.0.113.77"
@@ -55,6 +56,7 @@ func TestActivityShowsActionsOnlyToEveryRole(t *testing.T) {
 }
 
 func TestActivityRowsAndPaging(t *testing.T) {
+	t.Parallel()
 	names := map[string]string{"a": "Node A"}
 	tf := fmtIn(nil)
 	for _, rec := range []store.AuditRecord{{Action: "auth.login", Result: "ok"}, {Action: "power.on", Result: "denied"},
@@ -87,6 +89,7 @@ func TestActivityRowsAndPaging(t *testing.T) {
 }
 
 func TestPillShowsTheShortWorstWord(t *testing.T) {
+	t.Parallel()
 	for in, want := range map[string]string{
 		"1 critical · 1 stale": "1 critical", "2 OK · 1 off": "1 off", "2 stale · 1 in maintenance": "2 stale",
 		"1 OK · 1 in maintenance": "1 maint.", "1 warning": "",
@@ -100,6 +103,7 @@ func TestPillShowsTheShortWorstWord(t *testing.T) {
 // TestServerTabsAndSidebar (plan 04 §11 item 8): the stable tab set, Activity in the
 // sidebar, About only in the account menu and the footer.
 func TestServerTabsAndSidebar(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t, withHistory(t))
 	body := result(c.get("/servers/r730xd/sensors")).status(t, http.StatusOK).rec.Body.String()
 	tabs := between(body, `aria-label="Server sections"`, "</nav>")

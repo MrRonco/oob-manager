@@ -38,6 +38,10 @@ type harness struct {
 
 func quiet() *slog.Logger { return slog.New(slog.NewTextHandler(io.Discard, nil)) }
 
+// Every top-level test in this package calls t.Parallel(). Each one builds its own
+// harness (clock, fakes, store, parsed templates) and no test changes package state, so
+// they are independent; run one after another under -race they took most of the nightly
+// soak's 30-minute budget (make soak). A new test does the same.
 func newHarness(t *testing.T, tweak ...func(*Deps)) *harness {
 	t.Helper()
 	h := &harness{t: t, clock: &clock{t: time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)},

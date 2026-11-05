@@ -14,6 +14,7 @@ import (
 // TestGoLinksFirmwareByRole: with the firmware view wired, every role that may see it
 // (viewer, operator, admin) gets /firmware, as in the sidebar; only the admin gets Settings.
 func TestGoLinksFirmwareByRole(t *testing.T) {
+	t.Parallel()
 	e := newFWEnv(t)
 	for i, role := range []authz.Role{authz.RoleViewer, authz.RoleOperator} {
 		c := e.userClient(t, "u"+string(role), role, "192.0.2."+string(rune('6'+i))+"0")
@@ -46,6 +47,7 @@ func hrefsIn(s string) []string {
 // TestGoLinksMatchTheSidebar: the Pages and Servers groups hold exactly the sidebar's links,
 // in its order, for each role, with and without the firmware view.
 func TestGoLinksMatchTheSidebar(t *testing.T) {
+	t.Parallel()
 	e := newFWEnv(t)
 	plain, plainC := goClient(t, authz.RoleViewer)
 	_ = plain
@@ -68,6 +70,7 @@ func TestGoLinksMatchTheSidebar(t *testing.T) {
 // TestGoLinksEscapeServerNames: a server name is text everywhere: the /go list, the
 // palette's <template> and the hint.
 func TestGoLinksEscapeServerNames(t *testing.T) {
+	t.Parallel()
 	h, c := goClient(t, authz.RoleViewer)
 	v := h.fleet.servers[2]
 	v.Name = `<img src=x onerror=alert(1)>&"`
@@ -87,6 +90,7 @@ func TestGoLinksEscapeServerNames(t *testing.T) {
 // every server ID the registry accepts (config idPattern: ^[a-z0-9][a-z0-9-]{0,31}$) and every
 // path of the destination list must pass it. The pattern is read from the script itself.
 func TestPalettePathPatternAcceptsEveryServerID(t *testing.T) {
+	t.Parallel()
 	b, err := os.ReadFile("static/palette.js")
 	must(t, err)
 	m := regexp.MustCompile(`var PATH_RE = /(.+)/;`).FindSubmatch(b)
@@ -118,6 +122,7 @@ func TestPalettePathPatternAcceptsEveryServerID(t *testing.T) {
 }
 
 func TestParseGoQueryJoiners(t *testing.T) {
+	t.Parallel()
 	for _, ok := range []string{"a\u200db", "a\u200cb"} { // ZWJ (emoji, Indic), ZWNJ (Persian)
 		if got, accepted := parseGoQuery(ok); !accepted || got != ok {
 			t.Errorf("parseGoQuery(%q) = %q, %v", ok, got, accepted)

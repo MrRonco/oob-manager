@@ -7,6 +7,7 @@ import (
 )
 
 func TestAuditSentences(t *testing.T) {
+	t.Parallel()
 	names := map[string]string{"u1": "ana"}
 	cases := []struct {
 		rec  store.AuditRecord
@@ -42,6 +43,7 @@ func TestAuditSentences(t *testing.T) {
 }
 
 func TestAuditDetails(t *testing.T) {
+	t.Parallel()
 	got := auditDetails(`{"name":"dashboard","expires":"2027-01-19","n":3,"ok":true}`)
 	want := []kv{{"expires", "2027-01-19"}, {"n", "3"}, {"name", "dashboard"}, {"ok", "true"}}
 	if len(got) != len(want) {
@@ -61,6 +63,7 @@ func TestAuditDetails(t *testing.T) {
 }
 
 func TestAuditSentenceSettingsChanges(t *testing.T) {
+	t.Parallel()
 	rec := store.AuditRecord{Principal: "morgan", Action: "admin.general.update", Result: "ok",
 		ParamsJSON: `{"target":"general","rev":3,"changes":[{"field":"ui.time_zone","before":"UTC","after":"America/New_York"},{"field":"auth.session_idle","before":"30 min","after":"45 min"}]}`}
 	want := "morgan changed the general settings: ui.time_zone UTC → America/New_York; auth.session_idle 30 min → 45 min"

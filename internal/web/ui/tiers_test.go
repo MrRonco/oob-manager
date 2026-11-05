@@ -17,6 +17,7 @@ import (
 // status, not controls that lead nowhere.
 
 func TestPowerConfirmTiers(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleAdmin)
 	off := powerServer(e.h.clock.Now().Add(time.Hour), "off", "Off box", nil, allResetTypes)
 	off.Snapshot = bmc.NewSnapshot(bmc.SnapshotParams{TakenAt: off.LastSuccess, PowerState: bmc.PowerOff, Health: bmc.HealthOK})
@@ -36,6 +37,7 @@ func TestPowerConfirmTiers(t *testing.T) {
 }
 
 func TestFanReviewIsNeutral(t *testing.T) {
+	t.Parallel()
 	_, c, _ := fanSignedIn(t, authz.RoleOperator)
 	result(c.do(http.MethodPost, "/servers/r730xd/fan/lease", fanForm(t, c, nil))).status(t, http.StatusOK).
 		contains(t, "Reversible", `<section class="panel p-info"`, `<button class="btn" type="submit">Start lease</button>`).
@@ -43,6 +45,7 @@ func TestFanReviewIsNeutral(t *testing.T) {
 }
 
 func TestSettingsConfirmTiers(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	userPage := victorPage(t, e, c)
@@ -58,6 +61,7 @@ func TestSettingsConfirmTiers(t *testing.T) {
 }
 
 func TestServerSettingsConfirmTiers(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.fetchAndConfirm(t, c, "edge1", "192.0.2.12").status(t, http.StatusSeeOther)
@@ -74,6 +78,7 @@ func TestServerSettingsConfirmTiers(t *testing.T) {
 // where everything is disabled, one line that says which role acts. An operator, one
 // role step away from the forced actions, still sees those disabled with the reason.
 func TestViewersGetStatusNotControls(t *testing.T) {
+	t.Parallel()
 	e := newPowerEnv(t, authz.RoleViewer)
 	result(e.c.get("/servers/edge")).status(t, http.StatusOK).
 		contains(t, "Actions need the operator role.").
@@ -89,6 +94,7 @@ func TestViewersGetStatusNotControls(t *testing.T) {
 }
 
 func TestFanCardViewerHasNoDeadButton(t *testing.T) {
+	t.Parallel()
 	_, c, _ := fanSignedIn(t, authz.RoleViewer)
 	result(c.get("/servers/r730xd/fan")).status(t, http.StatusOK).
 		contains(t, "Fan leases need the operator role").lacks(t, "btn-disabled", "Start a lease")

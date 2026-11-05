@@ -25,6 +25,7 @@ const (
 // TestVendoredFontsWithinBudget: exactly the chosen families, each with its OFL text,
 // inside the size budget (plan 04 §6).
 func TestVendoredFontsWithinBudget(t *testing.T) {
+	t.Parallel()
 	sizes, total := map[string]int64{}, int64(0)
 	err := fs.WalkDir(staticFS, fontsDir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || path.Ext(p) != ".woff2" {
@@ -65,6 +66,7 @@ func TestVendoredFontsWithinBudget(t *testing.T) {
 // TestFontsAreServedImmutable: the font URL carries its version in the path, so it is
 // cached for a year; everything else keeps the one-hour cache.
 func TestFontsAreServedImmutable(t *testing.T) {
+	t.Parallel()
 	c := newHarness(t).client("192.0.2.10")
 	for family, file := range vendoredFonts {
 		rec := c.get("/static/vendor/fonts/" + family + "/" + file)
@@ -86,6 +88,7 @@ func TestFontsAreServedImmutable(t *testing.T) {
 
 // TestAboutCreditsTheFonts: the About page names both fonts and links their OFL texts.
 func TestAboutCreditsTheFonts(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/about")).status(t, http.StatusOK).contains(t,
 		`<a href="/static/vendor/fonts/inter-4.1/OFL.txt">Inter 4.1</a>`,

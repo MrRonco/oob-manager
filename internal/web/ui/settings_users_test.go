@@ -31,6 +31,7 @@ func createVictor(t *testing.T, c *client, role string) string {
 }
 
 func TestCreateUserLinkEnrolLogin(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	token := createVictor(t, c, "operator")
@@ -67,6 +68,7 @@ func TestCreateUserLinkEnrolLogin(t *testing.T) {
 }
 
 func TestCreateUserErrorsStayOnForm(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.submit("/settings/users", "/settings/users", url.Values{"username": {"Bad Name"}, "role": {"viewer"}})).
@@ -78,6 +80,7 @@ func TestCreateUserErrorsStayOnForm(t *testing.T) {
 }
 
 func TestUserManagement(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	token := createVictor(t, c, "viewer")
@@ -124,6 +127,7 @@ func TestUserManagement(t *testing.T) {
 }
 
 func TestSelfChangesAreRefused(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	u, err := e.db.Users().ByUsername(context.Background(), "morgan")
@@ -145,6 +149,7 @@ func TestSelfChangesAreRefused(t *testing.T) {
 }
 
 func TestRevokingOwnSessionSignsOut(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	u, _ := e.db.Users().ByUsername(context.Background(), "morgan")
@@ -153,6 +158,7 @@ func TestRevokingOwnSessionSignsOut(t *testing.T) {
 }
 
 func TestEnrolLinkInvalidAndRateLimited(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t, func(d *Deps) { d.LinkPerIP = RateLimit{Events: 2, Per: time.Hour} })
 	anon := e.client("192.0.2.70")
 	bogus, _ := auth.NewLinkToken()
@@ -169,6 +175,7 @@ func TestEnrolLinkInvalidAndRateLimited(t *testing.T) {
 }
 
 func TestAuditViewerAndVerify(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	_, err := e.deps.Audit.Record(context.Background(), audit.Entry{Principal: "system", Action: "app.start",
 		Result: audit.ResultOK})
@@ -190,6 +197,7 @@ func TestAuditViewerAndVerify(t *testing.T) {
 }
 
 func TestAuditViewerKeysetPaging(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	for i := range auditPageSize + 5 {
@@ -208,6 +216,7 @@ func TestAuditViewerKeysetPaging(t *testing.T) {
 }
 
 func TestAboutPage(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.get("/about")).status(t, http.StatusOK).

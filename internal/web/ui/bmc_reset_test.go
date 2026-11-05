@@ -105,6 +105,7 @@ func (e *bmcEnv) post(fields url.Values) *httpResult {
 }
 
 func TestBMCPanelReasonsAndButton(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleAdmin)
 	result(e.c.get("/servers/edge")).status(t, http.StatusOK).
 		contains(t, "<dt>Last BMC restart</dt>", "14G Monolithic", "7.00.00.182", "(reported by the BMC)",
@@ -134,6 +135,7 @@ func TestBMCPanelReasonsAndButton(t *testing.T) {
 }
 
 func TestBMCPanelRoles(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleOperator)
 	result(e.c.get("/servers/edge")).contains(t, `class="mi mi-off"`, "Needs the admin role.").
 		lacks(t, `href="/servers/edge/bmc/reset"`)
@@ -149,6 +151,7 @@ func TestBMCPanelRoles(t *testing.T) {
 }
 
 func TestBMCPanelStatusLines(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleAdmin)
 	at := e.now.Add(-time.Hour)
 	rec := func(result, class, detail string) bmcreset.Record {
@@ -180,6 +183,7 @@ func TestBMCPanelStatusLines(t *testing.T) {
 }
 
 func TestBMCConfirmPage(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleAdmin)
 	e.con.status["edge"] = console.Status{Configured: true, InUse: true, Active: console.Active{Username: "bob"}}
 	result(e.c.get("/servers/edge/bmc/reset")).status(t, http.StatusOK).
@@ -191,6 +195,7 @@ func TestBMCConfirmPage(t *testing.T) {
 }
 
 func TestBMCSubmitTypedNameAndSuccess(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleAdmin)
 	e.post(url.Values{"confirm": {"yes"}, "typed": {"edge router"}}).
 		status(t, http.StatusUnprocessableEntity).contains(t, "does not match")
@@ -212,6 +217,7 @@ func TestBMCSubmitTypedNameAndSuccess(t *testing.T) {
 }
 
 func TestBMCSubmitCSRFAndStepUp(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleAdmin)
 	path := "/servers/edge/bmc/reset"
 	result(e.c.do(http.MethodPost, path, url.Values{csrfField: {"forged"}, "confirm": {"yes"}, "typed": {"Edge router"}})).
@@ -233,6 +239,7 @@ func TestBMCSubmitCSRFAndStepUp(t *testing.T) {
 }
 
 func TestBMCCooldownAnswers429(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleAdmin)
 	e.fb.set("edge", bmcreset.State{CooldownLeft: 4 * time.Minute})
 	r := result(e.c.get("/servers/edge/bmc/reset")).status(t, http.StatusTooManyRequests).contains(t, "Cooling down for 4 min.")
@@ -245,6 +252,7 @@ func TestBMCCooldownAnswers429(t *testing.T) {
 }
 
 func TestBMCServiceErrors(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		err    error
 		status int
@@ -268,6 +276,7 @@ func TestBMCServiceErrors(t *testing.T) {
 }
 
 func TestBMCRateLimit(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleAdmin, func(d *Deps) { d.ChangesPerUser = RateLimit{Events: 1, Per: time.Minute} })
 	ok := url.Values{"confirm": {"yes"}, "typed": {"Edge router"}}
 	e.post(ok).status(t, http.StatusSeeOther)
@@ -278,6 +287,7 @@ func TestBMCRateLimit(t *testing.T) {
 }
 
 func TestRestartingStateWording(t *testing.T) {
+	t.Parallel()
 	e := newBMCEnv(t, authz.RoleAdmin)
 	v := e.h.fleet.servers[0]
 	v.Restarting, v.Restart = true, RestartWindow{Since: e.now, Until: e.now.Add(3 * time.Minute), By: "alice"}
@@ -293,6 +303,7 @@ func TestRestartingStateWording(t *testing.T) {
 }
 
 func TestBMCHelpers(t *testing.T) {
+	t.Parallel()
 	for d, want := range map[time.Duration]string{45 * time.Second: "45 s", 2 * time.Minute: "2 min",
 		130 * time.Second: "2 min 10 s"} {
 		if got := downFor(d); got != want {

@@ -22,6 +22,7 @@ const (
 // switch a vendored sheet's motion off); durations come from the --dur-* tokens, which
 // stay within the 250 ms budget (plan 04 §11 item 5).
 func TestMotionOnlyWhenAllowed(t *testing.T) {
+	t.Parallel()
 	files, err := fs.Glob(staticFS, "static/*.css")
 	if err != nil {
 		t.Fatal(err)

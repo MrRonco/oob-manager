@@ -17,6 +17,7 @@ func enrollForm(t *testing.T, c *client, user, code string) url.Values {
 }
 
 func TestEnrollConfirmThenLogin(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("newbie", authz.RoleViewer, false)
 	c := h.client("192.0.2.100")
@@ -31,6 +32,7 @@ func TestEnrollConfirmThenLogin(t *testing.T) {
 }
 
 func TestEnrollRejects(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("newbie", authz.RoleViewer, false)
 	c := h.client("192.0.2.100")
@@ -48,6 +50,7 @@ func TestEnrollRejects(t *testing.T) {
 }
 
 func TestEnrollRateLimited(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	h.addUser("newbie", authz.RoleViewer, false)
 	c := h.client("192.0.2.100")
@@ -59,6 +62,7 @@ func TestEnrollRateLimited(t *testing.T) {
 }
 
 func TestEnrollRevealShowsSecretOnce(t *testing.T) {
+	t.Parallel()
 	enr, err := auth.NewTOTPEnrollment("oob-manager", "newbie")
 	must(t, err)
 	h := newHarness(t, func(d *Deps) {
@@ -87,6 +91,7 @@ func TestEnrollRevealShowsSecretOnce(t *testing.T) {
 }
 
 func TestQRDataURLBadURI(t *testing.T) {
+	t.Parallel()
 	if got := qrDataURL("not a uri"); got != "" {
 		t.Fatalf("qrDataURL(bad) = %q", got)
 	}

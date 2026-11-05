@@ -42,6 +42,7 @@ func hueDistance(a, b float64) float64 {
 // rule's minimum; every other palette keeps a small margin (42°) so a later tweak of its
 // hues cannot slide onto the limit unnoticed.
 func TestAccentStaysFarFromStatusHues(t *testing.T) {
+	t.Parallel()
 	for id, pal := range palettes(t) {
 		minGap := 42.0
 		if id == "graphite" {
@@ -66,6 +67,7 @@ func TestAccentStaysFarFromStatusHues(t *testing.T) {
 }
 
 func TestGraphiteUsesTheAnchors(t *testing.T) {
+	t.Parallel()
 	pal := palettes(t)["graphite"]
 	want := map[string]float64{"accent": 198, "ok": 158, "warn": 78, "crit": 24, "info": 245, "stale": 98}
 	steps := map[string][]string{"accent": {"1", "7"}, "crit": {"1", "5", "7", "8"}}
@@ -98,6 +100,7 @@ func stepsOr(s []string) []string {
 }
 
 func TestHueDistance(t *testing.T) {
+	t.Parallel()
 	for _, tc := range [][3]float64{{10, 350, 20}, {198, 158, 40}, {0, 180, 180}, {720, 0, 0}} {
 		if got := hueDistance(tc[0], tc[1]); got != tc[2] {
 			t.Errorf("hueDistance(%v, %v) = %v", tc[0], tc[1], got)

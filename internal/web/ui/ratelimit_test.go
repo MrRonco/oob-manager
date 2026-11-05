@@ -7,6 +7,7 @@ import (
 )
 
 func TestLimiterBurstAndRefill(t *testing.T) {
+	t.Parallel()
 	now := time.Unix(1_800_000_000, 0)
 	l := newLimiter(RateLimit{Events: 5, Per: time.Minute}, 100, func() time.Time { return now })
 	for i := range 5 {
@@ -34,6 +35,7 @@ func TestLimiterBurstAndRefill(t *testing.T) {
 }
 
 func TestLimiterBoundedKeys(t *testing.T) {
+	t.Parallel()
 	now := time.Unix(1_800_000_000, 0)
 	l := newLimiter(RateLimit{Events: 2, Per: time.Hour}, 10, func() time.Time { return now })
 	l.allow("victim")
@@ -48,6 +50,7 @@ func TestLimiterBoundedKeys(t *testing.T) {
 }
 
 func TestLimiterPrunesFullBuckets(t *testing.T) {
+	t.Parallel()
 	now := time.Unix(1_800_000_000, 0)
 	l := newLimiter(RateLimit{Events: 1, Per: time.Second}, 3, func() time.Time { return now })
 	for i := range 3 {

@@ -97,6 +97,7 @@ func ntfyForm(e *notifyEnv, id, token string) url.Values {
 const uiSecret = "tk_UI-SECRET-VALUE" //nolint:gosec // G101: a fake secret the tests look for
 
 func TestNotifyAddEditTestDelete(t *testing.T) {
+	t.Parallel()
 	e := newNotifyEnv(t)
 	c := e.adminClient()
 	result(c.get("/settings/notifications")).status(t, http.StatusOK).contains(t, "No targets yet", "Add a target",
@@ -155,6 +156,7 @@ func TestNotifyAddEditTestDelete(t *testing.T) {
 }
 
 func TestNotifyInvalidInputKeepsSecretsOut(t *testing.T) {
+	t.Parallel()
 	e := newNotifyEnv(t)
 	c := e.adminClient()
 	f := ntfyForm(e, "phone", uiSecret)
@@ -175,6 +177,7 @@ func TestNotifyInvalidInputKeepsSecretsOut(t *testing.T) {
 }
 
 func TestNotifyEmailAndPushoverForms(t *testing.T) {
+	t.Parallel()
 	e := newNotifyEnv(t)
 	c := e.adminClient()
 	result(c.get("/settings/notifications/new?kind=email")).contains(t, "SMTP server", `value="587"`, "STARTTLS (required)")
@@ -197,6 +200,7 @@ func TestNotifyEmailAndPushoverForms(t *testing.T) {
 }
 
 func TestNotifyFileTargetsLockedAndRoles(t *testing.T) {
+	t.Parallel()
 	file := notify.Target{ID: "cfg", Name: "From file", Kind: notify.KindWebhook, URL: "https://hooks.example.net/x",
 		Enabled: true, Classes: notify.Classes(), MinSeverity: notify.SeverityWarning}
 	e := newNotifyEnv(t, notify.FileTarget{Target: file, Secrets: notify.Secrets{Token: secrets.New("FILE-HMAC")}})
@@ -220,6 +224,7 @@ func TestNotifyFileTargetsLockedAndRoles(t *testing.T) {
 }
 
 func TestNotifyStaleStepUpRedirects(t *testing.T) {
+	t.Parallel()
 	e := newNotifyEnv(t)
 	c := e.adminClient()
 	page := c.get("/settings/notifications/new?kind=ntfy").Body.String()
@@ -234,6 +239,7 @@ func TestNotifyStaleStepUpRedirects(t *testing.T) {
 }
 
 func TestNotifyFailingBanner(t *testing.T) {
+	t.Parallel()
 	e := newNotifyEnv(t)
 	c := e.adminClient()
 	viewer := e.signInAs(t, "vera", authz.RoleViewer, "192.0.2.31")
@@ -250,6 +256,7 @@ func TestNotifyFailingBanner(t *testing.T) {
 }
 
 func TestNotifyPagesHiddenWithoutService(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.get("/settings/notifications")).status(t, http.StatusNotFound)

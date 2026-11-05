@@ -18,6 +18,7 @@ import (
 var typedInputs = []string{"<textarea", `type="text"`, `type="search"`, `type="datetime-local"`, `type="password"`, `type="number"`}
 
 func TestRefreshedPagesCarryNoTypedInput(t *testing.T) {
+	t.Parallel()
 	e := newMaintEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	result(op.submit("/", "/prefs/refresh", url.Values{"refresh": {"on"}, "next": {"/"}})).status(t, http.StatusSeeOther)
@@ -34,6 +35,7 @@ func TestRefreshedPagesCarryNoTypedInput(t *testing.T) {
 }
 
 func TestMaintenanceFormPage(t *testing.T) {
+	t.Parallel()
 	e := newMaintEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	viewer := e.userClient(t, "vera", authz.RoleViewer, "192.0.2.31")
@@ -60,6 +62,7 @@ func TestMaintenanceFormPage(t *testing.T) {
 }
 
 func TestNoteFormPages(t *testing.T) {
+	t.Parallel()
 	e := newMaintEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	other := e.userClient(t, "olga", authz.RoleOperator, "192.0.2.32")
@@ -103,6 +106,7 @@ func TestNoteFormPages(t *testing.T) {
 // script, which pauses while a field is focused or dirty, and says how to see the result
 // without scripts.
 func TestFormPagesNeverMetaRefresh(t *testing.T) {
+	t.Parallel()
 	sec := newSecEnv(t)
 	adm := sec.adminClient()
 	result(adm.submit("/", "/prefs/refresh", url.Values{"refresh": {"on"}, "next": {"/"}})).status(t, http.StatusSeeOther)

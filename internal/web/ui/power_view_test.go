@@ -23,6 +23,7 @@ func noPSUServer(now time.Time) ServerView {
 }
 
 func TestNoPSUTelemetryOverview(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.servers = []ServerView{noPSUServer(h.clock.Now())}
 	r := result(c.get("/servers")).status(t, http.StatusOK)
@@ -37,6 +38,7 @@ func TestNoPSUTelemetryOverview(t *testing.T) {
 }
 
 func TestNoPSUTelemetryServerPageShowsVoltages(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	h.fleet.servers = []ServerView{noPSUServer(h.clock.Now())}
 	r := result(c.get("/servers/edge/sensors")).status(t, http.StatusOK)
@@ -46,6 +48,7 @@ func TestNoPSUTelemetryServerPageShowsVoltages(t *testing.T) {
 }
 
 func TestServerPageVoltagesWithPSUs(t *testing.T) {
+	t.Parallel()
 	h, c := signedIn(t)
 	v := h.fleet.servers[0]
 	p := bmc.SnapshotParams{TakenAt: h.clock.Now(), PowerState: bmc.PowerOn, Health: bmc.HealthOK,
@@ -60,6 +63,7 @@ func TestServerPageVoltagesWithPSUs(t *testing.T) {
 }
 
 func TestFmtVolts(t *testing.T) {
+	t.Parallel()
 	if fmtVolts(bmc.NoReading()) != dash || fmtVolts(bmc.ReadingOf(3.3)) != "3.30 V" {
 		t.Fatal("fmtVolts")
 	}

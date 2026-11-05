@@ -241,6 +241,7 @@ func oklabL(hex string) float64 {
 }
 
 func TestThemeContrast(t *testing.T) {
+	t.Parallel()
 	themes := resolvedThemes(t)
 	for _, th := range display.Themes() {
 		id := string(th.ID)
@@ -281,6 +282,7 @@ const themeGolden = "testdata/theme-hex.txt"
 // equals what themes.css and tokens.css resolve to), and themes.spec.ts (Chromium paints
 // the golden).
 func TestPalettesMatchGolden(t *testing.T) {
+	t.Parallel()
 	themes := resolvedThemes(t)
 	if *updateGolden {
 		writeThemeGolden(t, themes)
@@ -342,6 +344,7 @@ var fallbackRE = regexp.MustCompile(`@supports not \(color: light-dark\(#000, #f
 // TestLightDarkFallback: a browser without light-dark() gets every semantic token as
 // plain Graphite dark (the palettes' values would all be invalid there).
 func TestLightDarkFallback(t *testing.T) {
+	t.Parallel()
 	css, err := staticFS.ReadFile("static/tokens.css")
 	if err != nil {
 		t.Fatal(err)
@@ -369,6 +372,7 @@ func TestLightDarkFallback(t *testing.T) {
 // semantic layer is written once (no colour arithmetic the Go check cannot evaluate),
 // app.css, shell.css and pages.css define no colour token of their own, and Graphite is also the default.
 func TestTokenLayers(t *testing.T) {
+	t.Parallel()
 	for _, r := range parseRules(t, "static/themes.css") {
 		for name := range r.decls {
 			if !strings.HasPrefix(name, "p-") && name != "focus-w" {
@@ -400,6 +404,7 @@ func TestTokenLayers(t *testing.T) {
 }
 
 func TestColorMath(t *testing.T) {
+	t.Parallel()
 	for in, want := range map[string]string{"oklch(100% 0 0)": "#ffffff", "oklch(0% 0 0)": "#000000",
 		"oklch(62.8% 0.2577 29.23)": "#ff0000", "oklch(0.628 0.2577 29.23)": "#ff0000", "#4fd0e0": "#4fd0e0",
 		"oklch(79.33% 0.1132 206.72)": "#4fd0e0"} {
@@ -435,6 +440,7 @@ func TestColorMath(t *testing.T) {
 }
 
 func TestResolveErrors(t *testing.T) {
+	t.Parallel()
 	sem := map[string]string{"bg": "var(--p-a)", "loop": "var(--p-loop)", "raw": "#000000", "bad": "var(--p-bad)"}
 	pal := map[string]string{"p-a": "light-dark(#ffffff, #000000)", "p-loop": "var(--p-loop)",
 		"p-bad": "oklch(70% 0.4 30)"}

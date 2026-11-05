@@ -10,6 +10,7 @@ import (
 // TestTokensDeclareVendoredFonts: every @font-face url points at a vendored file, uses
 // font-display: swap, and each family has a metric-matched local fallback face.
 func TestTokensDeclareVendoredFonts(t *testing.T) {
+	t.Parallel()
 	css, err := staticFS.ReadFile("static/tokens.css")
 	if err != nil {
 		t.Fatal(err)
@@ -54,6 +55,7 @@ func TestTokensDeclareVendoredFonts(t *testing.T) {
 // TestPagesLoadTokensAndPreloadFonts: signed in and signed out, the page preloads both
 // fonts without a build fingerprint and loads tokens.css before the other sheets.
 func TestPagesLoadTokensAndPreloadFonts(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("fontcheck", "viewer", true)
 	signed := h.client("192.0.2.11")

@@ -129,6 +129,7 @@ func enableForm(addr string) url.Values {
 }
 
 func TestIntegrationsPageDisabledWithHints(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "")
 	c := g.adminClient()
 	r := result(c.get(pathIntegrations)).status(t, http.StatusOK).contains(t,
@@ -149,6 +150,7 @@ func TestIntegrationsPageDisabledWithHints(t *testing.T) {
 }
 
 func TestIntegrationsSaveApplyAndTest(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "")
 	c := g.adminClient()
 	result(postGELF(t, c, pathIntegrations, enableForm(plainGELF))).status(t, http.StatusSeeOther).
@@ -178,6 +180,7 @@ func TestIntegrationsSaveApplyAndTest(t *testing.T) {
 }
 
 func TestIntegrationsRefusals(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "")
 	c := g.adminClient()
 	result(postGELF(t, c, pathIntegrations, enableForm("127.0.0.1:12201"))).status(t, http.StatusUnprocessableEntity).
@@ -220,6 +223,7 @@ func withCSRF(t *testing.T, c *client, form url.Values) url.Values {
 }
 
 func TestIntegrationsFileManagedAndLocked(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, `audit: { gelf: { address: "`+plainGELF+`" } }`+"\n")
 	c := g.adminClient()
 	result(c.get(pathIntegrations)).status(t, http.StatusOK).contains(t, "Managed by config.yaml",
@@ -238,6 +242,7 @@ func TestIntegrationsFileManagedAndLocked(t *testing.T) {
 }
 
 func TestIntegrationsFetchAndConfirmPin(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "")
 	c := g.adminClient()
 	form := enableForm(tlsGELF)
@@ -275,6 +280,7 @@ func TestIntegrationsFetchAndConfirmPin(t *testing.T) {
 }
 
 func TestIntegrationsFetchRefusals(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "")
 	c := g.adminClient()
 	result(postGELF(t, c, pathGELFFetch, url.Values{"gelf.address": {""}})).status(t, http.StatusUnprocessableEntity).
@@ -293,6 +299,7 @@ func TestIntegrationsFetchRefusals(t *testing.T) {
 }
 
 func TestIntegrationsManualPinAndReset(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "")
 	c := g.adminClient()
 	form := enableForm(tlsGELF)
@@ -313,6 +320,7 @@ func TestIntegrationsManualPinAndReset(t *testing.T) {
 }
 
 func TestIntegrationsWithoutBackend(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.get(pathIntegrations)).status(t, http.StatusNotFound)
@@ -329,6 +337,7 @@ func (pausedIntegrations) Stats() audit.ShipperStats {
 func (pausedIntegrations) Note() string { return "The GELF settings saved here are not in force." }
 
 func TestOverviewBannerWhenShippingPaused(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t, func(d *Deps) { d.Integrations = pausedIntegrations{} })
 	c := e.adminClient()
 	result(c.get("/")).status(t, http.StatusOK).contains(t, "Audit shipping paused:", `href="/settings/integrations">Check Settings`,
@@ -339,6 +348,7 @@ func TestOverviewBannerWhenShippingPaused(t *testing.T) {
 }
 
 func TestGELFStateAndMessages(t *testing.T) {
+	t.Parallel()
 	tf := timeFmt{loc: time.UTC}
 	now := time.Date(2026, 10, 22, 9, 0, 0, 0, time.UTC)
 	st := gelfState(audit.ShipperStats{Active: true, Connected: false, LastError: audit.ClassTimeout, LastSuccess: now},
@@ -410,6 +420,7 @@ func postGELF(t *testing.T, c *client, action string, form url.Values) *httptest
 // TestIntegrationsIssuerNeedsTheName: fetched by IP, the certificate (issued for a name)
 // does not cover the address, so its CA is not offered and the leaf is preselected.
 func TestIntegrationsIssuerNeedsTheName(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "")
 	c := g.adminClient()
 	result(postGELF(t, c, pathGELFFetch, enableForm(tlsGELF))).status(t, http.StatusOK).
@@ -422,6 +433,7 @@ func TestIntegrationsIssuerNeedsTheName(t *testing.T) {
 // before Save, a confirm with shipping off says so, and saved values that no longer
 // validate are reported.
 func TestIntegrationsFormDetails(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "")
 	c := g.adminClient()
 	form := enableForm("10.9.0.99:12201") // allowed, but nothing answers there
@@ -450,6 +462,7 @@ func (n noteSettings) Current() settings.Effective {
 }
 
 func TestIntegrationsNoteForDiscardedRows(t *testing.T) {
+	t.Parallel()
 	g := newGELFEnv(t, "", func(d *Deps) { d.Settings = noteSettings{d.Settings} })
 	result(g.adminClient().get(pathIntegrations)).status(t, http.StatusOK).contains(t, "not in force (test)")
 }
@@ -462,6 +475,7 @@ func (expiredIntegrations) Stats() audit.ShipperStats {
 }
 
 func TestOverviewBannerExpired(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t, func(d *Deps) { d.Integrations = expiredIntegrations{} })
 	result(e.adminClient().get("/")).status(t, http.StatusOK).contains(t, "certificate has expired").
 		lacks(t, "does not match the pinned fingerprint")

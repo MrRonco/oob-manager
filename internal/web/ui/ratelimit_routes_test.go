@@ -16,6 +16,7 @@ import (
 // TestPrefsRoutesRateLimited: the theme and auto-refresh toggles share the 30/min
 // annotate rate (their own bucket), then 429 with Retry-After.
 func TestPrefsRoutesRateLimited(t *testing.T) {
+	t.Parallel()
 	for _, path := range []string{"/prefs/theme", "/prefs/refresh"} {
 		t.Run(path, func(t *testing.T) {
 			h := newHarness(t)
@@ -41,6 +42,7 @@ func TestPrefsRoutesRateLimited(t *testing.T) {
 // TestDisplayPrefsRateLimited: /preferences uses the per-user change limit (10/min),
 // and the refusal is audited.
 func TestDisplayPrefsRateLimited(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "")
 	c := e.adminClient()
 	for i := range 10 {
@@ -58,6 +60,7 @@ func TestDisplayPrefsRateLimited(t *testing.T) {
 // TestKeyBackupNoticeRateLimited: the dismissal writes an audit row, so a replayed form
 // cannot add rows without bound.
 func TestKeyBackupNoticeRateLimited(t *testing.T) {
+	t.Parallel()
 	data := t.TempDir()
 	if _, err := firstrun.EnsureKeys(data, func() (bool, error) { return true, nil }); err != nil {
 		t.Fatal(err)

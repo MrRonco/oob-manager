@@ -44,6 +44,7 @@ func newGeneralEnv(t *testing.T, extraYAML string) (*settingsEnv, *settings.Serv
 }
 
 func TestGeneralPageShowsSourcesAndLocks(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "ratelimit: { login_acct_per_hour: 12 }\n")
 	c := e.adminClient()
 	r := result(c.get("/settings/general")).status(t, http.StatusOK).contains(t,
@@ -57,6 +58,7 @@ func TestGeneralPageShowsSourcesAndLocks(t *testing.T) {
 }
 
 func TestGeneralSaveAppliesLiveAndIsAudited(t *testing.T) {
+	t.Parallel()
 	e, svc := newGeneralEnv(t, "")
 	c := e.adminClient()
 	result(c.get("/")).contains(t, `<time datetime="2026-10-21T09:01:02Z">09:01:02 UTC</time>`)
@@ -86,6 +88,7 @@ func TestGeneralSaveAppliesLiveAndIsAudited(t *testing.T) {
 }
 
 func TestGeneralRefusals(t *testing.T) {
+	t.Parallel()
 	e, svc := newGeneralEnv(t, "ratelimit: { login_acct_per_hour: 12 }\n")
 	c := e.adminClient()
 	post := func(fields url.Values) *httpResult {
@@ -115,6 +118,7 @@ func TestGeneralRefusals(t *testing.T) {
 }
 
 func TestGeneralLockedSection(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "settings: { locked: [general] }\n")
 	c := e.adminClient()
 	result(c.get("/settings/general")).status(t, http.StatusOK).contains(t, "locked by <code>settings.locked</code>").
@@ -124,6 +128,7 @@ func TestGeneralLockedSection(t *testing.T) {
 }
 
 func TestGeneralNeedsStepUpAndAdmin(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "")
 	c := e.adminClient()
 	e.clock.Advance(6 * time.Minute)
@@ -143,6 +148,7 @@ func TestGeneralNeedsStepUpAndAdmin(t *testing.T) {
 }
 
 func TestGeneralWithoutSettingsBackend(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.get("/settings/general")).status(t, http.StatusNotFound)
@@ -152,6 +158,7 @@ func TestGeneralWithoutSettingsBackend(t *testing.T) {
 }
 
 func TestLoginRateLimitIsLive(t *testing.T) {
+	t.Parallel()
 	e, svc := newGeneralEnv(t, "")
 	c := e.adminClient()
 	result(c.submit("/settings/general", "/settings/general", url.Values{"rev": {"0"},
@@ -174,6 +181,7 @@ func TestLoginRateLimitIsLive(t *testing.T) {
 }
 
 func TestGeneralResetToDefault(t *testing.T) {
+	t.Parallel()
 	e, svc := newGeneralEnv(t, "ratelimit: { login_acct_per_hour: 12 }\n")
 	c := e.adminClient()
 	// Nothing saved yet: no reset button anywhere.
@@ -207,6 +215,7 @@ func TestGeneralResetToDefault(t *testing.T) {
 }
 
 func TestGeneralResetNeedsStepUp(t *testing.T) {
+	t.Parallel()
 	e, _ := newGeneralEnv(t, "")
 	c := e.adminClient()
 	result(c.submit("/settings/general", "/settings/general", url.Values{"rev": {"0"}, config.KeyTheme: {"nord"}})).
@@ -222,6 +231,7 @@ func TestGeneralResetNeedsStepUp(t *testing.T) {
 // The instance name is a General field (v0.9.1): saved from the form, it shows in the
 // header at once; set in config.yaml it is locked.
 func TestGeneralInstanceName(t *testing.T) {
+	t.Parallel()
 	e, svc := newGeneralEnv(t, "")
 	c := e.adminClient()
 	result(c.get("/settings/general")).status(t, http.StatusOK).contains(t, `name="ui.instance_name" type="text" maxlength="64"`).

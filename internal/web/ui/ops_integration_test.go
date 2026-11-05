@@ -34,6 +34,7 @@ func opsAdmin(t *testing.T) (*harness, *client) {
 }
 
 func TestServerActionsAllServicesLive(t *testing.T) {
+	t.Parallel()
 	_, c := opsAdmin(t)
 	result(c.get("/servers/r730xd/fan")).status(t, http.StatusOK).
 		contains(t, `id="fan-h"`, `action="/servers/r730xd/fan/lease"`).lacks(t, placeholderTexts...)
@@ -45,6 +46,7 @@ func TestServerActionsAllServicesLive(t *testing.T) {
 }
 
 func TestServerActionsWithoutServicesSayNotSetUp(t *testing.T) {
+	t.Parallel()
 	_, c := signedInAdmin(t)
 	result(c.get("/servers/r730xd/fan")).status(t, http.StatusOK).lacks(t, placeholderTexts...)
 	result(c.get("/servers/r730xd")).contains(t, "Power control: not set up", "Fan control: not set up").
@@ -54,6 +56,7 @@ func TestServerActionsWithoutServicesSayNotSetUp(t *testing.T) {
 
 // Server-scoped refusals name the server in the audit row, whichever feature refused.
 func TestServerScopedDenialsAuditTheServer(t *testing.T) {
+	t.Parallel()
 	h, c, _ := fanSignedIn(t, authz.RoleOperator)
 	h.clock.Advance(6 * time.Minute)
 	result(c.do(http.MethodPost, "/servers/r730xd/fan/lease", fanForm(t, c, url.Values{"confirm": {"yes"}}))).
@@ -72,6 +75,7 @@ func TestServerScopedDenialsAuditTheServer(t *testing.T) {
 // The fan lease review is the shared confirm interstitial (same template and inline
 // step-up as power and Settings), with the floor and duration fields added.
 func TestFanReviewUsesSharedConfirm(t *testing.T) {
+	t.Parallel()
 	_, c, _ := fanSignedIn(t, authz.RoleOperator)
 	result(c.do(http.MethodPost, "/servers/r730xd/fan/lease", fanForm(t, c, nil))).status(t, http.StatusOK).
 		contains(t, `<h2 id="w-h">What happens</h2>`, `name="pct"`, `name="minutes"`, "Reversible",

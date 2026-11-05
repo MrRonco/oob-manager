@@ -87,6 +87,7 @@ func fanForm(t *testing.T, c *client, extra url.Values) url.Values {
 }
 
 func TestFanCardViewerIsReadOnly(t *testing.T) {
+	t.Parallel()
 	_, c, _ := fanSignedIn(t, authz.RoleViewer)
 	result(c.get("/servers/r730xd/fan")).status(t, http.StatusOK).
 		contains(t, "Fan lease", "<strong>Owner:</strong> Host fan curve", "35 %", "Fan leases need the operator role",
@@ -96,6 +97,7 @@ func TestFanCardViewerIsReadOnly(t *testing.T) {
 }
 
 func TestFanStartReviewThenConfirm(t *testing.T) {
+	t.Parallel()
 	h, c, ff := fanSignedIn(t, authz.RoleOperator)
 	result(c.get("/servers/r730xd/fan")).contains(t, `action="/servers/r730xd/fan/lease"`, "Review lease",
 		`name="pct"`, `<option value="120">2 hours</option>`, "30 to 100")
@@ -121,6 +123,7 @@ func TestFanStartReviewThenConfirm(t *testing.T) {
 }
 
 func TestFanStartNeedsStepUp(t *testing.T) {
+	t.Parallel()
 	h, c, ff := fanSignedIn(t, authz.RoleOperator)
 	h.clock.Advance(6 * time.Minute) // the login step-up has lapsed
 	form := fanForm(t, c, url.Values{"confirm": {"yes"}})
@@ -143,6 +146,7 @@ func TestFanStartNeedsStepUp(t *testing.T) {
 }
 
 func TestFanStartHostileInput(t *testing.T) {
+	t.Parallel()
 	_, c, ff := fanSignedIn(t, authz.RoleOperator)
 	for _, v := range []url.Values{{"pct": {"101"}}, {"pct": {"abc"}}, {"pct": {"-5"}}, {"minutes": {"999"}},
 		{"minutes": {"1"}}, {"pct": {"55 "}}, {"pct": {""}}} {
@@ -162,6 +166,7 @@ func TestFanStartHostileInput(t *testing.T) {
 }
 
 func TestFanRefusals(t *testing.T) {
+	t.Parallel()
 	h, c, ff := fanSignedIn(t, authz.RoleOperator)
 	result(c.do(http.MethodPost, "/servers/r730xd/fan/lease", url.Values{"pct": {"55"}, "minutes": {"30"}})).
 		status(t, http.StatusForbidden)
@@ -181,6 +186,7 @@ func TestFanRefusals(t *testing.T) {
 }
 
 func TestFanStartErrors(t *testing.T) {
+	t.Parallel()
 	cases := map[error]int{fan.ErrActive: http.StatusConflict, fan.ErrApply: http.StatusBadGateway,
 		fan.ErrNotConfigured: http.StatusNotFound, errors.New("db"): http.StatusInternalServerError}
 	for err, want := range cases {
@@ -192,6 +198,7 @@ func TestFanStartErrors(t *testing.T) {
 
 // TestFanStartAuditDown: a lease refused because the audit row could not be written says so.
 func TestFanStartAuditDown(t *testing.T) {
+	t.Parallel()
 	_, c, ff := fanSignedIn(t, authz.RoleOperator)
 	ff.set(func(f *fakeFans) { f.startErr = fan.ErrAudit })
 	result(c.do(http.MethodPost, "/servers/r730xd/fan/lease", fanForm(t, c, url.Values{"confirm": {"yes"}}))).
@@ -199,6 +206,7 @@ func TestFanStartAuditDown(t *testing.T) {
 }
 
 func TestFanEndNow(t *testing.T) {
+	t.Parallel()
 	h, c, ff := fanSignedIn(t, authz.RoleOperator)
 	now := h.clock.Now()
 	ff.set(func(f *fakeFans) {
@@ -225,6 +233,7 @@ func TestFanEndNow(t *testing.T) {
 }
 
 func TestFanCardStates(t *testing.T) {
+	t.Parallel()
 	_, c, ff := fanSignedIn(t, authz.RoleOperator)
 	ff.set(func(f *fakeFans) {
 		f.status = fan.Status{HasLease: true, Remaining: 30 * time.Second, Lease: store.FanLease{Pct: 50, RequestedBy: "ops"},
@@ -244,12 +253,14 @@ func TestFanCardStates(t *testing.T) {
 }
 
 func TestFanNotSetUp(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	result(c.get("/servers/r730xd/fan")).contains(t, "Fan control is not set up in this installation")
 	result(c.do(http.MethodPost, "/servers/r730xd/fan/lease", url.Values{})).status(t, http.StatusNotFound)
 }
 
 func TestFanRateLimit(t *testing.T) {
+	t.Parallel()
 	_, c, ff := fanSignedIn(t, authz.RoleOperator, func(d *Deps) { d.ChangesPerUser = RateLimit{Events: 1, Per: time.Minute} })
 	form := fanForm(t, c, url.Values{"confirm": {"yes"}})
 	result(c.do(http.MethodPost, "/servers/r730xd/fan/lease", form)).status(t, http.StatusSeeOther)

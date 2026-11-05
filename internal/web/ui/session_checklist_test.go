@@ -20,6 +20,7 @@ import (
 // TestDemotedAdminLosesAccessOnNextRequest: role is read from the user row on every
 // request, so a demotion applies at once (real store and admin service).
 func TestDemotedAdminLosesAccessOnNextRequest(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	link, err := e.svc.CreateUser(context.Background(), actorFor(t, e, "morgan"), "alice", authz.RoleAdmin)
 	must(t, err)
@@ -33,6 +34,7 @@ func TestDemotedAdminLosesAccessOnNextRequest(t *testing.T) {
 // TestDisabledUserSignedOutOnNextRequest: a disabled user's next request is refused
 // (the browser is sent to sign in) and the session is gone.
 func TestDisabledUserSignedOutOnNextRequest(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleViewer, true)
 	c := h.client("192.0.2.61")
@@ -51,6 +53,7 @@ func TestDisabledUserSignedOutOnNextRequest(t *testing.T) {
 // adopted (fixation), and the pre-session cookie is cleared once signed in, so nothing
 // an attacker set before login survives it.
 func TestPlantedCookiesReplacedAtLogin(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleViewer, true)
 	c := h.client("192.0.2.62")
@@ -73,6 +76,7 @@ func TestPlantedCookiesReplacedAtLogin(t *testing.T) {
 // after the password stage (a pending session) is not the one that is signed in: once the
 // code is accepted, a copy of the pending cookie is refused, end to end through the UI.
 func TestPendingTokenRejectedAfterLogin(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleViewer, true)
 	c := h.client("192.0.2.65")
@@ -102,6 +106,7 @@ func TestPendingTokenRejectedAfterLogin(t *testing.T) {
 // TestCookieReplayedAfterLogout: logout deletes the session server-side, so a copy of
 // the cookie taken before logout is refused afterwards.
 func TestCookieReplayedAfterLogout(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	secret := h.addUser("morgan", authz.RoleViewer, true)
 	c := h.client("192.0.2.63")
@@ -118,6 +123,7 @@ func TestCookieReplayedAfterLogout(t *testing.T) {
 // TestConsoleWebSocketOriginPortMismatch: the same host on another port is a foreign
 // origin for the console upgrade.
 func TestConsoleWebSocketOriginPortMismatch(t *testing.T) {
+	t.Parallel()
 	h, c, _, _ := consoleHarness(t, authz.RoleAdmin)
 	srv := httptest.NewServer(h.handler)
 	t.Cleanup(srv.Close)

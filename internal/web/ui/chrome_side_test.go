@@ -5,6 +5,7 @@ import "testing"
 // TestSideValueAlwaysNamesMaintenance (review L4): a server in maintenance says so on its
 // sidebar line, whatever else is true of it.
 func TestSideValueAlwaysNamesMaintenance(t *testing.T) {
+	t.Parallel()
 	m := &maintBadge{}
 	for _, c := range []struct {
 		row  summaryRow

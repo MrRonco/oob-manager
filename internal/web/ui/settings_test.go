@@ -20,6 +20,7 @@ var (
 )
 
 func TestSettingsNavAndAccessAreAdminOnly(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.get("/")).status(t, http.StatusOK).contains(t, `href="/settings"`)
@@ -48,6 +49,7 @@ func TestSettingsNavAndAccessAreAdminOnly(t *testing.T) {
 }
 
 func TestTokenCreateIsShownOnceThenRevoke(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	rec := c.submit("/settings/tokens", "/settings/tokens", url.Values{"name": {"dashboard"}, "expires": {"90"}})
@@ -87,6 +89,7 @@ func TestTokenCreateIsShownOnceThenRevoke(t *testing.T) {
 }
 
 func TestTokenCreateValidation(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.submit("/settings/tokens", "/settings/tokens", url.Values{"name": {"x"}, "expires": {"3"}})).
@@ -96,6 +99,7 @@ func TestTokenCreateValidation(t *testing.T) {
 }
 
 func TestChangesNeedFreshStepUp(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	page := c.get("/settings/tokens").Body.String()
@@ -126,6 +130,7 @@ func TestChangesNeedFreshStepUp(t *testing.T) {
 }
 
 func TestStepUpRedirectOnlyToLocalPaths(t *testing.T) {
+	t.Parallel()
 	for in, want := range map[string]string{"/settings/users": "/settings/users", "https://evil.test/": "/x",
 		"//evil.test": "/x", "/\\evil": "/x", "": "/x", "/a\nb": "/x", "settings": "/x"} {
 		if got := localPath(in, "/x"); got != want {
@@ -135,6 +140,7 @@ func TestStepUpRedirectOnlyToLocalPaths(t *testing.T) {
 }
 
 func TestSettingsChangeRequiresCSRF(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.do(http.MethodPost, "/settings/users", url.Values{"username": {"mallory"}, "role": {"admin"}})).
@@ -148,6 +154,7 @@ func TestSettingsChangeRequiresCSRF(t *testing.T) {
 }
 
 func TestSettingsChangesAreRateLimited(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t, func(d *Deps) { d.ChangesPerUser = RateLimit{Events: 1, Per: time.Hour} })
 	c := e.adminClient()
 	result(c.submit("/settings/tokens", "/settings/tokens", url.Values{"name": {"a"}, "expires": {"0"}})).
@@ -160,6 +167,7 @@ func TestSettingsChangesAreRateLimited(t *testing.T) {
 }
 
 func TestSettingsUnavailableWithoutBackend(t *testing.T) {
+	t.Parallel()
 	_, c := signedInAdmin(t)
 	result(c.get("/settings/users")).status(t, http.StatusNotFound)
 	result(c.do(http.MethodPost, "/settings/users", url.Values{})).status(t, http.StatusNotFound)

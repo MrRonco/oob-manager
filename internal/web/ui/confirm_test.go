@@ -25,6 +25,7 @@ func victorPage(t *testing.T, e *settingsEnv, c *client) string {
 }
 
 func TestDisableAccountGoesThroughAConfirmPage(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	userPage := victorPage(t, e, c)
@@ -48,6 +49,7 @@ func TestDisableAccountGoesThroughAConfirmPage(t *testing.T) {
 }
 
 func TestResetAuthenticatorNeedsTheTypedName(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	userPage := victorPage(t, e, c)
@@ -67,6 +69,7 @@ func TestResetAuthenticatorNeedsTheTypedName(t *testing.T) {
 }
 
 func TestConfirmPageTakesTheStepUpCode(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	userPage := victorPage(t, e, c)
@@ -93,6 +96,7 @@ func TestConfirmPageTakesTheStepUpCode(t *testing.T) {
 }
 
 func TestSessionEndingGoesThroughConfirm(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	userPage := victorPage(t, e, c)
@@ -102,6 +106,7 @@ func TestSessionEndingGoesThroughConfirm(t *testing.T) {
 }
 
 func TestRevokeTokenConfirmAndTypedWhenRecentlyUsed(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	rec := c.submit("/settings/tokens", "/settings/tokens", url.Values{"name": {"dashboard"}, "expires": {"90"}})
@@ -124,6 +129,7 @@ func TestRevokeTokenConfirmAndTypedWhenRecentlyUsed(t *testing.T) {
 }
 
 func TestStepUpPageNamesTheAction(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.get("/stepup?next=/settings/tokens")).status(t, http.StatusOK).
@@ -138,6 +144,7 @@ func TestStepUpPageNamesTheAction(t *testing.T) {
 }
 
 func TestRoleChangeUnchangedIsANoOp(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	userPage := victorPage(t, e, c)

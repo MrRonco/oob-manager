@@ -15,6 +15,7 @@ import (
 // address and the per-IP sign-in limit both use the TCP peer, never X-Forwarded-For,
 // X-Real-IP or Forwarded (any client could send them).
 func TestForwardingHeadersAreIgnored(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, func(d *Deps) { d.LoginPerIP = RateLimit{Events: 3, Per: time.Minute} })
 	h.addUser("morgan", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")

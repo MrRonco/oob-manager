@@ -71,6 +71,7 @@ func golden(t *testing.T, file, got string) {
 // <title> and <desc> per chart, no style attribute, no script, one path command per
 // bucket.
 func TestGoldenHistorySVG(t *testing.T) {
+	t.Parallel()
 	chart := renderPartial(t, "histchart", goldenPanel())
 	golden(t, "history_chart.svg", chart)
 	t0 := time.Date(2026, 10, 20, 0, 0, 0, 0, time.UTC)
@@ -94,6 +95,7 @@ func TestGoldenHistorySVG(t *testing.T) {
 }
 
 func TestHistoryUnits(t *testing.T) {
+	t.Parallel()
 	f := histUnitOf(store.UnitCelsius, display.Fahrenheit)
 	if f.Symbol != "°F" || f.text(100) != "212.0 °F" || f.tick(212) != "212" {
 		t.Errorf("°F: %+v %s %s", f, f.text(100), f.tick(212))

@@ -8,6 +8,7 @@ import (
 )
 
 func TestAgeChipStates(t *testing.T) {
+	t.Parallel()
 	now := time.Date(2026, 10, 20, 12, 0, 0, 0, time.UTC)
 	chip := func(age time.Duration, has bool) chipView {
 		v := ServerView{HasSnapshot: has, LastSuccess: now.Add(-age)}
@@ -35,6 +36,7 @@ func TestAgeChipStates(t *testing.T) {
 }
 
 func TestShortAndRelativeTimes(t *testing.T) {
+	t.Parallel()
 	loc := time.FixedZone("EDT", -4*3600)
 	now := time.Date(2026, 10, 21, 14, 44, 0, 0, time.UTC)
 	if got := fmtShort(now.Add(-13*time.Minute), now, loc); got != "10:31" {
@@ -72,6 +74,7 @@ func TestShortAndRelativeTimes(t *testing.T) {
 }
 
 func TestHeadroomMeter(t *testing.T) {
+	t.Parallel()
 	r := bmc.ReadingOf
 	cases := []struct {
 		name                string
@@ -102,6 +105,7 @@ func TestHeadroomMeter(t *testing.T) {
 }
 
 func TestTempRowsProblemsFirstWithDisplayNames(t *testing.T) {
+	t.Parallel()
 	r := bmc.ReadingOf
 	rows := tempRows([]bmc.Temperature{
 		{Name: "System Board Exhaust Temp", Context: "Exhaust", Celsius: r(30), WarnAbove: r(70), CritAbove: r(75), Health: bmc.HealthOK},
@@ -129,6 +133,7 @@ func names(rows []tempRow) []string {
 }
 
 func TestVoltagesSplitPowerGood(t *testing.T) {
+	t.Parallel()
 	vs := []bmc.Voltage{
 		{Name: "System Board 3.3V PG", Volts: bmc.ReadingOf(1), Health: bmc.HealthOK},
 		{Name: "CPU1 VCORE PG", Volts: bmc.NoReading(), Health: bmc.HealthOK},
@@ -156,6 +161,7 @@ func TestVoltagesSplitPowerGood(t *testing.T) {
 }
 
 func TestZoneLabel(t *testing.T) {
+	t.Parallel()
 	now := time.Date(2026, 10, 21, 14, 0, 0, 0, time.UTC)
 	for loc, want := range map[*time.Location]string{time.UTC: "UTC", time.FixedZone("EDT", -4*3600): "EDT (UTC−4)",
 		time.FixedZone("IST", 5*3600+1800): "IST (UTC+5:30)"} {
@@ -166,6 +172,7 @@ func TestZoneLabel(t *testing.T) {
 }
 
 func TestFirmwareRowsGroupAndHideEmptyColumns(t *testing.T) {
+	t.Parallel()
 	rows, cols := firmwareRows([]bmc.FirmwareItem{
 		{Name: "Component 101068", Version: "3.35", State: "Installed"},
 		{Name: "BIOS", Version: "2.18", State: "Previous", ComponentID: "159"},

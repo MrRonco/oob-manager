@@ -11,6 +11,7 @@ func testSigner(now *time.Time) csrfSigner {
 }
 
 func TestCSRFRoundTrip(t *testing.T) {
+	t.Parallel()
 	now := time.Unix(1_800_000_000, 0)
 	c := testSigner(&now)
 	tok := c.issue(formLogin, "pre:abc")
@@ -20,6 +21,7 @@ func TestCSRFRoundTrip(t *testing.T) {
 }
 
 func TestCSRFRejects(t *testing.T) {
+	t.Parallel()
 	now := time.Unix(1_800_000_000, 0)
 	c := testSigner(&now)
 	tok := c.issue(formLogin, "pre:abc")
@@ -45,6 +47,7 @@ func TestCSRFRejects(t *testing.T) {
 }
 
 func TestCSRFExpiry(t *testing.T) {
+	t.Parallel()
 	now := time.Unix(1_800_000_000, 0)
 	c := testSigner(&now)
 	tok := c.issue(formTOTP, "sess:x")

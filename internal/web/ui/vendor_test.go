@@ -20,6 +20,7 @@ import (
 // their licence texts), the Lucide 1.53.0 icon sources (ISC, unserved, in iconsrc/) and
 // their licence, and nothing else sits in either vendored tree.
 func TestVendoredFilesMatchManifest(t *testing.T) {
+	t.Parallel()
 	manifest, err := os.ReadFile("vendor.sha256")
 	if err != nil {
 		t.Fatal(err)
@@ -82,6 +83,7 @@ func vendoredPath(name string) string {
 }
 
 func TestConsoleAssetsAreServedAsModules(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	for _, p := range []string{"/static/console.js", "/static/vendor/novnc-1.7.0/core/rfb.js", "/static/console.css"} {
 		rec := c.get(p)
@@ -102,6 +104,7 @@ func TestConsoleAssetsAreServedAsModules(t *testing.T) {
 }
 
 func TestSerialAssetsAreServedAsModules(t *testing.T) {
+	t.Parallel()
 	_, c := signedIn(t)
 	for _, p := range []string{"/static/serial.js", "/static/vendor/xterm-6.0.0/xterm.mjs",
 		"/static/vendor/xterm-addon-fit-0.11.0/addon-fit.mjs", "/static/serial.css", "/static/vendor/xterm-6.0.0/xterm.css"} {

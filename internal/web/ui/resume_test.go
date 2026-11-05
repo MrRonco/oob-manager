@@ -15,6 +15,7 @@ import (
 // step-up window plus a minute) and replayed once the code is confirmed.
 
 func TestPendingStoreSealsBindsAndExpires(t *testing.T) {
+	t.Parallel()
 	clk := &clock{t: time.Date(2026, 10, 21, 9, 0, 0, 0, time.UTC)}
 	st, err := newPendingStore([]byte(strings.Repeat("k", 32)), clk.Now)
 	must(t, err)
@@ -80,6 +81,7 @@ func resumeFrom(t *testing.T, r *httpResult, wantNext string) (string, string) {
 }
 
 func TestStepUpExpiryKeepsTheForm(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.clock.Advance(6 * time.Minute) // the login's step-up has lapsed
@@ -112,6 +114,7 @@ func TestStepUpExpiryKeepsTheForm(t *testing.T) {
 // TestStepUpExpiryReplaysASecretForm: a password typed into a credential form survives
 // the step-up (sealed in memory, never in the audit log or a page) and is stored.
 func TestStepUpExpiryReplaysASecretForm(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.fetchAndConfirm(t, c, "edge1", "192.0.2.12").status(t, http.StatusSeeOther)
@@ -133,6 +136,7 @@ func TestStepUpExpiryReplaysASecretForm(t *testing.T) {
 
 // A kept form belongs to the session that posted it: another session's code cannot run it.
 func TestKeptFormIsBoundToItsSession(t *testing.T) {
+	t.Parallel()
 	e := newServersEnv(t, "")
 	c := e.adminClient()
 	e.clock.Advance(6 * time.Minute)
@@ -154,6 +158,7 @@ func TestKeptFormIsBoundToItsSession(t *testing.T) {
 // maxPendingPerSession forms (its oldest goes first), so it cannot flush the shared stash
 // and evict the forms other admins are keeping across their step-up.
 func TestPendingStoreCapsEachSession(t *testing.T) {
+	t.Parallel()
 	clk := &clock{t: time.Date(2026, 10, 21, 9, 0, 0, 0, time.UTC)}
 	st, err := newPendingStore([]byte(strings.Repeat("k", 32)), clk.Now)
 	must(t, err)
@@ -184,6 +189,7 @@ func TestPendingStoreCapsEachSession(t *testing.T) {
 // (oob-console). Stashed forms live in memory only, but the label is left as it was so
 // the rename changes no derived key anywhere.
 func TestResumePurposeIsPinned(t *testing.T) {
+	t.Parallel()
 	if resumePurpose != "oob-console/ui-resume/v1" {
 		t.Fatalf("resume HKDF label changed: %q", resumePurpose)
 	}

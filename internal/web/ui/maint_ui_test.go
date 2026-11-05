@@ -48,6 +48,7 @@ func (e *maintEnv) userClient(t *testing.T, name string, role authz.Role, ip str
 }
 
 func TestMaintenanceModeUI(t *testing.T) {
+	t.Parallel()
 	e := newMaintEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	viewer := e.userClient(t, "vera", authz.RoleViewer, "192.0.2.31")
@@ -119,6 +120,7 @@ func TestMaintenanceModeUI(t *testing.T) {
 }
 
 func TestPillAllInMaintenance(t *testing.T) {
+	t.Parallel()
 	c := fleetCounts{Total: 2, Maintenance: 2}
 	if p := pillOf(c); p.Class != "gp-maint" || p.Text != "All 2 in maintenance" {
 		t.Fatalf("pill %+v", p)
@@ -133,6 +135,7 @@ func TestPillAllInMaintenance(t *testing.T) {
 }
 
 func TestNotesUI(t *testing.T) {
+	t.Parallel()
 	e := newMaintEnv(t)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
 	other := e.userClient(t, "olga", authz.RoleOperator, "192.0.2.32")
@@ -194,6 +197,7 @@ func ackFleet(e *maintEnv) time.Time {
 }
 
 func TestAcknowledgeUI(t *testing.T) {
+	t.Parallel()
 	e := newMaintEnv(t)
 	base := ackFleet(e)
 	op := e.userClient(t, "oscar", authz.RoleOperator, "192.0.2.30")
@@ -265,6 +269,7 @@ func TestAcknowledgeUI(t *testing.T) {
 }
 
 func TestMaintenanceHiddenWithoutService(t *testing.T) {
+	t.Parallel()
 	e := newSettingsEnv(t)
 	c := e.adminClient()
 	result(c.get("/servers/r730xd/activity")).lacks(t, `id="maint-h"`, `id="notes-h"`)
@@ -274,6 +279,7 @@ func TestMaintenanceHiddenWithoutService(t *testing.T) {
 }
 
 func TestLinkify(t *testing.T) {
+	t.Parallel()
 	segs := linkify("a http://x.test/p) b https:// c ftp://no http://ok.test/q?x=1.")
 	var links []string
 	for _, s := range segs {

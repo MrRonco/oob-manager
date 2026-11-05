@@ -13,6 +13,7 @@ import (
 )
 
 func TestRecorderCacheTTLAndBound(t *testing.T) {
+	t.Parallel()
 	var c recorderCache
 	t0 := time.Date(2026, 10, 29, 0, 0, 0, 0, time.UTC)
 	k := recCacheKey{"a", "temp:1", "c", t0}
@@ -55,6 +56,7 @@ func (c *countingHistory) Chart(ctx context.Context, keys []store.SensorKey, p h
 // TestRecorderReadsOnceAndCaches (review M6): one Chart call for the recorder's rows, and
 // none on a reload within the cache's minute; a failed read leaves the rows text-only.
 func TestRecorderReadsOnceAndCaches(t *testing.T) {
+	t.Parallel()
 	var ch *countingHistory
 	h, c := signedIn(t, func(d *Deps) {
 		ch = &countingHistory{History: newHistorySvc(t, d.Now())}

@@ -39,6 +39,7 @@ func setupForm(t *testing.T, c *client, code, user, pw, confirm string) url.Valu
 var secretAttr = regexp.MustCompile(`data-secret="([A-Z2-7]+)"`)
 
 func TestSetupCreatesTheFirstAdminThenCloses(t *testing.T) {
+	t.Parallel()
 	h, code := firstRunHarness(t, nil)
 	c := h.client("192.0.2.100")
 	result(c.get("/login")).status(t, http.StatusOK).contains(t, `href="/setup"`)
@@ -76,6 +77,7 @@ func TestSetupCreatesTheFirstAdminThenCloses(t *testing.T) {
 }
 
 func TestSetupRejects(t *testing.T) {
+	t.Parallel()
 	h, code := firstRunHarness(t, nil)
 	c := h.client("192.0.2.100")
 	result(c.do(http.MethodPost, "/setup", setupForm(t, c, "AAAA-BBBB-CCCC", "owner", testPassword, testPassword))).
@@ -99,6 +101,7 @@ func TestSetupRejects(t *testing.T) {
 }
 
 func TestSetupRateLimited(t *testing.T) {
+	t.Parallel()
 	h, _ := firstRunHarness(t, nil)
 	c := h.client("192.0.2.100")
 	for range 5 {
@@ -112,6 +115,7 @@ func TestSetupRateLimited(t *testing.T) {
 // /setup requests must write one audit row per window, not one per request (plan 09 N1).
 // The limiter itself still refuses every request over the limit.
 func TestSetupRateLimitedAuditsOncePerWindow(t *testing.T) {
+	t.Parallel()
 	h, _ := firstRunHarness(t, nil)
 	c := h.client("192.0.2.100")
 	flood := func(n int) {
@@ -164,6 +168,7 @@ func (f *fakeAudit) countDenied(action, class string) int {
 // /setup has its own per-IP bucket: a flood of wrong setup codes for "admin" must not
 // charge the sign-in buckets, and failed sign-ins must not block the administrator's real claim.
 func TestSetupBucketIsSeparateFromSignIn(t *testing.T) {
+	t.Parallel()
 	h, _ := firstRunHarness(t, nil)
 	c := h.client("192.0.2.100")
 	for range 8 {
@@ -185,6 +190,7 @@ func TestSetupBucketIsSeparateFromSignIn(t *testing.T) {
 
 // The acknowledgement is audited or not done: with the audit store down, the notice stays.
 func TestKeyBackupNoticeNeedsTheAudit(t *testing.T) {
+	t.Parallel()
 	data := t.TempDir()
 	if _, err := firstrun.EnsureKeys(data, func() (bool, error) { return true, nil }); err != nil {
 		t.Fatal(err)
@@ -206,6 +212,7 @@ func TestKeyBackupNoticeNeedsTheAudit(t *testing.T) {
 }
 
 func TestSetupAbsentWithoutFirstRun(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t)
 	c := h.client("192.0.2.100")
 	result(c.get("/setup")).status(t, http.StatusNotFound)
@@ -213,6 +220,7 @@ func TestSetupAbsentWithoutFirstRun(t *testing.T) {
 }
 
 func TestSetupClosedWhenAnAccountExists(t *testing.T) {
+	t.Parallel()
 	h, _ := firstRunHarness(t, nil)
 	h.addUser("someone", authz.RoleAdmin, true)
 	c := h.client("192.0.2.100")
@@ -221,6 +229,7 @@ func TestSetupClosedWhenAnAccountExists(t *testing.T) {
 }
 
 func TestKeyBackupNotice(t *testing.T) {
+	t.Parallel()
 	data := t.TempDir()
 	if _, err := firstrun.EnsureKeys(data, func() (bool, error) { return true, nil }); err != nil {
 		t.Fatal(err)
