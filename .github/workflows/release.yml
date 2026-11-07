@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RELEASE_LIVE: "false" # THE switch: "true" only once the repository is public (see the header)
+  RELEASE_LIVE: "true" # THE switch: live since the repository went public (2026-11-07)
   # renovate: datasource=github-releases depName=anchore/syft
   SYFT_VERSION: v1.54.0
   # renovate: datasource=github-releases depName=sigstore/cosign
